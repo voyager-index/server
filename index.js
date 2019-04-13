@@ -31,7 +31,7 @@ app.get('/db', async (req, res) => {
 })
 
 app.get('/city', async(req, res) => {
-    res.render('pages/city');
+    res.render('pages/city', {city_name:"Portland", city_image:""});
 })
 
 app.post('/city-submit', async (req, res) => {
@@ -72,7 +72,7 @@ app.post('/city-submit', async (req, res) => {
         response.on('end', () => {
             const obj = JSON.parse(output);
             console.log("obj:", obj.results[0].urls.regular);
-            city_url = obj.results[0].urls.small;
+            city_url = obj.results[0].urls.regular;
             console.log("url:", city_url);
             var request = require('request').defaults({ encoding: null });
 
@@ -80,7 +80,8 @@ app.post('/city-submit', async (req, res) => {
                 if (!error && response.statusCode == 200) {
                     data = "data:" + response.headers["content-type"] + ";base64," + new Buffer(body).toString('base64');
                     console.log(data);
-                    res.render('pages/city-submit',{city_image:data});
+                    console.log(city);
+                    res.render('pages/city',{city_name:decodeURI(city), city_image:data});
                 }
             });
         });

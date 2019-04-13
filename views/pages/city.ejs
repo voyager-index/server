@@ -1,42 +1,9 @@
 <p>Search cities:</p>
 
-    <form>
-    <input id="city" type="text" name="city" placeholder="Portland"/>
-    <br />
-    <input id="submit" type="submit" value="Submit" />
-    <br />
-    <img id="city-image"/>
-    </form>
+<form action="/city-submit" method="post">
+<input type="text" name="city" value="<%=city_name%>"/>
+<br />
+<input type="submit" value="Submit" />
+</form>
 
-<script>
-
-    document.getElementById("submit").addEventListener("click", function(event){
-        event.preventDefault();
-
-const auth = '195148f3e5b47fe30e0761f4cc1c920288dfa2b9d200d48accb4991c6496e435';
-const image = document.getElementById("city-image");
-const city = document.getElementById("city").value;
-const proto = "https://";
-const host = 'api.unsplash.com';
-const path = '/search/photos?client_id=' + auth + '&query=';
-let url = "https://cors.io/?" + proto + host + path + city;
-console.log("url:", url);
-var options = {
-    method: 'GET',
-    cache: 'default'
-};
-
-
-fetch(url)
-    .then(function(response) {
-        return response.json();
-    })
-    .then(function(data) {
-        let url = JSON.stringify(data);
-        url = JSON.parse(url);
-        url = url.results[0].urls.regular;
-        console.log(url);
-        document.getElementById("city-image").src = url;
-    })
-    });
-</script>
+<img src="<%=city_image%>"/>
