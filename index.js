@@ -51,17 +51,27 @@ app.post('/city-submit', async (req, res) => {
             return response.json();
         })
         .then(function(data) {
-            city_url = data._embedded["city:search-results"][0]._links["city:item"].href;
-            city_guess = data._embedded["city:search-results"][0].matching_full_name;
 
+            try {
+                city_url = data._embedded["city:search-results"][0]._links["city:item"].href;
+                city_guess = data._embedded["city:search-results"][0].matching_full_name;
+            }
+            catch(error) {
+                res.render('pages/city',{city_name:"City not found.", city_image:"https://www.rust-lang.org/logos/error.png"});
+            }
             console.log("city_url:", city_url);
             fetch(city_url)
                 .then(function(response) {
                     return response.json();
                 })
                 .then(function(data) {
-                    let urban_url = data._links["city:urban_area"].href;
+                    try{
+                        urban_url = data._links["city:urban_area"].href;
+                    }
 
+                    catch(error) {
+                        res.render('pages/city',{city_name:"City not found.", city_image:"https://www.rust-lang.org/logos/error.png"});
+                    }
                     fetch(urban_url)
                         .then(function(response) {
                             return response.json();
@@ -84,7 +94,7 @@ app.post('/city-submit', async (req, res) => {
 
     //res.render('pages/city-submit');
     /*
-    // An object of options to indicate where to sned the request to.
+        // An object of options to indicate where to sned the request to.
     const options = {
         host: 'api.unsplash.com',
         path: '/search/photos?query=' + city,
@@ -113,7 +123,7 @@ app.post('/city-submit', async (req, res) => {
                 city_url = obj.results[0].urls.regular;
                 var request = require('request').defaults({ encoding: null });
 
-                // get image of city, convert image data from hexadecimal to string
+// get image of city, convert image data from hexadecimal to string
                 request.get(city_url, function (error, response, body) {
                     if (!error && response.statusCode == 200) {
                         data = "data:" + response.headers["content-type"] + ";base64," + new Buffer(body).toString('base64');
@@ -128,7 +138,7 @@ app.post('/city-submit', async (req, res) => {
         });
     });
 
-    // post the data
+// post the data
     post_req.write(city);
     post_req.end();
     */
