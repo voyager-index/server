@@ -70,20 +70,22 @@ app.post('/city-submit', async (req, res) => {
         });
 
         response.on('end', () => {
-            const obj = JSON.parse(output);
-            console.log("obj:", obj.results[0].urls.regular);
-            city_url = obj.results[0].urls.regular;
-            console.log("url:", city_url);
-            var request = require('request').defaults({ encoding: null });
+            try {
+                const obj = JSON.parse(output);
+                city_url = obj.results[0].urls.regular;
+                var request = require('request').defaults({ encoding: null });
 
-            request.get(city_url, function (error, response, body) {
-                if (!error && response.statusCode == 200) {
-                    data = "data:" + response.headers["content-type"] + ";base64," + new Buffer(body).toString('base64');
-                    console.log(data);
-                    console.log(city);
-                    res.render('pages/city',{city_name:decodeURI(city), city_image:data});
-                }
-            });
+                request.get(city_url, function (error, response, body) {
+                    if (!error && response.statusCode == 200) {
+                        data = "data:" + response.headers["content-type"] + ";base64," + new Buffer(body).toString('base64');
+                        res.render('pages/city',{city_name:decodeURI(city), city_image:data});
+                    }
+                });
+            }
+            catch(err) {
+                console.error(err);
+                res.render('pages/city',{city_name:"City not found.", city_image:""});
+            }
         });
     });
 
