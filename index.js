@@ -1,21 +1,20 @@
-const express = require('express')
-const path = require('path')
 const PORT = process.env.PORT || 5000
-
-const app = express();
+const express = require('express')
 const bodyParser = require('body-parser');
-app.use(bodyParser());
+const ejs = require('ejs');
+const fetch = require("node-fetch");
 const https = require('https');
-
-let ejs = require('ejs');
-app.set('view engine', 'ejs');
-
-
+const path = require('path')
 const { Pool } = require('pg');
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: true
 });
+
+const app = express();
+app.use(bodyParser());
+app.set('view engine', 'ejs');
 
 app.get('/db', async (req, res) => {
     try {
@@ -31,22 +30,62 @@ app.get('/db', async (req, res) => {
 })
 
 app.get('/city', async(req, res) => {
-    res.render('pages/city', {city_name:"Portland", city_image:""});
+    const img = "https://d13k13wj6adfdf.cloudfront.net/urban_areas/portland-or_web-55a07378b0.jpg";
+    res.render('pages/city', {city_name:"Portland", city_image:img});
 })
 
 app.post('/city-submit', async (req, res) => {
     var qParams = [];
     console.log("req:", req.body.city);
     const city = encodeURI(req.body.city);
-    //for (var p in req.body){
-    //    qParams.push({'name':p,'value':req.body[p]})
-    //}
-    //console.log(qParams[0]);
 
-    // An object of options to indicate where to post to
-    const post_options = {
-        //host: 'webdev.liambeckman.com',
-        //path: '/getpost',
+    const city_search = "https://api.teleport.org/api/cities/?search=" + city;
+    let city_url = "";
+    let urban_url = "";
+    let image_url = "";
+    let mobile_url = "";
+    let city_guess = "";
+
+    fetch(city_search)
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            city_url = data._embedded["city:search-results"][0]._links["city:item"].href;
+            city_guess = data._embedded["city:search-results"][0].matching_full_name;
+
+            console.log("city_url:", city_url);
+            fetch(city_url)
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    let urban_url = data._links["city:urban_area"].href;
+
+                    fetch(urban_url)
+                        .then(function(response) {
+                            return response.json();
+                        })
+                        .then(function(data) {
+                            image_url = data._links["ua:images"].href;
+
+                            fetch(image_url)
+                                .then(function(response) {
+                                    return response.json();
+                                })
+                                .then(function(data) {
+                                    mobile_url = data.photos[0].image.web;
+                                    res.render('pages/city',{city_name:city_guess, city_image:mobile_url});
+                                });
+                        });
+                });
+        });
+
+
+    //res.render('pages/city-submit');
+    /*
+    // An object of options to indicate where to sned the request to.
+    const options = {
         host: 'api.unsplash.com',
         path: '/search/photos?query=' + city,
         port: '443',
@@ -58,12 +97,11 @@ app.post('/city-submit', async (req, res) => {
         }
     };
 
-    let output = '';
-
-    var city_url = "";
+    let output = "";
+    let city_url = "";
 
     // Set up the request
-    const post_req = https.request(post_options, function(response) {
+    const post_req = https.request(options, function(response) {
         response.setEncoding('utf8');
         response.on('data', (chunk) => {
             output += chunk;
@@ -75,6 +113,7 @@ app.post('/city-submit', async (req, res) => {
                 city_url = obj.results[0].urls.regular;
                 var request = require('request').defaults({ encoding: null });
 
+                // get image of city, convert image data from hexadecimal to string
                 request.get(city_url, function (error, response, body) {
                     if (!error && response.statusCode == 200) {
                         data = "data:" + response.headers["content-type"] + ";base64," + new Buffer(body).toString('base64');
@@ -89,11 +128,10 @@ app.post('/city-submit', async (req, res) => {
         });
     });
 
-
-
     // post the data
     post_req.write(city);
     post_req.end();
+    */
 })
 
 

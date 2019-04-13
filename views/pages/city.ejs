@@ -1,9 +1,22 @@
-<p>Search cities:</p>
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include ../partials/header.ejs %>
+    </head>
 
-<form action="/city-submit" method="post">
-<input type="text" name="city" value="<%=city_name%>"/>
-<br />
-<input type="submit" value="Submit" />
-</form>
+    <body>
 
-<img src="<%=city_image%>"/>
+        <a href="/">Home</a>
+
+        <p>Search cities:</p>
+
+        <form action="/city-submit" method="post">
+            <input type="text" name="city" value="<%=city_name%>"/>
+            <br />
+            <input type="submit" value="Submit" />
+        </form>
+
+        <img src="<%=city_image%>"/>
+
+    </body>
+</html>
