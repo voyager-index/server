@@ -78,7 +78,7 @@ async function getCity(city) {
 }
 
 
-app.post('/city-submit', async (req, res) => {
+app.post('/city', async (req, res) => {
     var qParams = [];
     const city = encodeURI(req.body.city);
 
