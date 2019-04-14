@@ -40,52 +40,22 @@ app.get('/city', async(req, res) => {
 })
 
 
-async function getThing(url, object, err) {
-    return fetch(url)
-    .then(response => response.json())
-        .then(data => {
-            try {
-                return eval(object);
-            }
-            catch(error) {
-                err;
-            }
-        })
-}
-
-async function getCity(city) {
-    const city_search = "https://api.teleport.org/api/cities/?search=" + city;
-    const city_url = 'data._embedded["city:search-results"][0]._links["city:item"].href';
-    const city_guess = 'data._embedded["city:search-results"][0].matching_full_name';
-    const urban_url = 'data._links["city:urban_area"].href';
-    const image_url = 'data._links["ua:images"].href';
-    const mobile_url = 'data.photos[0].image.web';
-
-    const err = () => {
-        res.render('pages/city',{city_name:"City not found.",city_image:"https://www.rust-lang.org/logos/error.png"});
-    }
-    const city_name = await getThing(city_search, city_guess, err);
-    const urban_search = await getThing(city_search, city_url, err);
-    const image_search = await getThing(urban_search, urban_url, err);
-    const mobile_search = await getThing(image_search, image_url, err);
-    const city_image = await getThing(mobile_search, mobile_url, err);
-
-    const ret = new Object();
-    ret.name = city_name;
-    ret.image = city_image;
-
-    return ret;
-}
-
-
 app.post('/city', async (req, res) => {
     var qParams = [];
     const city = encodeURI(req.body.city);
+    const err = () => {
+        res.render('pages/city',{city_name:"City not found.",city_image:"https://www.rust-lang.org/logos/error.png"});
+    }
 
-    const city_req = await getCity(city);
-    const city_name = city_req.name;
-    const city_image = city_req.image;
-    res.render('pages/city',{city_name:city_name, city_image:city_image});
+    try {
+        const city_req = await getCity(city);
+        const city_name = city_req.name;
+        const city_image = city_req.image;
+        res.render('pages/city',{city_name:city_name, city_image:city_image});
+    }
+    catch(error) {
+        err();
+    }
 })
 
 
@@ -95,3 +65,34 @@ app
     .set('view engine', 'ejs')
     .get('/', (req, res) => res.render('pages/index'))
     .listen(PORT, () => console.log(`Listening at http://localhost:${ PORT }`))
+
+
+async function getThing(url, object) {
+    return fetch(url)
+    .then(response => response.json())
+        .then(data => {
+            return eval(object);
+        })
+}
+
+
+async function getCity(city) {
+    const city_search = "https://api.teleport.org/api/cities/?search=" + city;
+    const city_url = 'data._embedded["city:search-results"][0]._links["city:item"].href';
+    const city_guess = 'data._embedded["city:search-results"][0].matching_full_name';
+    const urban_url = 'data._links["city:urban_area"].href';
+    const image_url = 'data._links["ua:images"].href';
+    const mobile_url = 'data.photos[0].image.web';
+
+    const city_name = await getThing(city_search, city_guess);
+    const urban_search = await getThing(city_search, city_url);
+    const image_search = await getThing(urban_search, urban_url);
+    const mobile_search = await getThing(image_search, image_url);
+    const city_image = await getThing(mobile_search, mobile_url);
+
+    const ret = new Object();
+    ret.name = city_name;
+    ret.image = city_image;
+
+    return ret;
+}
