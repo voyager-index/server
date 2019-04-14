@@ -16,6 +16,7 @@ const app = express();
 app.use(bodyParser());
 app.set('view engine', 'ejs');
 
+
 app.get('/db', async (req, res) => {
     try {
         const client = await pool.connect()
@@ -29,119 +30,62 @@ app.get('/db', async (req, res) => {
     }
 })
 
+
 app.get('/city', async(req, res) => {
-    const img = "https://d13k13wj6adfdf.cloudfront.net/urban_areas/portland-or_web-55a07378b0.jpg";
-    res.render('pages/city', {city_name:"Portland", city_image:img});
+    const city = "portland";
+    const city_req = await getCity(city);
+    const city_name = city_req.name;
+    const city_image = city_req.image;
+    res.render('pages/city',{city_name:city_name, city_image:city_image});
 })
+
+
+async function getThing(url, object, err) {
+    return fetch(url)
+    .then(response => response.json())
+        .then(data => {
+            try {
+                return eval(object);
+            }
+            catch(error) {
+                err;
+            }
+        })
+}
+
+async function getCity(city) {
+    const city_search = "https://api.teleport.org/api/cities/?search=" + city;
+    const city_url = 'data._embedded["city:search-results"][0]._links["city:item"].href';
+    const city_guess = 'data._embedded["city:search-results"][0].matching_full_name';
+    const urban_url = 'data._links["city:urban_area"].href';
+    const image_url = 'data._links["ua:images"].href';
+    const mobile_url = 'data.photos[0].image.web';
+
+    const err = () => {
+        res.render('pages/city',{city_name:"City not found.",city_image:"https://www.rust-lang.org/logos/error.png"});
+    }
+    const city_name = await getThing(city_search, city_guess, err);
+    const urban_search = await getThing(city_search, city_url, err);
+    const image_search = await getThing(urban_search, urban_url, err);
+    const mobile_search = await getThing(image_search, image_url, err);
+    const city_image = await getThing(mobile_search, mobile_url, err);
+
+    const ret = new Object();
+    ret.name = city_name;
+    ret.image = city_image;
+
+    return ret;
+}
+
 
 app.post('/city-submit', async (req, res) => {
     var qParams = [];
-    console.log("req:", req.body.city);
     const city = encodeURI(req.body.city);
 
-    const city_search = "https://api.teleport.org/api/cities/?search=" + city;
-    let city_url = "";
-    let urban_url = "";
-    let image_url = "";
-    let mobile_url = "";
-    let city_guess = "";
-
-    fetch(city_search)
-        .then(function(response) {
-            return response.json();
-        })
-        .then(function(data) {
-
-            try {
-                city_url = data._embedded["city:search-results"][0]._links["city:item"].href;
-                city_guess = data._embedded["city:search-results"][0].matching_full_name;
-            }
-            catch(error) {
-                res.render('pages/city',{city_name:"City not found.", city_image:"https://www.rust-lang.org/logos/error.png"});
-            }
-            console.log("city_url:", city_url);
-            fetch(city_url)
-                .then(function(response) {
-                    return response.json();
-                })
-                .then(function(data) {
-                    try{
-                        urban_url = data._links["city:urban_area"].href;
-                    }
-
-                    catch(error) {
-                        res.render('pages/city',{city_name:"City not found.", city_image:"https://www.rust-lang.org/logos/error.png"});
-                    }
-                    fetch(urban_url)
-                        .then(function(response) {
-                            return response.json();
-                        })
-                        .then(function(data) {
-                            image_url = data._links["ua:images"].href;
-
-                            fetch(image_url)
-                                .then(function(response) {
-                                    return response.json();
-                                })
-                                .then(function(data) {
-                                    mobile_url = data.photos[0].image.web;
-                                    res.render('pages/city',{city_name:city_guess, city_image:mobile_url});
-                                });
-                        });
-                });
-        });
-
-
-    //res.render('pages/city-submit');
-    /*
-        // An object of options to indicate where to sned the request to.
-    const options = {
-        host: 'api.unsplash.com',
-        path: '/search/photos?query=' + city,
-        port: '443',
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(city),
-            'Authorization': 'Client-ID 195148f3e5b47fe30e0761f4cc1c920288dfa2b9d200d48accb4991c6496e435'
-        }
-    };
-
-    let output = "";
-    let city_url = "";
-
-    // Set up the request
-    const post_req = https.request(options, function(response) {
-        response.setEncoding('utf8');
-        response.on('data', (chunk) => {
-            output += chunk;
-        });
-
-        response.on('end', () => {
-            try {
-                const obj = JSON.parse(output);
-                city_url = obj.results[0].urls.regular;
-                var request = require('request').defaults({ encoding: null });
-
-// get image of city, convert image data from hexadecimal to string
-                request.get(city_url, function (error, response, body) {
-                    if (!error && response.statusCode == 200) {
-                        data = "data:" + response.headers["content-type"] + ";base64," + new Buffer(body).toString('base64');
-                        res.render('pages/city',{city_name:decodeURI(city), city_image:data});
-                    }
-                });
-            }
-            catch(err) {
-                console.error(err);
-                res.render('pages/city',{city_name:"City not found.", city_image:""});
-            }
-        });
-    });
-
-// post the data
-    post_req.write(city);
-    post_req.end();
-    */
+    const city_req = await getCity(city);
+    const city_name = city_req.name;
+    const city_image = city_req.image;
+    res.render('pages/city',{city_name:city_name, city_image:image});
 })
 
 
@@ -150,4 +94,4 @@ app
     .set('views', path.join(__dirname, 'views'))
     .set('view engine', 'ejs')
     .get('/', (req, res) => res.render('pages/index'))
-    .listen(PORT, () => console.log(`Listening on ${ PORT }`))
+    .listen(PORT, () => console.log(`Listening at http://localhost:${ PORT }`))
