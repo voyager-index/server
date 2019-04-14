@@ -85,7 +85,7 @@ app.post('/city-submit', async (req, res) => {
     const city_req = await getCity(city);
     const city_name = city_req.name;
     const city_image = city_req.image;
-    res.render('pages/city',{city_name:city_name, city_image:image});
+    res.render('pages/city',{city_name:city_name, city_image:city_image});
 })
 
 
