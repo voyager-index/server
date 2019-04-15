@@ -10,13 +10,12 @@ npm run start
 
 # Server Setup
 
-Get Source Code
-https://github.com/cs467-map/server
+- Get Source Code: https://github.com/cs467-map/server
 
-Install Node.js/npm
-[OS specific instructions.](https://nodejs.org/en/download/)
+- Install Node.js/npm: [OS specific instructions.](https://nodejs.org/en/download/)
 
-Start Server
+- Start Server
+
 The server’s npm commands are defined in the package.json file:
 
 ```JSON
