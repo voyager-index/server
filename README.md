@@ -16,9 +16,10 @@ https://github.com/cs467-map/server
 Install Node.js/npm
 [OS specific instructions.](https://nodejs.org/en/download/)
 
-```JSON
 Start Server
 The server’s npm commands are defined in the package.json file:
+
+```JSON
   "scripts": {
     "start": "nodemon index.js",
     "test": "node test.js",
@@ -41,7 +42,7 @@ npm run start
 
 Browse to localhost:5000 and you should see the map!
 
-![example of server running on localhost](./examples.png)
+![example of server running on localhost](./example.png)
 
 # Database Setup
 
