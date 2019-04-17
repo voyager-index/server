@@ -30,9 +30,14 @@ const app = express();
 app.get('/db', async (req, res) => {
     try {
         const client = await pool.connect()
+
         const result = await client.query('SELECT * FROM Country');
         const results = { 'results': (result) ? result.rows : null};
-        res.render('pages/db', results );
+
+        const table = await client.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+        const tables = {'tables': (table) ? table.rows : null};
+
+        res.render('pages/db', {tables:tables, results:results});
         client.release();
     } catch (err) {
         console.error(err);

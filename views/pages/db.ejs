@@ -12,8 +12,16 @@
 <h2>Database Results</h2>
 
 <ul>
-    <% results.forEach(function(r) { %>
+    <% results.results.forEach(function(r) { %>
         <li><%= r.id %> - <%= r.name %></li>
+    <% }); %>
+</ul>
+
+<h2>Database Tables</h2>
+
+<ul>
+    <% tables.tables.forEach(function(t) { %>
+        <li><%= t.table_name %></li>
     <% }); %>
 </ul>
 
