@@ -6,5 +6,8 @@ module.exports = {
     path: __dirname,
     filename: './public/bundle.js'
   },
-  target: 'node'
+  target: 'node',
+  devServer: {
+    port: 5000
+  }
 };
