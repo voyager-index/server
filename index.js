@@ -22,6 +22,10 @@ const pool = new Pool({
 const express = require('express')
 const app = express();
 
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
+
 // ---------- //
 // Pages
 // ---------- //
@@ -74,6 +78,7 @@ app.post('/city', async (req, res) => {
         res.render('pages/city',{city_name:city_name, city_image:city_image});
     }
     catch(error) {
+        console.log(error);
         err();
     }
 });
@@ -127,6 +132,5 @@ app
     .use(express.static(path.join(__dirname, 'public')))
     .set('views', path.join(__dirname, 'views'))
     .set('view engine', 'ejs')
-    .use(bodyParser())
     .get('/', (req, res) => res.render('pages/index'))
     .listen(PORT, () => console.log(`Listening at http://localhost:${ PORT }`))
