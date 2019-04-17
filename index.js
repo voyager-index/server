@@ -85,7 +85,10 @@ app.post('/city', async (req, res) => {
 
 // Basic post request that receives bounding box, returns city points
 app.post('/bounding', (req, res) => {
-    const bounding_box = encodeURI(req.body.bounding_box);
+   // const bounding_box = encodeURI(req.body.bounding_box);
+    console.log(req.body);
+    //console.log(bounding_box);
+    res.send("Bounding box received");
 });
 
 
