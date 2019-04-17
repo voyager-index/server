@@ -12,6 +12,7 @@
     "build": "webpack --config webpack.config.js --mode production"
   },
   "dependencies": {
+    "dotenv": "^7.0.0",
     "ejs": "^2.6.1",
     "express": "^4.15.2",
     "https": "^1.0.0",
