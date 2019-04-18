@@ -70,6 +70,7 @@ function buildFeatures(cities) {
     var rank = cities[i][3].toString();
 
     //I have added 3 different marker png images to the folder for use
+    // Credit to https://mapicons.mapsmarker.com. Creative commons license. (I edited the marker to erase icon)
     var src;
     if(cities[i][3] > 3.5){
       src = "greenMarker.png";
