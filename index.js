@@ -85,11 +85,23 @@ app.post('/city', async (req, res) => {
 });
 
 // Basic post request that receives bounding box, returns city points
+// returns array with the form: [ [City, lon, lat, rank] ], 
+// example: [["San Diego", -17.1, 32.2, 2.7] ]]
+// example: [["New York", -74, 40.7, 4.5], ["San Diego", -117, 33, 2.7], ["Dallas", -96, 33, 1.2]];
 app.post('/bounding', (req, res) => {
-   // const bounding_box = encodeURI(req.body.bounding_box);
-    console.log(req.body);
-    //console.log(bounding_box);
-    res.send("Bounding box received");
+    const bounding_box = req.body.bounding_box;
+
+    console.log(`bounding_box:
+    bottom-left lng: ${bounding_box[0]}
+    bottom-left lat: ${bounding_box[1]}
+    top-right lng: ${bounding_box[2]}
+    top-right lat: ${bounding_box[3]}`);
+
+    //Once we are getting real city data from the server, this can be deleted
+    // [name, lon, lat, ranking]
+    const cities = [["New York", -74, 40.7, 4.5], ["San Diego", -117, 33, 2.7], ["Dallas", -96, 33, 1.2]];
+
+    res.send(cities);
 });
 
 

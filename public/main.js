@@ -37,6 +37,8 @@ function onMoveEnd(evt) {
   makeBBoxRequest(points);
 }
 
+// Every movement on the map, scroll or zoom, triggers the makeBBoxRequest() function,
+// which sends a POST request containing a bounding box array to the server.
 function makeBBoxRequest(points){
   var http = new XMLHttpRequest();
   http.open("POST", '/bounding', true);
@@ -45,11 +47,10 @@ function makeBBoxRequest(points){
   http.onreadystatechange = function() {
     if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
         console.log("Server: ", this.response);
-        //Once we are getting real city data from the server, this can be deleted
-        // [name, lon, lat, ranking]
-        var fakeCities = [["New York", -74, 40.7, 4.5], ["San Diego", -117, 33, 2.7], ["Dallas", -96, 33, 1.2]];
 
-        buildFeatures(fakeCities);
+        const cities = this.response;
+
+        buildFeatures(cities);
     }
   }
   var param = {'bounding_box': points};
@@ -59,6 +60,8 @@ function makeBBoxRequest(points){
 
 
 //Turn city array into markers
+// erases all previous markers from the map, and draws all new ones,
+// coloring them +  adding text based on the (currently fake) ranking.
 function buildFeatures(cities) {
   clearMarkers();
 
