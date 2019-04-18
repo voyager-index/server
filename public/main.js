@@ -46,7 +46,8 @@ function makeBBoxRequest(points){
     if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
         console.log("Server: ", this.response);
         //Once we are getting real city data from the server, this can be deleted
-        var fakeCities = [["New York", -74, 40.7]];
+        // [name, lon, lat, ranking]
+        var fakeCities = [["New York", -74, 40.7, 4.5], ["San Diego", -117, 33, 2.7], ["Dallas", -96, 33, 1.2]];
 
         buildFeatures(fakeCities);
     }
@@ -57,20 +58,60 @@ function makeBBoxRequest(points){
 }
 
 
-//This will eventually be used to take city points and make them into markers
+//Turn city array into markers
 function buildFeatures(cities) {
   clearMarkers();
+
   for (var i = 0; i < cities.length; i++){
     //Intentionally left these easy to modify, so that they can be changed to meet what is really being sent from server
     var name = cities[i][0];
     var lon = cities[i][1];
     var lat = cities[i][2];
+    var rank = cities[i][3].toString();
 
+    //I have added 3 different marker png images to the folder for use
+    var src;
+    if(cities[i][3] > 3.5){
+      src = "greenMarker.png";
+    }
+    else if (cities[i][3] > 2.5){
+      src = "yellowMarker.png";
+    }
+    else{
+       src = "redMarker.png";
+    }
     cityMarkers[i] = new ol.Feature({
       geometry: new ol.geom.Point(
         ol.proj.fromLonLat([lon, lat])
       ),
+      name: name,
     });
+
+    // Adds a style to the marker
+    var iconStyle = new ol.style.Style({
+      image: new ol.style.Icon({
+        anchor: [12, 40],
+        anchorXUnits: 'pixels',
+        anchorYUnits: 'pixels',
+        opacity: 1,
+        src: src,
+      }),
+      text: new ol.style.Text({
+        text: rank,
+        offsetY: -20, //Positive = shift down
+        offsetX: 4, //Positive = shift right
+        scale: 1.4,
+        fill: new ol.style.Fill({
+          color: "#FFFFFF"
+        }),
+        stroke: new ol.style.Stroke({
+          color: "#000000",
+          width: 2.5
+        })
+      })
+    });
+    cityMarkers[i].setStyle(iconStyle);
+
   }
 
   //New Source for the vector (set of points) layer
