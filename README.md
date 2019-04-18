@@ -4,7 +4,6 @@ A Node.js/Express powered server for all your mapping needs!
 
 ```sh
 npm install
-npm run build
 npm run start
 ```
 
@@ -16,27 +15,23 @@ npm run start
 
 - Start Server
 
-The server’s npm commands are defined in the package.json file:
-
-```JSON
-  "scripts": {
-    "start": "nodemon index.js",
-    "test": "node test.js",
-    "build": "webpack --config webpack.config.js --mode production"
-  },
-```
-
 To build and run the server, enter
 
 ```sh
 # install dependencies
 npm install
 
-# bundle assets
-npm run build
-
 # start server
 npm run start
+```
+
+The server’s npm commands are defined in the package.json file:
+
+```JSON
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "node test.js",
+  },
 ```
 
 Browse to localhost:5000 and you should see the map!
