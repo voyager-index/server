@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  	<head>
+    	<meta charset="utf-8">
+    	<title>Voyager Index</title>
+	</head>
+  	<body>
+  		<h1>City Data</h1>
+
+		<p>Downloaded from natural earth</p>
+
+		<p>used shp2pgsql to convert the shapefile into a postgresql query/instert file. Used psql -f thatfile.sql to get it into a temp database</p>
+
+		<p>created country table with </p>
+		<p>CREATE TABLE country(id SERIAL NOT NULL, name VARCHAR(100), code VARCHAR(3));</p>
+
+		<p>Inserted from DB with </p>
+		<p>INSERT INTO country (name, code) SELECT DISTNICT(sov0name) as name, sov_a3 as code FROM temptable;</p>
+
+		<p>created city table with </p>
+		<p>CREATE TABLE city (id SERIAL NOT NULL, name VARCHAR(100), country_id INTEGER REFERENCES country(id), lat NUMERIC, lng NUMERIC);</p>
+
+		<p>inserted with </p>
+		<p>INSERT INTO city(name, country_id, lat, lng) SELECT temptable.name, c.id, latitude, longitude FROM temptable JOIN country AS c ON temptable.sov0name = c.name;</p>
+
+		<p>copied these with \copy (SELECT * FROM country) to '\Users\user\...\MyFileName.csv' with csv</p>
+    </body>
+</html>
