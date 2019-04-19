@@ -53,7 +53,6 @@ function makeBBoxRequest(points){
     }
   }
   var param = {'bounding_box': points};
-  console.log("Sending: ", param);
   http.send(JSON.stringify(param));
 }
 
