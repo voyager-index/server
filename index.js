@@ -120,12 +120,12 @@ app.post('/bounding', async (req, res) => {
         const client = await pool.connect()
 
         const query_string = `
-SELECT C.name, C.lon, C.lat, C.rank FROM City C
+SELECT C.name, C.lon, C.lat FROM City C
 WHERE 
 C.lon >= ${bottom_left_lon} OR C.lon >= ${lon_wrap} AND
 C.lat >= ${bottom_left_lat} OR C.lat >= ${lat_wrap} AND
 C.lon <= ${top_right_lon} AND
-C.lat <= ${top_right_lat};
+C.lat <= ${top_right_lat} LIMIT 50;
 `
         const result = await client.query(query_string);
         const results = { 'cities': (result) ? result.rows : null};
@@ -160,7 +160,8 @@ function obj2arr(obj) {
     for (let property in obj) {
         arr.push(obj[property]);
     }
-
+    //ranking
+    arr.push("3");
     return arr;
 }
 

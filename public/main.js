@@ -46,11 +46,10 @@ function makeBBoxRequest(points){
 
   http.onreadystatechange = function() {
     if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-        console.log("Server: ", this.response);
 
-        const cities = JSON.parse(this.response);
-
-        buildFeatures(cities);
+      //Turn a string into an array
+      const cities = JSON.parse(this.response);
+      buildFeatures(cities);
     }
   }
   var param = {'bounding_box': points};
@@ -70,7 +69,7 @@ function buildFeatures(cities) {
     var name = cities[i][0];
     var lon = cities[i][1];
     var lat = cities[i][2];
-    var rank = cities[i][3].toString();
+    var rank = cities[i][3];
 
     //I have added 3 different marker png images to the folder for use
     // Credit to https://mapicons.mapsmarker.com. Creative commons license. (I edited the marker to erase icon)
@@ -84,6 +83,7 @@ function buildFeatures(cities) {
     else{
        src = "redMarker.png";
     }
+
     cityMarkers[i] = new ol.Feature({
       geometry: new ol.geom.Point(
         ol.proj.fromLonLat([lon, lat])
