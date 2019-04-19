@@ -48,7 +48,7 @@ function makeBBoxRequest(points){
     if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
         console.log("Server: ", this.response);
 
-        const cities = this.response;
+        const cities = JSON.parse(this.response);
 
         buildFeatures(cities);
     }
