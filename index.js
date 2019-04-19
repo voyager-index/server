@@ -102,7 +102,7 @@ app.post('/bounding', async (req, res) => {
     const top_right_lon = bounding_box[2];
     const top_right_lat = bounding_box[3];
 
-    let lon_wrap = Number.MAX_SAFE_INTEGER;
+   /* let lon_wrap = Number.MAX_SAFE_INTEGER;
     let lat_wrap = Number.MAX_SAFE_INTEGER;
 
     if (bottom_left_lon > 0) {
@@ -111,10 +111,10 @@ app.post('/bounding', async (req, res) => {
     }
 
     if (bottom_left_lat > 0) {
-        lat_wrap = -1 * ((180 - bottom_left_lat) + 180);
+        lat_wrap = -1 * ((90 - bottom_left_lat) + 90);
         console.log("lat_wrap:", lat_wrap);
     }
-
+*/
     let cities = [];
     try {
         const client = await pool.connect()
@@ -122,8 +122,8 @@ app.post('/bounding', async (req, res) => {
         const query_string = `
 SELECT C.name, C.lon, C.lat FROM City C
 WHERE 
-C.lon >= ${bottom_left_lon} OR C.lon >= ${lon_wrap} AND
-C.lat >= ${bottom_left_lat} OR C.lat >= ${lat_wrap} AND
+C.lon >= ${bottom_left_lon} AND
+C.lat >= ${bottom_left_lat} AND
 C.lon <= ${top_right_lon} AND
 C.lat <= ${top_right_lat} LIMIT 50;
 `

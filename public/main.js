@@ -68,7 +68,7 @@ function buildFeatures(cities) {
     var lon = Number(cities[i][1]);
     var lat = Number(cities[i][2]);
     var rank = cities[i][3].toString();
-
+console.log(i, name);
     //I have added 3 different marker png images to the folder for use
     // Credit to https://mapicons.mapsmarker.com. Creative commons license. (I edited the marker to erase icon)
     var src;
