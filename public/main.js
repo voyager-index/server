@@ -63,13 +63,12 @@ function makeBBoxRequest(points){
 // coloring them +  adding text based on the (currently fake) ranking.
 function buildFeatures(cities) {
   clearMarkers();
-
   for (var i = 0; i < cities.length; i++){
     //Intentionally left these easy to modify, so that they can be changed to meet what is really being sent from server
     var name = cities[i][0];
-    var lon = cities[i][1];
-    var lat = cities[i][2];
-    var rank = cities[i][3];
+    var lon = Number(cities[i][1]);
+    var lat = Number(cities[i][2]);
+    var rank = cities[i][3].toString();
 
     //I have added 3 different marker png images to the folder for use
     // Credit to https://mapicons.mapsmarker.com. Creative commons license. (I edited the marker to erase icon)
@@ -97,7 +96,7 @@ function buildFeatures(cities) {
         anchor: [12, 40],
         anchorXUnits: 'pixels',
         anchorYUnits: 'pixels',
-        opacity: 1,
+        //opacity: 1,
         src: src,
       }),
       text: new ol.style.Text({
@@ -127,6 +126,8 @@ function buildFeatures(cities) {
   markerVectorLayer = new ol.layer.Vector({
     source: vectorSource,
   });
+
+  markerVectorLayer.setZIndex(100);
   map.addLayer(markerVectorLayer);
 }
 
