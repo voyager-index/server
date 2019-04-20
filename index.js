@@ -104,12 +104,18 @@ app.post('/bounding', async (req, res) => {
 
 
     let lon_wrap = Number.MAX_SAFE_INTEGER;
-    let lon_wrap_neg = Number.MAX_SAFE_INTEGER;
+    let lon_wrap_neg = -Number.MAX_SAFE_INTEGER;
+    lon_wrap = -1 * ((180 - bottom_left_lon) + 180);
 
     // edge case: left side of map crosses 180 degress longitude.
     // edge case: left side of map crosses 0 degress longitude.
-    lon_wrap = -1 * ((180 - bottom_left_lon) + 180);
-    console.log("lon_wrap:", lon_wrap);
+    if (bottom_left_lon > top_right_lon) {
+        lon_wrap_neg = 180;
+    }
+    else {
+        lon_wrap_neg = -Number.MAX_SAFE_INTEGER;
+    }
+
 
     let cities = [];
     try {
@@ -120,9 +126,10 @@ SELECT C.name, C.lon, C.lat FROM City C
 WHERE 
 C.lon >= ${bottom_left_lon} OR 
 C.lon >= ${lon_wrap} AND
-
 C.lat >= ${bottom_left_lat} AND
-C.lon <= ${top_right_lon} AND
+
+C.lon <= ${top_right_lon} OR
+C.lon <= ${lon_wrap_neg} AND
 C.lat <= ${top_right_lat}
 `
         const result = await client.query(query_string);
