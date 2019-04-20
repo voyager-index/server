@@ -107,8 +107,8 @@ app.post('/bounding', async (req, res) => {
 
     // edge case: left side of map crosses 180 degress longitude.
     // edge case: left side of map crosses 0 degress longitude.
-    lon_wrap = -1 * ((180 - bottom_left_lon) + 180);
-    console.log("lon_wrap:", lon_wrap);
+    lon_wrap = -1 * (bottom_left_lon + 180) % 360;
+    // console.log("lon_wrap:", lon_wrap);
 
     let cities = [];
     try {
