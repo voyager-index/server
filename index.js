@@ -142,6 +142,14 @@ C.lat <= ${top_right_lat} LIMIT 50;
 });
 
 
+app.get('/data', (req, res) => {
+    res.render('pages/data_article');
+});
+
+// -------------------- //
+// Helper functions
+// -------------------- //
+
 function obj_arr2arr(obj_arr) {
     let arr = []
 
@@ -164,11 +172,6 @@ function obj2arr(obj) {
     arr.push("3");
     return arr;
 }
-
-
-// -------------------- //
-// Helper functions
-// -------------------- //
 
 // Used to interprete JSON objects returned by requests to API's.
 // Fetches "url" and returns whatever value is associated with the "object".
