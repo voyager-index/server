@@ -25,6 +25,7 @@ const app = express();
 app.use(bodyParser.urlencoded({
   extended: true
 }));
+app.use(bodyParser.json());
 
 // ---------- //
 // Pages
@@ -84,14 +85,93 @@ app.post('/city', async (req, res) => {
 });
 
 // Basic post request that receives bounding box, returns city points
-app.post('/bounding', (req, res) => {
-    const bounding_box = encodeURI(req.body.bounding_box);
+// returns array with the form: [ [City, lon, lat, rank] ], 
+// example: [["San Diego", -17.1, 32.2, 2.7] ]]
+// example: [["New York", -74, 40.7, 4.5], ["San Diego", -117, 33, 2.7], ["Dallas", -96, 33, 1.2]];
+app.post('/bounding', async (req, res) => {
+    const bounding_box = req.body.bounding_box;
+
+    console.log(`bounding_box:
+    bottom-left lon: ${bounding_box[0]}
+    bottom-left lat: ${bounding_box[1]}
+    top-right lon: ${bounding_box[2]}
+    top-right lat: ${bounding_box[3]}`);
+
+    const bottom_left_lon = bounding_box[0];
+    const bottom_left_lat = bounding_box[1];
+    const top_right_lon = bounding_box[2];
+    const top_right_lat = bounding_box[3];
+
+   /* let lon_wrap = Number.MAX_SAFE_INTEGER;
+    let lat_wrap = Number.MAX_SAFE_INTEGER;
+
+    if (bottom_left_lon > 0) {
+        lon_wrap = -1 * ((180 - bottom_left_lon) + 180);
+        console.log("lon_wrap:", lon_wrap);
+    }
+
+    if (bottom_left_lat > 0) {
+        lat_wrap = -1 * ((90 - bottom_left_lat) + 90);
+        console.log("lat_wrap:", lat_wrap);
+    }
+*/
+    let cities = [];
+    try {
+        const client = await pool.connect()
+
+        const query_string = `
+SELECT C.name, C.lon, C.lat FROM City C
+WHERE 
+C.lon >= ${bottom_left_lon} AND
+C.lat >= ${bottom_left_lat} AND
+C.lon <= ${top_right_lon} AND
+C.lat <= ${top_right_lat} LIMIT 50;
+`
+        const result = await client.query(query_string);
+        const results = { 'cities': (result) ? result.rows : null};
+
+        cities = obj_arr2arr(results.cities);
+
+        client.release();
+    } catch (err) {
+        console.error(err);
+        res.send("Error " + err);
+    }
+
+    res.send(cities);
 });
 
+
+app.get('/data', (req, res) => {
+    res.render('pages/data_article');
+});
 
 // -------------------- //
 // Helper functions
 // -------------------- //
+
+function obj_arr2arr(obj_arr) {
+    let arr = []
+
+    for (let i = 0; i < obj_arr.length; i++) {
+        let arr_new = obj2arr(obj_arr[i])
+        arr.push(arr_new);
+    }
+
+    return arr;
+}
+
+
+function obj2arr(obj) {
+    let arr = [];
+
+    for (let property in obj) {
+        arr.push(obj[property]);
+    }
+    //ranking
+    arr.push("3");
+    return arr;
+}
 
 // Used to interprete JSON objects returned by requests to API's.
 // Fetches "url" and returns whatever value is associated with the "object".

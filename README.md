@@ -16,6 +16,16 @@ npm run start
 
 - Start Server
 
+To build and run the server, enter
+
+```sh
+# install dependencies
+npm install
+
+# start server
+npm run start
+```
+
 The server’s npm commands are defined in the package.json file:
 
 ```JSON
@@ -24,19 +34,6 @@ The server’s npm commands are defined in the package.json file:
     "test": "node test.js",
     "build": "webpack --config webpack.config.js --mode production"
   },
-```
-
-To build and run the server, enter
-
-```sh
-# install dependencies
-npm install
-
-# bundle assets
-npm run build
-
-# start server
-npm run start
 ```
 
 Browse to localhost:5000 and you should see the map!
