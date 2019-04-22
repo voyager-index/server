@@ -24,5 +24,25 @@
 		<p>INSERT INTO city(name, country_id, lat, lng) SELECT temptable.name, c.id, latitude, longitude FROM temptable JOIN country AS c ON temptable.sov0name = c.name;</p>
 
 		<p>copied these with \copy (SELECT * FROM country) to '\Users\user\...\MyFileName.csv' with csv</p>
+
+
+		<h1>Beaches</h1>
+
+		Using coastline data from the natural earth site, I have created a table using shp2pgsql
+		Then, I created a temp table from the city data, with postgis point geoms instead of lon/lat, using ST_MakePoint(lon, lat)
+		Since this was actually wrong, and had no srid, I had to 
+
+		Then, I merged these tables and used the ST_DWithin function from postgis with the following command: ALTER TABLE st_setsrid
+		ALTER TABLE coastline
+  ALTER COLUMN geom TYPE geometry(MULTILINESTRING, 4326)
+    USING ST_SetSRID(geom,4326)
+
+    	SELECT id, ST_SetSRID(ST_MakePoint(lon, lat), 4326) INTO TABLE citygeom FROM city;
+
+		SELECT DISTINCT(cg.id), COALESCE(ST_DWithin(cl.geom:geography, cg.st_setsrid::geography, 80000), false) INTO TABLE beaches FROM coastline cl RIGHT JOIN citygeom cg ON ST_DWithin(cl.geom::geography, cg.st_setsrid::geography, 80000);
+
+
+		80,000 references meters, which is roughly 50 miles. This is from city center to coastline, and since some travellers might be willing to drive further, I have decided to include all cities that could 'reasonably '
+
     </body>
 </html>
