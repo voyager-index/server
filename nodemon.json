@@ -2,5 +2,6 @@
   "events": {
     "restart": "node docs.js"
   },
-  "watch": "views/pages/data_article.md"
+  "watch": "views/pages/data_article.md",
+  "watch": "./index.js"
 }

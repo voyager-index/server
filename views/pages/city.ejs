@@ -1,25 +1,12 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <% include ../partials/header.ejs %>
-    </head>
+<p>Search cities:</p>
 
-    <body>
+<form action="/city" method="post">
+    <input type="text" name="city" value="<%=city_name%>"/>
+    <br />
+    <input type="submit" value="Submit" />
+</form>
 
-        <a href="/">Home</a>
-
-        <p>Search cities:</p>
-
-        <form action="/city" method="post">
-            <input type="text" name="city" value="<%=city_name%>"/>
-            <br />
-            <input type="submit" value="Submit" />
-        </form>
-
-        <img src="<%=city_image%>"/>
-
-    </body>
-</html>
+<img src="<%=city_image%>"/>
 
 <script>
     document.getElementById("submit").addEventListener("click", function(event){
