@@ -11,6 +11,7 @@ const bodyParser = require('body-parser');
 
 // Use ejs for templating.
 const ejs = require('ejs');
+const expressLayouts = require('express-ejs-layouts');
 
 // Used to connect to PostgreSQL database.
 const { Pool } = require('pg');
@@ -26,6 +27,9 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 app.use(bodyParser.json());
+
+app.use(expressLayouts);
+
 
 // ---------- //
 // Pages
@@ -123,6 +127,7 @@ C.lon >= ${lon_wrap} AND
 C.lat >= ${bottom_left_lat} AND
 C.lon <= ${top_right_lon} AND
 C.lat <= ${top_right_lat}
+LIMIT 50
 `
         const result = await client.query(query_string);
         const results = { 'cities': (result) ? result.rows : null};
@@ -141,6 +146,10 @@ C.lat <= ${top_right_lat}
 
 app.get('/data', (req, res) => {
     res.render('pages/data_article');
+});
+
+app.get('/settings', (req, res) => {
+    res.render('pages/settings');
 });
 
 // -------------------- //

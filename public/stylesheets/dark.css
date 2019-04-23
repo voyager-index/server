@@ -1,0 +1,102 @@
+/***************************************************/
+/* CSS I've cobbled together from the far corners of the world.
+Feel free to copy and paste, fork, clone, or anything you like. */
+/***************************************************/
+
+/***************************************************/
+/* DARK THEMES
+/***************************************************/
+
+body {
+  background-color: #131516; }
+
+#header, #footer, .site-footer {
+  background-color: black; }
+
+p, h1, h2, h3, h4, h5, h6, .text, pre, dd, dt, li, ul, ol, label {
+  color: snow; }
+
+.navbar-default {
+    background-color: black;
+    border-color: black;
+}
+
+code {
+    background-color: black;
+    color: #8be9fd;
+}
+
+pre{
+    background-color: black;
+}
+
+.navbar-default .navbar-nav > .active > a, .navbar-default .navbar-nav > .active > a:focus, .navbar-default .navbar-nav > .active > a:hover {
+    color: #555;
+    background-color: #111;
+}
+
+/***************************************************/
+/* SYNTAX HIGHLIGHTING
+/***************************************************/
+
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+code.sourceCode { white-space: pre-wrap; position: relative; word-wrap: break-word}
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { /*! white-space: pre-wrap; */ /*! word-wrap: break-word */ }
+}
+@media print {
+code.sourceCode { white-space: pre; word-wrap: break-word }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #f8f8f2; font-weight: bold; } /* Alert */
+code span.an { color: #6272a4; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #50fa7b; } /* Attribute */
+code span.bn { color: #bd93f9; } /* BaseN */
+code span.bu { color: #f8f8f2; } /* BuiltIn */
+code span.cf { color: #f8f8f2; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #f1fa8c; } /* Char */
+code span.cn { color: #ff79c6; } /* Constant */
+code span.co { color: #6272a4; font-style: italic; } /* Comment */
+code span.cv { color: #6272a4; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #f1fa8c; font-style: italic; } /* Documentation */
+code span.dt { color: #8be9fd; } /* DataType */
+code span.dv { color: #bd93f9; } /* DecVal */
+code span.er { color: #f8f8f2; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #bd93f9; } /* Float */
+code span.fu { color: #50fa7b; } /* Function */
+code span.im { color: #ff79c6; } /* Import */
+code span.in { color: #f8f8f2; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #ff79c6; font-weight: bold; } /* Keyword */
+code span.op { color: #ff79c6; } /* Operator */
+code span.ot { color: #f8f8f2; } /* Other */
+code span.pp { color: #ff79c6; } /* Preprocessor */
+code span.sc { color: #6272a4; } /* SpecialChar */
+code span.ss { color: #f1fa8c; } /* SpecialString */
+code span.st { color: #f1fa8c; } /* String */
+code span.va { color: #8be9fd; } /* Variable */
+code span.vs { color: #f1fa8c; } /* VerbatimString */
+code span.wa { color: #f8f8f2; font-weight: bold; font-style: italic; } /* Warning */
+

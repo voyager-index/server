@@ -1,3 +1,84 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>data_article</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style>
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #f8f8f2; font-weight: bold; } /* Alert */
+code span.an { color: #6272a4; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #50fa7b; } /* Attribute */
+code span.bn { color: #bd93f9; } /* BaseN */
+code span.bu { color: #f8f8f2; } /* BuiltIn */
+code span.cf { color: #f8f8f2; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #f1fa8c; } /* Char */
+code span.cn { color: #ff79c6; } /* Constant */
+code span.co { color: #6272a4; font-style: italic; } /* Comment */
+code span.cv { color: #6272a4; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #f1fa8c; font-style: italic; } /* Documentation */
+code span.dt { color: #8be9fd; } /* DataType */
+code span.dv { color: #bd93f9; } /* DecVal */
+code span.er { color: #f8f8f2; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #bd93f9; } /* Float */
+code span.fu { color: #50fa7b; } /* Function */
+code span.im { color: #ff79c6; } /* Import */
+code span.in { color: #f8f8f2; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #ff79c6; font-weight: bold; } /* Keyword */
+code span.op { color: #ff79c6; } /* Operator */
+code span.ot { color: #f8f8f2; } /* Other */
+code span.pp { color: #ff79c6; } /* Preprocessor */
+code span.sc { color: #6272a4; } /* SpecialChar */
+code span.ss { color: #f1fa8c; } /* SpecialString */
+code span.st { color: #f1fa8c; } /* String */
+code span.va { color: #8be9fd; } /* Variable */
+code span.vs { color: #f1fa8c; } /* VerbatimString */
+code span.wa { color: #f8f8f2; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
 <h1 id="city-data">City Data</h1>
 <p>Downloaded from natural earth.</p>
 <p>Used <code>shp2pgsql</code> to convert the shapefile into a postgresql query/instert file. Used <code>psql -f thatfile.sql</code> to get it into a temp database</p>
@@ -28,3 +109,5 @@
 <a class="sourceLine" id="cb5-7" title="7"></a>
 <a class="sourceLine" id="cb5-8" title="8"><span class="kw">SELECT</span> <span class="kw">DISTINCT</span>(cg.<span class="kw">id</span>), <span class="fu">COALESCE</span>(ST_DWithin(cl.geom<span class="ch">:geography</span>, cg.st_setsrid:<span class="ch">:geography</span>, <span class="dv">80000</span>), <span class="kw">false</span>) <span class="kw">INTO</span> <span class="kw">TABLE</span> beaches <span class="kw">FROM</span> coastline cl <span class="kw">RIGHT</span> <span class="kw">JOIN</span> citygeom cg <span class="kw">ON</span> ST_DWithin(cl.geom:<span class="ch">:geography</span>, cg.st_setsrid:<span class="ch">:geography</span>, <span class="dv">80000</span>);</a></code></pre></div>
 <p>80,000 references meters, which is roughly 50 miles. This is from city center to coastline, and since some travellers might be willing to drive further, I have decided to include all cities that could ‘reasonably’</p>
+</body>
+</html>

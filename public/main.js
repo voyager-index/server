@@ -13,19 +13,30 @@ import Point from 'ol/geom/Point';
 var cityMarkers = [];
 var markerVectorLayer;
 
+let theme = localStorage.getItem("theme");
+let urlString = '';
+
+if (theme == "dark") {
+    urlString = 'http://{a-c}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
+}
+
+else if (theme == "light") {
+    urlString = 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+}
+
 var map = new Map({
   target: 'map',
   layers: [
     new TileLayer({
       source: new XYZ({
-        url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+        url: urlString
       })
     })
   ],
   view: new View({
     center: proj.fromLonLat([0,0]),
     zoom: 3,
-    minZoom: 3,
+    minZoom: 2,
     projection: "EPSG:3857"
     //units: 'degrees'
   })
