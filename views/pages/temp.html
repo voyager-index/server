@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>data_article</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style>
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #f8f8f2; font-weight: bold; } /* Alert */
+code span.an { color: #6272a4; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #50fa7b; } /* Attribute */
+code span.bn { color: #bd93f9; } /* BaseN */
+code span.bu { color: #f8f8f2; } /* BuiltIn */
+code span.cf { color: #f8f8f2; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #f1fa8c; } /* Char */
+code span.cn { color: #ff79c6; } /* Constant */
+code span.co { color: #6272a4; font-style: italic; } /* Comment */
+code span.cv { color: #6272a4; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #f1fa8c; font-style: italic; } /* Documentation */
+code span.dt { color: #8be9fd; } /* DataType */
+code span.dv { color: #bd93f9; } /* DecVal */
+code span.er { color: #f8f8f2; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #bd93f9; } /* Float */
+code span.fu { color: #50fa7b; } /* Function */
+code span.im { color: #ff79c6; } /* Import */
+code span.in { color: #f8f8f2; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #ff79c6; font-weight: bold; } /* Keyword */
+code span.op { color: #ff79c6; } /* Operator */
+code span.ot { color: #f8f8f2; } /* Other */
+code span.pp { color: #ff79c6; } /* Preprocessor */
+code span.sc { color: #6272a4; } /* SpecialChar */
+code span.ss { color: #f1fa8c; } /* SpecialString */
+code span.st { color: #f1fa8c; } /* String */
+code span.va { color: #8be9fd; } /* Variable */
+code span.vs { color: #f1fa8c; } /* VerbatimString */
+code span.wa { color: #f8f8f2; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h1 id="city-data">City Data</h1>
+<p>Downloaded from natural earth.</p>
+<p>Used <code>shp2pgsql</code> to convert the shapefile into a postgresql query/instert file. Used <code>psql -f thatfile.sql</code> to get it into a temp database</p>
+<p>Created country table with</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">CREATE</span> <span class="kw">TABLE</span> country(<span class="kw">id</span> SERIAL <span class="kw">NOT</span> <span class="kw">NULL</span>, name <span class="dt">VARCHAR</span>(<span class="dv">100</span>), code</a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="dt">VARCHAR</span>(<span class="dv">3</span>));</a></code></pre></div>
+<p>Inserted from DB with</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">INSERT</span> <span class="kw">INTO</span> country (name, code) <span class="kw">SELECT</span> DISTNICT(sov0name) <span class="kw">as</span> name,</a>
+<a class="sourceLine" id="cb2-2" title="2">sov\_a3 <span class="kw">as</span> code <span class="kw">FROM</span> temptable;</a></code></pre></div>
+<p>Created city table with</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">CREATE</span> <span class="kw">TABLE</span> city (<span class="kw">id</span> SERIAL <span class="kw">NOT</span> <span class="kw">NULL</span>, name <span class="dt">VARCHAR</span>(<span class="dv">100</span>), country\_id</a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="dt">INTEGER</span> <span class="kw">REFERENCES</span> country(<span class="kw">id</span>), lat <span class="dt">NUMERIC</span>, lng <span class="dt">NUMERIC</span>);</a></code></pre></div>
+<p>Inserted with</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">INSERT</span> <span class="kw">INTO</span> city(name, country\_id, lat, lng) <span class="kw">SELECT</span> temptable.name,</a>
+<a class="sourceLine" id="cb4-2" title="2">c.<span class="kw">id</span>, latitude, longitude <span class="kw">FROM</span> temptable <span class="kw">JOIN</span> country <span class="kw">AS</span> c <span class="kw">ON</span></a>
+<a class="sourceLine" id="cb4-3" title="3">temptable.sov0name <span class="op">=</span> c.name;</a></code></pre></div>
+<p>copied these with \copy (SELECT * FROM country) to <code>'\Users\user\...\MyFileName.csv\' with csv</code></p>
+<h1 id="beaches">Beaches</h1>
+<p>Using coastline data from the natural earth site, I have created a table using <code>shp2pgsql</code>.</p>
+<p>Then, I created a temp table from the city data, with postgis point geoms instead of lon/lat, using <code>ST_MakePoint(lon, lat)</code> Since this was actually wrong, and had no srid, I had to</p>
+<p>Then, I merged these tables and used the <code>ST_DWithin</code> function from postgis with the following command:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">ALTER</span> <span class="kw">TABLE</span> st_setsrid</a>
+<a class="sourceLine" id="cb5-2" title="2"><span class="kw">ALTER</span> <span class="kw">TABLE</span> coastline</a>
+<a class="sourceLine" id="cb5-3" title="3"><span class="kw">ALTER</span> <span class="kw">COLUMN</span> geom <span class="kw">TYPE</span> geometry(MULTILINESTRING, <span class="dv">4326</span>)</a>
+<a class="sourceLine" id="cb5-4" title="4"><span class="kw">USING</span> ST_SetSRID(geom,<span class="dv">4326</span>)</a>
+<a class="sourceLine" id="cb5-5" title="5"></a>
+<a class="sourceLine" id="cb5-6" title="6"><span class="kw">SELECT</span> <span class="kw">id</span>, ST_SetSRID(ST_MakePoint(lon, lat), <span class="dv">4326</span>) <span class="kw">INTO</span> <span class="kw">TABLE</span> citygeom <span class="kw">FROM</span> city;</a>
+<a class="sourceLine" id="cb5-7" title="7"></a>
+<a class="sourceLine" id="cb5-8" title="8"><span class="kw">SELECT</span> <span class="kw">DISTINCT</span>(cg.<span class="kw">id</span>), <span class="fu">COALESCE</span>(ST_DWithin(cl.geom<span class="ch">:geography</span>, cg.st_setsrid:<span class="ch">:geography</span>, <span class="dv">80000</span>), <span class="kw">false</span>) <span class="kw">INTO</span> <span class="kw">TABLE</span> beaches <span class="kw">FROM</span> coastline cl <span class="kw">RIGHT</span> <span class="kw">JOIN</span> citygeom cg <span class="kw">ON</span> ST_DWithin(cl.geom:<span class="ch">:geography</span>, cg.st_setsrid:<span class="ch">:geography</span>, <span class="dv">80000</span>);</a></code></pre></div>
+<p>80,000 references meters, which is roughly 50 miles. This is from city center to coastline, and since some travellers might be willing to drive further, I have decided to include all cities that could ‘reasonably’</p>
+</body>
+</html>

@@ -148,6 +148,10 @@ app.get('/data', (req, res) => {
     res.render('pages/data_article');
 });
 
+app.get('/settings', (req, res) => {
+    res.render('pages/settings');
+});
+
 // -------------------- //
 // Helper functions
 // -------------------- //
