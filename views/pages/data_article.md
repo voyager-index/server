@@ -1,3 +1,6 @@
+<link rel="stylesheet" href="/stylesheets/tufte.css" />
+<link rel="stylesheet" href="/stylesheets/code.css" />
+
 # City Data
 
 Downloaded from natural earth.
