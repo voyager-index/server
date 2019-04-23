@@ -4,6 +4,7 @@ A Node.js/Express powered server for all your mapping needs!
 
 ```sh
 npm install
+npm run build
 npm run start
 ```
 
@@ -31,6 +32,7 @@ The server’s npm commands are defined in the package.json file:
   "scripts": {
     "start": "nodemon index.js",
     "test": "node test.js",
+    "build": "webpack --config webpack.config.js --mode production"
   },
 ```
 

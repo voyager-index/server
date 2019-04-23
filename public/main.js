@@ -1,15 +1,29 @@
+import {Map, View, Feature} from 'ol';
+import {Icon, Fill, Stroke, Style, Text} from 'ol/style';
+import TileLayer from 'ol/layer/Tile';
+import VectorLayer from 'ol/layer/Vector';
+import XYZ from 'ol/source/XYZ';
+import * as proj from 'ol/proj';
+import * as geom from 'ol/geom';
+import * as layer from 'ol/layer';
+import VectorSource from 'ol/source/Vector';
+import Source from 'ol/source/Source';
+import Point from 'ol/geom/Point';
+
 var cityMarkers = [];
 var markerVectorLayer;
 
-var map = new ol.Map({
+var map = new Map({
   target: 'map',
   layers: [
-    new ol.layer.Tile({
-      source: new ol.source.OSM()
+    new TileLayer({
+      source: new XYZ({
+        url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+      })
     })
   ],
-  view: new ol.View({
-    center: ol.proj.fromLonLat([0,0]),
+  view: new View({
+    center: proj.fromLonLat([0,0]),
     zoom: 3,
     projection: "EPSG:3857"
     //units: 'degrees'
@@ -26,8 +40,8 @@ function onMoveEnd(evt) {
   var points = [];
 
   // Convert to Lon/Lat
-  var bottomLeft = ol.proj.toLonLat([extent[0], extent[1]]);
-  var topRight = ol.proj.toLonLat([extent[2], extent[3]]);
+  var bottomLeft = proj.toLonLat([extent[0], extent[1]]);
+  var topRight = proj.toLonLat([extent[2], extent[3]]);
   points.push(bottomLeft[0]);
   points.push(bottomLeft[1]);
   points.push(topRight[0]);
@@ -82,31 +96,31 @@ console.log(i, name);
        src = "redMarker.png";
     }
 
-    cityMarkers[i] = new ol.Feature({
-      geometry: new ol.geom.Point(
-        ol.proj.fromLonLat([lon, lat])
+    cityMarkers[i] = new Feature({
+      geometry: new Point(
+        proj.fromLonLat([lon, lat])
       ),
       name: name,
     });
 
     // Adds a style to the marker
-    var iconStyle = new ol.style.Style({
-      image: new ol.style.Icon({
+    var iconStyle = new Style({
+      image: new Icon({
         anchor: [12, 40],
         anchorXUnits: 'pixels',
         anchorYUnits: 'pixels',
         //opacity: 1,
         src: src,
       }),
-      text: new ol.style.Text({
+      text: new Text({
         text: rank,
         offsetY: -20, //Positive = shift down
         offsetX: 4, //Positive = shift right
         scale: 1.4,
-        fill: new ol.style.Fill({
+        fill: new Fill({
           color: "#FFFFFF"
         }),
-        stroke: new ol.style.Stroke({
+        stroke: new Stroke({
           color: "#000000",
           width: 2.5
         })
@@ -117,12 +131,12 @@ console.log(i, name);
   }
 
   //New Source for the vector (set of points) layer
-  var vectorSource = new ol.source.Vector({
+  var vectorSource = new VectorSource({
     features: cityMarkers
   });
 
   //The layer itself
-  markerVectorLayer = new ol.layer.Vector({
+  markerVectorLayer = new VectorLayer({
     source: vectorSource,
   });
 
