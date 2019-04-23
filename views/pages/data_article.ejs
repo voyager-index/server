@@ -2,19 +2,18 @@
 <p>Downloaded from natural earth.</p>
 <p>Used <code>shp2pgsql</code> to convert the shapefile into a postgresql query/instert file. Used <code>psql -f thatfile.sql</code> to get it into a temp database</p>
 <p>Created country table with</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">CREATE</span> <span class="kw">TABLE</span> country(<span class="kw">id</span> SERIAL <span class="kw">NOT</span> <span class="kw">NULL</span>, name <span class="dt">VARCHAR</span>(<span class="dv">100</span>), code</a>
-<a class="sourceLine" id="cb1-2" title="2"><span class="dt">VARCHAR</span>(<span class="dv">3</span>));</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">CREATE</span> <span class="kw">TABLE</span> country(<span class="kw">id</span> SERIAL <span class="kw">NOT</span> <span class="kw">NULL</span>, name <span class="dt">VARCHAR</span>(<span class="dv">100</span>), code <span class="dt">VARCHAR</span>(<span class="dv">3</span>));</a></code></pre></div>
 <p>Inserted from DB with</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">INSERT</span> <span class="kw">INTO</span> country (name, code) <span class="kw">SELECT</span> DISTNICT(sov0name) <span class="kw">as</span> name,</a>
-<a class="sourceLine" id="cb2-2" title="2">sov\_a3 <span class="kw">as</span> code <span class="kw">FROM</span> temptable;</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">INSERT</span> <span class="kw">INTO</span> country (name, code) <span class="kw">SELECT</span> DISTNICT(sov0name) <span class="kw">as</span> name, sov_a3 <span class="kw">as</span> code <span class="kw">FROM</span> temptable;</a></code></pre></div>
 <p>Created city table with</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">CREATE</span> <span class="kw">TABLE</span> city (<span class="kw">id</span> SERIAL <span class="kw">NOT</span> <span class="kw">NULL</span>, name <span class="dt">VARCHAR</span>(<span class="dv">100</span>), country\_id</a>
 <a class="sourceLine" id="cb3-2" title="2"><span class="dt">INTEGER</span> <span class="kw">REFERENCES</span> country(<span class="kw">id</span>), lat <span class="dt">NUMERIC</span>, lng <span class="dt">NUMERIC</span>);</a></code></pre></div>
 <p>Inserted with</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">INSERT</span> <span class="kw">INTO</span> city(name, country\_id, lat, lng) <span class="kw">SELECT</span> temptable.name,</a>
-<a class="sourceLine" id="cb4-2" title="2">c.<span class="kw">id</span>, latitude, longitude <span class="kw">FROM</span> temptable <span class="kw">JOIN</span> country <span class="kw">AS</span> c <span class="kw">ON</span></a>
-<a class="sourceLine" id="cb4-3" title="3">temptable.sov0name <span class="op">=</span> c.name;</a></code></pre></div>
-<p>copied these with \copy (SELECT * FROM country) to <code>'\Users\user\...\MyFileName.csv\' with csv</code></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">INSERT</span> <span class="kw">INTO</span> city(name, country\_id, lat, lng) </a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="kw">SELECT</span> temptable.name,c.<span class="kw">id</span>, latitude, longitude </a>
+<a class="sourceLine" id="cb4-3" title="3"><span class="kw">FROM</span> temptable </a>
+<a class="sourceLine" id="cb4-4" title="4"><span class="kw">JOIN</span> country <span class="kw">AS</span> c <span class="kw">ON</span> temptable.sov0name <span class="op">=</span> c.name;</a></code></pre></div>
+<p>Copied these with <code>\copy (SELECT * FROM country)</code> to <code>'\Users\user\...\MyFileName.csv\' with csv</code></p>
 <h1 id="beaches">Beaches</h1>
 <p>Using coastline data from the natural earth site, I have created a table using <code>shp2pgsql</code>.</p>
 <p>Then, I created a temp table from the city data, with postgis point geoms instead of lon/lat, using <code>ST_MakePoint(lon, lat)</code> Since this was actually wrong, and had no srid, I had to</p>
@@ -24,7 +23,10 @@
 <a class="sourceLine" id="cb5-3" title="3"><span class="kw">ALTER</span> <span class="kw">COLUMN</span> geom <span class="kw">TYPE</span> geometry(MULTILINESTRING, <span class="dv">4326</span>)</a>
 <a class="sourceLine" id="cb5-4" title="4"><span class="kw">USING</span> ST_SetSRID(geom,<span class="dv">4326</span>)</a>
 <a class="sourceLine" id="cb5-5" title="5"></a>
-<a class="sourceLine" id="cb5-6" title="6"><span class="kw">SELECT</span> <span class="kw">id</span>, ST_SetSRID(ST_MakePoint(lon, lat), <span class="dv">4326</span>) <span class="kw">INTO</span> <span class="kw">TABLE</span> citygeom <span class="kw">FROM</span> city;</a>
-<a class="sourceLine" id="cb5-7" title="7"></a>
-<a class="sourceLine" id="cb5-8" title="8"><span class="kw">SELECT</span> <span class="kw">DISTINCT</span>(cg.<span class="kw">id</span>), <span class="fu">COALESCE</span>(ST_DWithin(cl.geom<span class="ch">:geography</span>, cg.st_setsrid:<span class="ch">:geography</span>, <span class="dv">80000</span>), <span class="kw">false</span>) <span class="kw">INTO</span> <span class="kw">TABLE</span> beaches <span class="kw">FROM</span> coastline cl <span class="kw">RIGHT</span> <span class="kw">JOIN</span> citygeom cg <span class="kw">ON</span> ST_DWithin(cl.geom:<span class="ch">:geography</span>, cg.st_setsrid:<span class="ch">:geography</span>, <span class="dv">80000</span>);</a></code></pre></div>
+<a class="sourceLine" id="cb5-6" title="6"><span class="kw">SELECT</span> <span class="kw">id</span>, ST_SetSRID(ST_MakePoint(lon, lat), <span class="dv">4326</span>) </a>
+<a class="sourceLine" id="cb5-7" title="7"><span class="kw">INTO</span> <span class="kw">TABLE</span> citygeom <span class="kw">FROM</span> city;</a>
+<a class="sourceLine" id="cb5-8" title="8"></a>
+<a class="sourceLine" id="cb5-9" title="9"><span class="kw">SELECT</span> <span class="kw">DISTINCT</span>(cg.<span class="kw">id</span>), <span class="fu">COALESCE</span>(ST_DWithin(cl.geom<span class="ch">:geography</span>, cg.st_setsrid:<span class="ch">:geography</span>, <span class="dv">80000</span>), <span class="kw">false</span>) </a>
+<a class="sourceLine" id="cb5-10" title="10"><span class="kw">INTO</span> <span class="kw">TABLE</span> beaches <span class="kw">FROM</span> coastline cl </a>
+<a class="sourceLine" id="cb5-11" title="11"><span class="kw">RIGHT</span> <span class="kw">JOIN</span> citygeom cg <span class="kw">ON</span> ST_DWithin(cl.geom:<span class="ch">:geography</span>, cg.st_setsrid:<span class="ch">:geography</span>, <span class="dv">80000</span>);</a></code></pre></div>
 <p>80,000 references meters, which is roughly 50 miles. This is from city center to coastline, and since some travellers might be willing to drive further, I have decided to include all cities that could ‘reasonably’</p>
