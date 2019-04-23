@@ -20,7 +20,7 @@ if (theme == "dark") {
     urlString = 'http://{a-c}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
 }
 
-else if (theme == "light") {
+else {
     urlString = 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 }
 

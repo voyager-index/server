@@ -112,23 +112,31 @@ app.post('/bounding', async (req, res) => {
     // edge case: left side of map crosses 180 degress longitude.
     // edge case: left side of map crosses 0 degress longitude.
     lon_wrap = -1 * (bottom_left_lon + 180) % 360;
+    lon_wrap_neg = 1 * (bottom_left_lon + 180) % 360;
     // console.log("lon_wrap:", lon_wrap);
+    // console.log("lon_wrap_neg:", lon_wrap_neg);
 
     let cities = [];
     try {
         const client = await pool.connect()
 
         const query_string = `
-SELECT C.name, C.lon, C.lat FROM City C
+SELECT C.name, C.lon, C.lat, TRUNC((P.total / 1e6), 1) FROM City C
+INNER JOIN Population P ON (P.CityId = C.id)
 WHERE 
-C.lon >= ${bottom_left_lon} OR 
-C.lon >= ${lon_wrap} AND
-
+(C.lon >= ${bottom_left_lon} OR 
+C.lon >= ${lon_wrap}) AND
 C.lat >= ${bottom_left_lat} AND
-C.lon <= ${top_right_lon} AND
+
+(C.lon <= ${lon_wrap_neg} OR
+C.lon <= ${top_right_lon}) AND
 C.lat <= ${top_right_lat}
-LIMIT 50
+
+ORDER BY P.total DESC
+LIMIT 100
 `
+
+        console.log(query_string);
         const result = await client.query(query_string);
         const results = { 'cities': (result) ? result.rows : null};
 
