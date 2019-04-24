@@ -6,11 +6,11 @@ const pool = new Pool({
     // connectionString: process.env.DATABASE_URL
 
     // new connection info
-    host: 'coolsite.com', // server name or IP address;
-    port: 12345,
-    database: 'coolDatabase',
-    user: 'coolUser',
-    password: 'myCoolPassword'
+    host: process.env.DBHOST, // server name or IP address;
+    port: process.env.DBPORT,
+    database: process.env.DB,
+    user: process.env.DBUSER,
+    password: process.env.DBPASS
 });
 
 module.exports = pool;
