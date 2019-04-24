@@ -8,7 +8,7 @@ const pool = new Pool({
     // new connection info
     host: process.env.DBHOST, // server name or IP address;
     port: process.env.DBPORT,
-    database: process.env.DB,
+    database: process.env.DBNAME,
     user: process.env.DBUSER,
     password: process.env.DBPASS
 });
