@@ -14,9 +14,15 @@ body {
   background-color: black; }
 
 p, h1, h2, h3, h4, h5, h6, .text, pre, dd, dt, li, ul, ol, label {
-  color: snow; }
+  color: snow; 
+}
 
-.navbar-default {
+
+.navbar-light, .navbar-nav, .nav-link, .navbar-brand {
+    color: snow !important;
+}
+
+.navbar-light, .navbar-default {
     background-color: black;
     border-color: black;
 }

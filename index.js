@@ -136,7 +136,7 @@ ORDER BY P.total DESC
 LIMIT 100
 `
 
-        console.log(query_string);
+        //console.log(query_string);
         const result = await client.query(query_string);
         const results = { 'cities': (result) ? result.rows : null};
 
@@ -226,5 +226,5 @@ app
     .use(express.static(path.join(__dirname, 'public')))
     .set('views', path.join(__dirname, 'views'))
     .set('view engine', 'ejs')
-    .get('/', (req, res) => res.render('pages/index'))
+    .get('/', (req, res) => res.render('pages/index', { layout: 'layout-map' }))
     .listen(PORT, () => console.log(`Listening at http://localhost:${ PORT }`))

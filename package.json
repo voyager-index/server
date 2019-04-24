@@ -7,7 +7,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js",
+    "start": "nodemon -e js,ejs,json,css,md index.js",
     "test": "node test.js",
     "build": "webpack --config webpack.config.js --mode production"
   },

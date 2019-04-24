@@ -36,7 +36,7 @@ var map = new Map({
   view: new View({
     center: proj.fromLonLat([0,0]),
     zoom: 3,
-    minZoom: 2,
+    minZoom: 1,
     projection: "EPSG:3857"
     //units: 'degrees'
   })
