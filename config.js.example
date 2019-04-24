@@ -1,0 +1,16 @@
+// Used to connect to PostgreSQL database.
+const { Pool } = require('pg');
+
+const pool = new Pool({
+    // old heroku info
+    // connectionString: process.env.DATABASE_URL
+
+    // new connection info
+    host: 'coolsite.com', // server name or IP address;
+    port: 12345,
+    database: 'coolDatabase',
+    user: 'coolUser',
+    password: 'myCoolPassword'
+});
+
+module.exports = pool;

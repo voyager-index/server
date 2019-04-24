@@ -13,11 +13,7 @@ const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const expressLayouts = require('express-ejs-layouts');
 
-// Used to connect to PostgreSQL database.
-const { Pool } = require('pg');
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL
-});
+const pool = require('./config.js');
 
 // Use express for the web server.
 const express = require('express')
