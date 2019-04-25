@@ -2,15 +2,7 @@
 const { Pool } = require('pg');
 
 const pool = new Pool({
-    // old heroku info
-    // connectionString: process.env.DATABASE_URL
-
-    // new connection info
-    host: process.env.DBHOST, // server name or IP address;
-    port: process.env.DBPORT,
-    database: process.env.DBNAME,
-    user: process.env.DBUSER,
-    password: process.env.DBPASS
+    connectionString: process.env.DATABASE_URL
 });
 
 module.exports = pool;
