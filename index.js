@@ -117,8 +117,13 @@ app.post('/bounding', async (req, res) => {
         const client = await pool.connect()
 
         const query_string = `
-SELECT C.name, C.lon, C.lat, TRUNC((P.total / 1e6), 1) FROM City C
-INNER JOIN Population P ON (P.CityId = C.id)
+--SELECT C.name, C.lon, C.lat, TRUNC((P.total / 1e6), 1) FROM City C
+--INNER JOIN Population P ON (P.CityId = C.id)
+
+SELECT DISTINCT ON (CO.name) C.name, CO.name, C.lon, C.lat, I.speed FROM City C
+INNER JOIN Country CO ON CO.id = C.country
+INNER JOIN Internet_Speed I ON I.Country = CO.id
+
 WHERE 
 (C.lon >= ${bottom_left_lon} OR 
 C.lon >= ${lon_wrap}) AND
@@ -128,7 +133,7 @@ C.lat >= ${bottom_left_lat} AND
 C.lon <= ${top_right_lon}) AND
 C.lat <= ${top_right_lat}
 
-ORDER BY P.total DESC
+--ORDER BY P.total DESC
 LIMIT 100
 `
 
