@@ -2,32 +2,28 @@
 // to start on port 31415
 const PORT = process.env.PORT || 5000
 
-const fetch = require("node-fetch");
+const fetch = require('node-fetch');
 const https = require('https');
 const path = require('path')
 
 // POST requests
 const bodyParser = require('body-parser');
 
-// Use ejs for templating.
-const ejs = require('ejs');
-const expressLayouts = require('express-ejs-layouts');
-
 // Used to connect to PostgreSQL database.
-const { Pool } = require('pg');
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL
-});
+const pool = require('./config.js');
 
 // Use express for the web server.
 const express = require('express')
 const app = express();
 
 app.use(bodyParser.urlencoded({
-  extended: true
+    extended: true
 }));
 app.use(bodyParser.json());
 
+// Use ejs for templating.
+const ejs = require('ejs');
+const expressLayouts = require('express-ejs-layouts');
 app.use(expressLayouts);
 
 
@@ -121,8 +117,13 @@ app.post('/bounding', async (req, res) => {
         const client = await pool.connect()
 
         const query_string = `
-SELECT C.name, C.lon, C.lat, TRUNC((P.total / 1e6), 1) FROM City C
-INNER JOIN Population P ON (P.CityId = C.id)
+--SELECT C.name, C.lon, C.lat, TRUNC((P.total / 1e6), 1) FROM City C
+--INNER JOIN Population P ON (P.CityId = C.id)
+
+SELECT DISTINCT ON (CO.name) C.name, CO.name, C.lon, C.lat, I.speed FROM City C
+INNER JOIN Country CO ON CO.id = C.country
+INNER JOIN Internet_Speed I ON I.Country = CO.id
+
 WHERE 
 (C.lon >= ${bottom_left_lon} OR 
 C.lon >= ${lon_wrap}) AND
@@ -132,7 +133,7 @@ C.lat >= ${bottom_left_lat} AND
 C.lon <= ${top_right_lon}) AND
 C.lat <= ${top_right_lat}
 
-ORDER BY P.total DESC
+--ORDER BY P.total DESC
 LIMIT 100
 `
 
@@ -160,9 +161,11 @@ app.get('/settings', (req, res) => {
     res.render('pages/settings');
 });
 
+
 // -------------------- //
 // Helper functions
 // -------------------- //
+
 
 function obj_arr2arr(obj_arr) {
     let arr = []
@@ -191,7 +194,7 @@ function obj2arr(obj) {
 // Fetches "url" and returns whatever value is associated with the "object".
 async function getThing(url, object) {
     return fetch(url)
-    .then(response => response.json())
+        .then(response => response.json())
         .then(data => {
             return eval(object);
         })
