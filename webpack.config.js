@@ -7,7 +7,7 @@ module.exports = {
         filename: './public/bundle.js'
     },
     target: 'node',
-    watch: true,
+    watch: false,
     devServer: {
         port: 5000
     },
