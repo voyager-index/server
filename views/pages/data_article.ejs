@@ -29,78 +29,45 @@
 <a class="sourceLine" id="cb5-9" title="9"><span class="kw">SELECT</span> <span class="kw">DISTINCT</span>(cg.<span class="kw">id</span>), <span class="fu">COALESCE</span>(ST_DWithin(cl.geom<span class="ch">:geography</span>, cg.st_setsrid:<span class="ch">:geography</span>, <span class="dv">80000</span>), <span class="kw">false</span>) </a>
 <a class="sourceLine" id="cb5-10" title="10"><span class="kw">INTO</span> <span class="kw">TABLE</span> beaches <span class="kw">FROM</span> coastline cl </a>
 <a class="sourceLine" id="cb5-11" title="11"><span class="kw">RIGHT</span> <span class="kw">JOIN</span> citygeom cg <span class="kw">ON</span> ST_DWithin(cl.geom:<span class="ch">:geography</span>, cg.st_setsrid:<span class="ch">:geography</span>, <span class="dv">80000</span>);</a></code></pre></div>
-<p>80,000 references meters, which is roughly 50 miles. This is from city center to coastline, and since some travellers might be willing to drive further, I have decided to include all cities that could ‘reasonably’</p>
-<p>What do you guys think about: town = less than 50k people, small city, less than 150k, city, less than 500k, large city, less than 2 million people, mega city, anything larger. What population breakdowns would you give? Similarly, for the coast line, what defines “close to beaches”? I filtered it to less than 50 miles to coast. Some friends I asked said 10 or 25 miles, but I dont think there is harm in showing cities that are 40 miles away, it could be a big drive, but not necessarily terrible. For mountains, there is no list of mountains I can find. So what defines mountain? I was going to go by elevation data, and say any region over 11,500 feet If you are looking for potential skiing cities, I think its further than beaches. I was going to set it to “Cities that are less than 80 miles from a region at least 11,500 ft”</p>
-<p>Make sure you have postgis extention enabled in your database, CREATE EXTENSION postgis; 17:14 then you have to make a temp table where the lon/lat are replaced with geometries (technically geographies, but i havent gotten that far yet, so I just cast later) I use the projection 4326, because its pretty standard</p>
-<p>Convert city points to geoms. SELECT id, ST_SetSRID(ST_MakePoint(lon, lat), 4326) INTO TABLE citygeom FROM city;</p>
-<p>Then I would do something similar for airports, so you have airport id, and point (Side note, temp tables disappear after you close out of psql. If you want to do that, use INTO TEMP TABLE citygeom Then, once you have both that are points, you combine them into your perminent table that will have city id, and t/f for whether there is a close by airport SELECT DISTINCT(cg.id), COALESCE(ST_DWithin(cl.geom:geography, cg.st_setsrid::geography, 80000), false) INTO TABLE beaches FROM coastline cl RIGHT JOIN citygeom cg ON ST_DWithin(cl.geom::geography, cg.st_setsrid::geography, 80000); Thats the query I used. Note that you have to cast to geography for ST_DWithin to work properly, with the :: I actually missed it copying in the first one. but its table.geoAttribute::geography the 80,000 that I used is meters, thats 50 miles. I would make it much smaller than that like 10 max So like 16000 meters</p>
-<p>Cool, well I have to strip this csv file I have down some and then Ill give that a go</p>
-<p>So this: ‘SELECT DISTINCT(cg.id), COALESCE(ST_DWithin(cl.geom:geography, cg.st_setsrid::geography, 80000), false) INTO TABLE beaches FROM coastline cl RIGHT JOIN citygeom cg ON ST_DWithin(cl.geom::geography, cg.st_setsrid::geography, 80000);’</p>
-<p>coalesce selects the first true statement, or the last one in this case, if the st_dwithin is true its true, otherwise false st_dwithin, i believe loops through them all and checks to see if there are city points within the distance specified for each airport point distance in meters.</p>
-
-
-<!DOCTYPE html>
-<html>
-  	<head>
-    	<meta charset="utf-8">
-    	<title>Voyager Index</title>
-	</head>
-  	<body>
-  		<h1>Technologies</h1>
-
-  		<p>This project was completed using <a href="https://www.postgresql.org/download/">PostgreSQL</a> wuth the <a href="https://postgis.net/install/">PostGIS</a> extension</p>
-
-  		<h1>Cities and Countries</h1>
-
-		<p>City data was downloaded from <a href="https://www.naturalearthdata.com/">Natural Earth</a>, selecting the highest resolution data. "Populated Places" was the data item chosen.</p>
-
-		<p>Using the commandline program shp2pgsql, the shapefile is converted into a SQL file. Using the command <span class="sourceCode">shp2pgsql ne_10m_populated_places.shp public.populatedplaces > populatedplace.sql</span> I was able to create a SQL file that would create a new table, populatedplaces, into the public schema of my database.</p>
-		<p>This data contained some different characters than what were standard on windwos, so in psql (<span class="sourceCode">psql -U postgres</span>) I was able to set the encoding to UTF8 with <span class="sourceCode">SET CLIENT_ENCODING TO UTF8;</span></p>
-		<p>From here, I moved on to creating two tables, a country table, and a city table. The country table would have the attributes "id" and "name". The city table would have the attributes "id", "name", "country" (A foreign key), and "lat" and "lon" which would be used to represent the city points, and eventually to place markers on the map, using OpenLayers 5.</p>
-
-		<span class="sourceCode">SELECT DISTINCT(sov0name) FROM populatedplaces INTO TABLE country; </span>
-		<span class="sourceCode">ALTER TABLE country ADD COLUMN id SERIAL;</span>
-
-		<p>The second statement is to create ids for each country, which will be used for foreign keys.</p>
-		<p>Then, for cities.</p>
-
-		<span class="sourceCode">SELECT p.name, c.id AS country, p.latitude AS lat, p.longitude AS lon INTO TABLE city FROM populatedplaces p LEFT JOIN country c ON p.sov0name = c.name; </span>
-		<span class="sourceCode">ALTER TABLE city ADD COLUMN id SERIAL;</span>
-		<span class="sourceCode">ALTER TABLE city ADD CONSTRAINT key FOREIGN KEY (country) REFERENCES country (id) MATCH FULL;</span>
-
-		<p>It is useful to have these tables saved elsewhere in a short form, to be able to be shared. This was done with the '\copy' command, still on the psql command line</p>
-
-		<span class="sourceCode">\copy (SELECT * FROM country) to '\Users\user\...\MyFileName.csv' with csv</span>
-		<p>A similar command was used for the city table.</p>
-		<p>Small side note, the ID columns were out of order from how I wanted them, so I opened the csv files in a spreadsheet application, and manually copy and pasted in order to switch the columns</p>
-		<p>It is also useful to save a SQL file to easily import these into a new database. A file named 'data.sql' was created, and had these commands added to it:</p>
-		<span class="sourceCode">\copy Country(id, Name) FROM 'data/country.csv' DELIMITER ',' CSV HEADER;</span>
-		<span class="sourceCode">\copy City(id, name, lat, lon, Country) FROM 'data/city.csv' DELIMITER ',' CSV HEADER;</span>
-
-		<br>
-
-		<h1>Beaches</h1>
-
-		<p>The goal for this table was to find the cities that are close to the beach. To do this, coastline data was downloaded from the same Natural Earth website, and the highest resolution (10m) vector data was downloaded, called "Coastlines." What defines close to the beach, for our purposes? We decided that within 40 miles from city center to coastline would be reasonable for now, until we have more user feedback. For reference, 40 miles is about 64,000 meters, which is what will be used in the ST_DWithin() PostGIS function.</p>
-
-		<p>In order to accomplish this goal, a temporary table was created, in order to have fast access to PostGIS GEOMETRIES, rather than having to convert from Latitudes and Longitudes in the main function. The main function took over an hour to run on my machine, so time savings was beneficial.</p>
-
-		<span class="sourceCode">SELECT id, ST_SetSRID(ST_MakePoint(lon, lat), 4326) INTO TEMP TABLE citygeom FROM city;</span>
-		<span class="sourceCode">ALTER TABLE citygeom RENAME COLUMN st_setsrid TO geom;</span>
-
-		<p>Coastline data was entered into the database using the .sql file created by the shp2pgsql command line executable. I then altered the table to make sure that the SRIDs were the same for both geometries. The ST_DWithin() PostGIS function actually needs the vector data as geographies to caculate distances in meters, so they were convereted using two colons like: <span>table.geom::geography</span></p>
-
-		<span class="sourceCode">ALTER TABLE coastline ALTER COLUMN geom TYPE geometry(MULTILINESTRING, 4326) USING ST_SetSRID(geom,4326)</span>
-
-
-		<span class="sourceCode">SELECT DISTINCT(cg.id), COALESCE(ST_DWithin(cl.geom:geography, cg.geom::geography, 64000), false) INTO TABLE beaches FROM coastline cl RIGHT JOIN citygeom cg ON ST_DWithin(cl.geom::geography, cg.geom::geography, 64000); </span>
-
-		<h1>Elevation</h1>
-
-		<p>Elevation was obtained from the public dataset GTOPO30, downloaded from <a href="https://earthexplorer.usgs.gov/">Earth Explorer</a>. You are required to make an account, download both java, and a bulk download application, and then place an order, though the information is public and free. This data was slected over newer, more accurate information, because of the size of the download. Uncompressed, this elevation raster data was 1.5 GB, which was less than 10% of the size of the newer GTOPO2010 data. This raster data was imported into postgis with the raster2pgsql function. Using the same city geometries table as before, I was able to get elevation data for each of those points. Perhaps someone can share with me a faster way, as this query took 2 hours to compute on my machine.</p>		
-
-		<span class="sourceCode">SELECT c.id, ST_Value(e.rast, c.geom) AS elevation INTO TABLE elevationdata FROM citygeom c LEFT JOIN elevationRaster e ON ST_Contains(ST_Envelope(e.rast), c.geom);</span>
-
-    </body>
-</html>
-
+<h1 id="technologies">Technologies</h1>
+<p>This project was completed using <a href="https://www.postgresql.org/download/">PostgreSQL</a> wriuth the <a href="https://postgis.net/install/">PostGIS</a> extension</p>
+<h1 id="cities-and-countries">Cities and Countries</h1>
+<p>City data was downloaded from <a href="https://www.naturalearthdata.com/">Natural Earth</a>, selecting the highest resolution data. "Populated Places" was the data item chosen.</p>
+<p>Using the commandline program shp2pgsql, the shapefile is converted into a SQL file. Using the command <code>shp2pgsql ne\_10m\_populated\_places.shp public.populatedplaces \&gt; populatedplace.sql</code> I was able to create a SQL file that would create a new table, populatedplaces, into the public schema of my database.</p>
+<p>This data contained some different characters than what were standard on windwos, so in psql ([psql -U postgres] ) I was able to set the encoding to UTF8 with [SET CLIENT_ENCODING TO UTF8;]</p>
+<p>From here, I moved on to creating two tables, a country table, and a city table. The country table would have the attributes "id" and "name". The city table would have the attributes "id", "name", "country" (A foreign key), and "lat" and "lon" which would be used to represent the city points, and eventually to place markers on the map, using OpenLayers 5.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">SELECT</span> <span class="kw">DISTINCT</span>(sov0name) <span class="kw">FROM</span> populatedplaces <span class="kw">INTO</span> <span class="kw">TABLE</span> country;</a>
+<a class="sourceLine" id="cb6-2" title="2"></a>
+<a class="sourceLine" id="cb6-3" title="3"><span class="kw">ALTER</span> <span class="kw">TABLE</span> country <span class="kw">ADD</span> <span class="kw">COLUMN</span> <span class="kw">id</span> SERIAL;</a></code></pre></div>
+<p>The second statement is to create ids for each country, which will be used for foreign keys.</p>
+<p>Then, for cities.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">SELECT</span> p.name, c.<span class="kw">id</span> <span class="kw">AS</span> country, p.latitude <span class="kw">AS</span> lat, p.longitude <span class="kw">AS</span> lon</a>
+<a class="sourceLine" id="cb7-2" title="2"><span class="kw">INTO</span> <span class="kw">TABLE</span> city <span class="kw">FROM</span> populatedplaces p <span class="kw">LEFT</span> <span class="kw">JOIN</span> country c <span class="kw">ON</span> p.sov0name <span class="op">=</span> c.name; </a>
+<a class="sourceLine" id="cb7-3" title="3"><span class="kw">ALTER</span> <span class="kw">TABLE</span> city <span class="kw">ADD</span> <span class="kw">COLUMN</span> <span class="kw">id</span> SERIAL;</a>
+<a class="sourceLine" id="cb7-4" title="4"><span class="kw">ALTER</span> <span class="kw">TABLE</span> city <span class="kw">ADD</span> <span class="kw">CONSTRAINT</span> <span class="kw">key</span> <span class="kw">FOREIGN</span> <span class="kw">KEY</span> (country) <span class="kw">REFERENCES</span> country (<span class="kw">id</span>) MATCH <span class="kw">FULL</span>;</a></code></pre></div>
+<p>It is useful to have these tables saved elsewhere in a short form, to be able to be shared. This was done with the '\copy' command, still on the psql command line</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb8-1" title="1">\\<span class="kw">copy</span> (<span class="kw">SELECT</span> \<span class="op">*</span> <span class="kw">FROM</span> country) <span class="kw">to</span></a>
+<a class="sourceLine" id="cb8-2" title="2">\<span class="st">&#39;</span><span class="ch">\\</span><span class="st">Users</span><span class="ch">\\</span><span class="st">user</span><span class="ch">\\</span><span class="st">\...</span><span class="ch">\\</span><span class="st">MyFileName.csv\&#39;</span> <span class="kw">with</span> csv</a></code></pre></div>
+<p>A similar command was used for the city table.</p>
+<p>Small side note, the ID columns were out of order from how I wanted them, so I opened the csv files in a spreadsheet application, and manually copy and pasted in order to switch the columns</p>
+<p>It is also useful to save a SQL file to easily import these into a new database. A file named 'data.sql' was created, and had these commands added to it:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb9-1" title="1">\\<span class="kw">copy</span> Country(<span class="kw">id</span>, Name) <span class="kw">FROM</span> \<span class="st">&#39;data/country.csv\&#39;</span> DELIMITER \<span class="st">&#39;,\&#39;</span> CSV <span class="kw">HEADER</span>;</a>
+<a class="sourceLine" id="cb9-2" title="2">\\<span class="kw">copy</span> City(<span class="kw">id</span>, name, lat, lon, Country) <span class="kw">FROM</span> \<span class="st">&#39;data/city.csv\&#39;</span> DELIMITER \<span class="st">&#39;,\&#39;</span> CSV <span class="kw">HEADER</span>;</a></code></pre></div>
+<h1 id="beaches-1">Beaches</h1>
+<p>The goal for this table was to find the cities that are close to the beach. To do this, coastline data was downloaded from the same Natural Earth website, and the highest resolution (10m) vector data was downloaded, called "Coastlines." What defines close to the beach, for our purposes? We decided that within 40 miles from city center to coastline would be reasonable for now, until we have more user feedback. For reference, 40 miles is about 64,000 meters, which is what will be used in the ST_DWithin() PostGIS function.</p>
+<p>In order to accomplish this goal, a temporary table was created, in order to have fast access to PostGIS GEOMETRIES, rather than having to convert from Latitudes and Longitudes in the main function. The main function took over an hour to run on my machine, so time savings was beneficial.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb10-1" title="1"><span class="kw">SELECT</span> <span class="kw">id</span>, ST\_SetSRID(ST\_MakePoint(lon, lat), <span class="dv">4326</span>) <span class="kw">INTO</span> TEMP <span class="kw">TABLE</span></a>
+<a class="sourceLine" id="cb10-2" title="2">citygeom <span class="kw">FROM</span> city;</a>
+<a class="sourceLine" id="cb10-3" title="3"><span class="kw">ALTER</span> <span class="kw">TABLE</span> citygeom <span class="kw">RENAME</span> <span class="kw">COLUMN</span></a>
+<a class="sourceLine" id="cb10-4" title="4">st\_setsrid <span class="kw">TO</span> geom;</a></code></pre></div>
+<p>Coastline data was entered into the database using the .sql file created by the shp2pgsql command line executable. I then altered the table to make sure that the SRIDs were the same for both geometries. The ST_DWithin() PostGIS function actually needs the vector data as geographies to caculate distances in meters, so they were convereted using two colons like: table.geom::geography</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb11-1" title="1"><span class="kw">ALTER</span> <span class="kw">TABLE</span> coastline <span class="kw">ALTER</span> <span class="kw">COLUMN</span> geom <span class="kw">TYPE</span> geometry(MULTILINESTRING,</a>
+<a class="sourceLine" id="cb11-2" title="2"><span class="dv">4326</span>) <span class="kw">USING</span> ST\_SetSRID(geom,<span class="dv">4326</span>)</a>
+<a class="sourceLine" id="cb11-3" title="3"> <span class="kw">SELECT</span></a>
+<a class="sourceLine" id="cb11-4" title="4"><span class="kw">DISTINCT</span>(cg.<span class="kw">id</span>), <span class="fu">COALESCE</span>(ST\_DWithin(cl.geom<span class="ch">:geography</span>,</a>
+<a class="sourceLine" id="cb11-5" title="5">cg.geom:<span class="ch">:geography</span>, <span class="dv">64000</span>), <span class="kw">false</span>) <span class="kw">INTO</span> <span class="kw">TABLE</span> beaches <span class="kw">FROM</span> coastline cl</a>
+<a class="sourceLine" id="cb11-6" title="6"><span class="kw">RIGHT</span> <span class="kw">JOIN</span> citygeom cg <span class="kw">ON</span> ST\_DWithin(cl.geom:<span class="ch">:geography</span>,</a>
+<a class="sourceLine" id="cb11-7" title="7">cg.geom:<span class="ch">:geography</span>, <span class="dv">64000</span>); </a></code></pre></div>
+<h1 id="elevation">Elevation</h1>
+<p>Elevation was obtained from the public dataset GTOPO30, downloaded from <a href="https://earthexplorer.usgs.gov/">Earth Explorer</a>. You are required to make an account, download both java, and a bulk download application, and then place an order, though the information is public and free. This data was slected over newer, more accurate information, because of the size of the download. Uncompressed, this elevation raster data was 1.5 GB, which was less than 10% of the size of the newer GTOPO2010 data. This raster data was imported into postgis with the raster2pgsql function. Using the same city geometries table as before, I was able to get elevation data for each of those points. Perhaps someone can share with me a faster way, as this query took 2 hours to compute on my machine.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb12-1" title="1"><span class="kw">SELECT</span> c.<span class="kw">id</span>, ST\_Value(e.rast, c.geom) <span class="kw">AS</span> elevation <span class="kw">INTO</span> <span class="kw">TABLE</span> elevationdata <span class="kw">FROM</span> citygeom c <span class="kw">LEFT</span> <span class="kw">JOIN</span> elevationRaster e <span class="kw">ON</span> ST\_Contains(ST\_Envelope(e.rast), c.geom);</a></code></pre></div>
