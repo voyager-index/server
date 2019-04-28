@@ -9,8 +9,10 @@
   "scripts": {
     "start": "nodemon -e js,ejs,json,css,md index.js",
     "test": "node test.js",
-    "build": "webpack --config webpack.config.js --mode production",
-    "watch": "webpack --config webpack.config.js --mode production --watch"
+    "build": "webpack --config webpack.config.js --mode development",
+    "watch": "webpack --config webpack.config.js --mode development --watch",
+    "analyze": "webpack --config webpack.config.js --mode production --profile --json > stats.json",
+    "release": "webpack --config webpack.config.js --mode production"
   },
   "dependencies": {
     "dotenv": "^7.0.0",
@@ -29,7 +31,9 @@
     "webpack-dev-server": "^3.3.1"
   },
   "devDependencies": {
-    "tape": "^4.7.0"
+    "prettier": "1.17.0",
+    "tape": "^4.7.0",
+    "webpack-bundle-analyzer": "^3.3.2"
   },
   "repository": {
     "type": "git",

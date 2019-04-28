@@ -16,6 +16,9 @@ var markerVectorLayer;
 let theme = localStorage.getItem("theme");
 let urlString = '';
 
+export var _markerType = '';
+let _points;
+
 if (theme == "dark") {
     urlString = 'http://{a-c}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
 }
@@ -47,6 +50,7 @@ map.on('moveend', onMoveEnd);
 
 function onMoveEnd(evt) {
   var map = evt.map;
+  console.log("onMoveEnd() markerType:", getMarkerType());
   // This gets the bounding box, but as a different type of coordinate system
   var extent = map.getView().calculateExtent(map.getSize());
   var points = [];
@@ -59,13 +63,18 @@ function onMoveEnd(evt) {
   points.push(topRight[0]);
   points.push(topRight[1]);
 
+  setPoints(points);
+
   //Send bounding box coords to server.
-  makeBBoxRequest(points);
+  makeBBoxRequest();
 }
 
 // Every movement on the map, scroll or zoom, triggers the makeBBoxRequest() function,
 // which sends a POST request containing a bounding box array to the server.
-function makeBBoxRequest(points){
+function makeBBoxRequest(){
+  console.log("bbox request.");
+  const type = getMarkerType();
+  const points = getPoints();
   var http = new XMLHttpRequest();
   http.open("POST", '/bounding', true);
   http.setRequestHeader("Content-Type", "application/json");
@@ -78,7 +87,7 @@ function makeBBoxRequest(points){
       buildFeatures(cities);
     }
   }
-  var param = {'bounding_box': points};
+  var param = {'bounding_box': points, 'type': type};
   http.send(JSON.stringify(param));
 }
 
@@ -94,7 +103,8 @@ function buildFeatures(cities) {
     var lon = Number(cities[i][1]);
     var lat = Number(cities[i][2]);
     var rank = cities[i][3].toString();
-//console.log(i, name);
+
+    //console.log(i, name);
     //I have added 3 different marker png images to the folder for use
     // Credit to https://mapicons.mapsmarker.com. Creative commons license. (I edited the marker to erase icon)
     var src;
@@ -162,3 +172,32 @@ function clearMarkers(){
   map.removeLayer(markerVectorLayer);
   cityMarkers = [];
 }
+
+function getMarkerType() {
+    return _markerType
+};
+
+function setMarkerType(newType) {
+    console.log("changing marker type to", newType);
+    _markerType = newType
+    console.log("marker changed to", getMarkerType());
+}
+
+function getPoints() {
+    return _points;
+}
+
+function setPoints(newPoints) {
+    _points = newPoints;
+}
+
+function cool() {
+    return 2 * 2;
+}
+
+export {clearMarkers};
+export {setMarkerType};
+export {getMarkerType};
+export {buildFeatures};
+export {cool};
+export{makeBBoxRequest};

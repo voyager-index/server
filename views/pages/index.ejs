@@ -7,32 +7,29 @@
                 <div>
                     <input type="range" min="0" max="10000000" value="100000" class="slider" id="myRange"/>
                 </div>
+                <div>
+                    <input type="radio" id="rating" name="markers" value="rating"
+                    checked>
+                    <label for="rating">rating</label>
+                </div>
+
+                <div>
+                    <input type="radio" id="population" name="markers" value="population">
+                    <label for="population">population</label>
+                </div>
+
+                <div>
+                    <input type="radio" id="internet" name="markers" value="internet">
+                    <label for="internet">internet</label>
+                </div>
             </div>
         </div>
 
         <div id="content" class="col-lg-12 h-100">
-                <div id="map"></div>
+            <div id="map"></div>
         </div>
     </div>
 
 </div>
-<script src="bundle.js"></script>
-
-<script>
-    $("#toggle").click(() => {
-        /* to toggle the sidebar, just switch the CSS classes */
-        $("#filter").toggleClass("hidden");
-        $("#content").toggleClass("col-lg-12 col-lg-10");
-    });
-
-var slider = document.getElementById("myRange");
-var output = document.getElementById("demo");
-output.innerHTML = slider.value; // Display the default slider value
-
-// Update the current slider value (each time you drag the slider handle)
-slider.oninput = function() {
-    output.innerHTML = this.value;
-} 
-</script>
-
-
+<script src="main.bundle.js"></script>
+<script src="filter.js"></script>

@@ -85,11 +85,13 @@ app.post('/city', async (req, res) => {
 });
 
 // Basic post request that receives bounding box, returns city points
-// returns array with the form: [ [City, lon, lat, rank] ], 
+// returns array with the form: [ [City, lon, lat, rank] ],
 // example: [["San Diego", -17.1, 32.2, 2.7] ]]
 // example: [["New York", -74, 40.7, 4.5], ["San Diego", -117, 33, 2.7], ["Dallas", -96, 33, 1.2]];
 app.post('/bounding', async (req, res) => {
     const bounding_box = req.body.bounding_box;
+    const type = req.body.type;
+    console.log("type:", type);
 
     console.log(`bounding_box:
     bottom-left lon: ${bounding_box[0]}
@@ -116,16 +118,15 @@ app.post('/bounding', async (req, res) => {
     try {
         const client = await pool.connect()
 
-        const query_string = `
---SELECT C.name, C.lon, C.lat, TRUNC((P.total / 1e6), 1) FROM City C
---INNER JOIN Population P ON (P.CityId = C.id)
+        let query_string;
 
-SELECT DISTINCT ON (CO.name) C.name, CO.name, C.lon, C.lat, I.speed FROM City C
-INNER JOIN Country CO ON CO.id = C.country
-INNER JOIN Internet_Speed I ON I.Country = CO.id
+        if (type == 'population') {
+            query_string = `
+SELECT C.name, C.lon, C.lat, TRUNC((P.total / 1e6), 1) FROM City C
+INNER JOIN Population P ON (P.CityId = C.id)
 
-WHERE 
-(C.lon >= ${bottom_left_lon} OR 
+WHERE
+(C.lon >= ${bottom_left_lon} OR
 C.lon >= ${lon_wrap}) AND
 C.lat >= ${bottom_left_lat} AND
 
@@ -133,11 +134,28 @@ C.lat >= ${bottom_left_lat} AND
 C.lon <= ${top_right_lon}) AND
 C.lat <= ${top_right_lat}
 
---ORDER BY P.total DESC
-LIMIT 100
-`
+ORDER BY P.total DESC
+LIMIT 100`
+        }
+        else {
+            query_string = `
+SELECT DISTINCT ON (CO.name) C.name, CO.name, C.lon, C.lat, I.speed FROM City C
+INNER JOIN Country CO ON CO.id = C.country
+INNER JOIN Internet_Speed I ON I.Country = CO.id
 
-        //console.log(query_string);
+WHERE
+(C.lon >= ${bottom_left_lon} OR
+C.lon >= ${lon_wrap}) AND
+C.lat >= ${bottom_left_lat} AND
+
+(C.lon <= ${lon_wrap_neg} OR
+C.lon <= ${top_right_lon}) AND
+C.lat <= ${top_right_lat}
+
+LIMIT 100`
+        }
+
+        console.log(query_string);
         const result = await client.query(query_string);
         const results = { 'cities': (result) ? result.rows : null};
 
