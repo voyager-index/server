@@ -9,10 +9,10 @@
   "scripts": {
     "start": "nodemon -e js,ejs,json,css,md index.js",
     "test": "node test.js",
-    "build": "webpack --config webpack.config.js --mode development",
+    "dev": "webpack --config webpack.config.js --mode development",
     "watch": "webpack --config webpack.config.js --mode development --watch",
     "analyze": "webpack --config webpack.config.js --mode production --profile --json > stats.json",
-    "release": "webpack --config webpack.config.js --mode production"
+    "build": "webpack --config webpack.config.js --mode production"
   },
   "dependencies": {
     "dotenv": "^7.0.0",
