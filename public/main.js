@@ -16,8 +16,9 @@ var markerVectorLayer;
 let theme = localStorage.getItem("theme");
 let urlString = '';
 
-export var _markerType = '';
-let _points;
+let _markerType = '';
+let _points = [];
+let _pops = []
 
 if (theme == "dark") {
     urlString = 'http://{a-c}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
@@ -75,6 +76,7 @@ function makeBBoxRequest(){
   console.log("bbox request.");
   const type = getMarkerType();
   const points = getPoints();
+  const pops = getPops();
   var http = new XMLHttpRequest();
   http.open("POST", '/bounding', true);
   http.setRequestHeader("Content-Type", "application/json");
@@ -87,7 +89,8 @@ function makeBBoxRequest(){
       buildFeatures(cities);
     }
   }
-  var param = {'bounding_box': points, 'type': type};
+  var param = {'bounding_box': points, 'type': type, 'pop_min': pops[0], 'pop_max': pops[1]};
+
   http.send(JSON.stringify(param));
 }
 
@@ -178,9 +181,7 @@ function getMarkerType() {
 };
 
 function setMarkerType(newType) {
-    console.log("changing marker type to", newType);
     _markerType = newType
-    console.log("marker changed to", getMarkerType());
 }
 
 function getPoints() {
@@ -191,13 +192,19 @@ function setPoints(newPoints) {
     _points = newPoints;
 }
 
-function cool() {
-    return 2 * 2;
+function getPops() {
+    return _pops;
+};
+
+function setPops(newPopMin, newPopMax) {
+    _pops = [newPopMin, newPopMax];
 }
 
 export {clearMarkers};
 export {setMarkerType};
 export {getMarkerType};
+export {setPops};
+export {getPops};
 export {buildFeatures};
-export {cool};
-export{makeBBoxRequest};
+export {getPoints};
+export {makeBBoxRequest};

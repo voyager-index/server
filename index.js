@@ -26,6 +26,7 @@ const ejs = require('ejs');
 const expressLayouts = require('express-ejs-layouts');
 app.use(expressLayouts);
 
+const DEBUG = true;
 
 // ---------- //
 // Pages
@@ -91,13 +92,17 @@ app.post('/city', async (req, res) => {
 app.post('/bounding', async (req, res) => {
     const bounding_box = req.body.bounding_box;
     const type = req.body.type;
-    console.log("type:", type);
 
-    console.log(`bounding_box:
-    bottom-left lon: ${bounding_box[0]}
-    bottom-left lat: ${bounding_box[1]}
-    top-right lon: ${bounding_box[2]}
-    top-right lat: ${bounding_box[3]}`);
+    if (DEBUG) {
+        console.log("req.body:", req.body);
+        console.log("type:", type);
+
+        console.log(`bounding_box:
+        bottom-left lon: ${bounding_box[0]}
+        bottom-left lat: ${bounding_box[1]}
+        top-right lon: ${bounding_box[2]}
+        top-right lat: ${bounding_box[3]}`);
+    }
 
     const bottom_left_lon = bounding_box[0];
     const bottom_left_lat = bounding_box[1];
@@ -111,8 +116,42 @@ app.post('/bounding', async (req, res) => {
     // edge case: left side of map crosses 0 degress longitude.
     lon_wrap = -1 * (bottom_left_lon + 180) % 360;
     lon_wrap_neg = 1 * (bottom_left_lon + 180) % 360;
-    // console.log("lon_wrap:", lon_wrap);
-    // console.log("lon_wrap_neg:", lon_wrap_neg);
+
+    const bound = `
+WHERE
+(C.lon >= ${bottom_left_lon} OR
+C.lon >= ${lon_wrap}) AND
+C.lat >= ${bottom_left_lat} AND
+
+(C.lon <= ${lon_wrap_neg} OR
+C.lon <= ${top_right_lon}) AND
+C.lat <= ${top_right_lat}
+`;
+
+    const pop_max = () => {
+        if (isNaN(req.body.pop_max)) {
+            return "POWER(2,31)";
+        }
+        else {
+            return req.body.pop_max
+        }
+    }
+
+    const pop_min = () => {
+        if (isNaN(req.body.pop_max)) {
+            return 0;
+        }
+        else {
+            return req.body.pop_min
+        }
+    }
+
+    const pop = `
+AND P.total <= ${pop_max()}
+AND P.total >= ${pop_min()}
+`;
+
+
 
     let cities = [];
     try {
@@ -120,42 +159,33 @@ app.post('/bounding', async (req, res) => {
 
         let query_string;
 
-        if (type == 'population') {
-            query_string = `
-SELECT C.name, C.lon, C.lat, TRUNC((P.total / 1e6), 1) FROM City C
-INNER JOIN Population P ON (P.CityId = C.id)
-
-WHERE
-(C.lon >= ${bottom_left_lon} OR
-C.lon >= ${lon_wrap}) AND
-C.lat >= ${bottom_left_lat} AND
-
-(C.lon <= ${lon_wrap_neg} OR
-C.lon <= ${top_right_lon}) AND
-C.lat <= ${top_right_lat}
-
-ORDER BY P.total DESC
-LIMIT 100`
-        }
-        else {
+        if (type === 'internet'){
             query_string = `
 SELECT DISTINCT ON (CO.name) C.name, CO.name, C.lon, C.lat, I.speed FROM City C
 INNER JOIN Country CO ON CO.id = C.country
 INNER JOIN Internet_Speed I ON I.Country = CO.id
-
-WHERE
-(C.lon >= ${bottom_left_lon} OR
-C.lon >= ${lon_wrap}) AND
-C.lat >= ${bottom_left_lat} AND
-
-(C.lon <= ${lon_wrap_neg} OR
-C.lon <= ${top_right_lon}) AND
-C.lat <= ${top_right_lat}
-
+INNER JOIN Population P ON (P.CityId = C.id)` 
++ bound
++ pop
++
+`LIMIT 100`
+        }
+        // default: population
+        else {
+            query_string = `
+SELECT C.name, C.lon, C.lat, TRUNC((P.total / 1e6), 1) FROM City C
+INNER JOIN Population P ON (P.CityId = C.id)` 
++ bound
++ pop
++
+`ORDER BY P.total DESC
 LIMIT 100`
         }
 
-        console.log(query_string);
+        if (DEBUG) {
+            console.log("pop:", pop);
+            console.log("query:", query_string);
+        }
         const result = await client.query(query_string);
         const results = { 'cities': (result) ? result.rows : null};
 

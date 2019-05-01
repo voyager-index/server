@@ -9,23 +9,27 @@ $(document).ready(function() {
         setLight();
     }
 
-    document.getElementById("darkswitch").onclick = function() {
-        setDark();
+    try {
+        document.getElementById("darkswitch").onclick = function() {
+            setDark();
+        };
 
-    };
+        document.getElementById("lightswitch").onclick = function() {
+            setLight();
+        };
 
-    document.getElementById("lightswitch").onclick = function() {
-        setLight();
-    };
+        function setDark() {
+            localStorage.setItem("theme", "dark");
+            document.getElementById("dark").href = "/stylesheets/dark.css";
+        }
 
-    function setDark() {
-        localStorage.setItem("theme", "dark");
-        document.getElementById("dark").href = "/stylesheets/dark.css";
+        function setLight() {
+            localStorage.setItem("theme", "light");
+            document.getElementById("dark").href = "";
+        }
     }
-
-    function setLight() {
-        localStorage.setItem("theme", "light");
-        document.getElementById("dark").href = "";
+    catch(err) {
+        console.log("Theme error.");
     }
 });
 

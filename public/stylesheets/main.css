@@ -74,14 +74,48 @@ p {
     //transition: width 500ms;
 }
 
-#toggle {
+button {
     color: #fff;
     text-decoration: none;
     text-align: center;
     background-color: rgba(0,60,136,.5);
     border: none;
+    transition: 500ms;
+    border: 1px solid rgba(0,60,136,.5);
+}
+
+.big {
+    margin-top: 5%;
+    font-size: 1.2em;
+    padding: 2%;
+}
+
+.clear {
+    background: rgba(255, 8, 8, 0.5);
+    border: 1px solid brown;
+}
+
+button:hover {
+    background-color: #fff;
+    color: rgba(0,60,136,.8);
+}
+
+.clear:hover {
+    color: rgba(255, 8, 8, 0.8);
+}
+
+input {
+    max-width: 100%;
 }
 
 .navbar-light, .navbar-default {
     background-color: #f8f8f8;
+}
+
+#map {
+    height: 80vh;
+}
+
+#filter {
+    padding-top: 20%;
 }
