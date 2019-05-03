@@ -85,7 +85,7 @@ button {
 }
 
 .big {
-    margin-top: 5%;
+    margin-top: 0.5em;
     font-size: 1.2em;
     padding: 2%;
 }
@@ -106,7 +106,7 @@ button:hover {
 
 input {
     max-width: 100%;
-    margin: 5%;
+    margin: 0.5em;
 }
 
 .navbar-light, .navbar-default {

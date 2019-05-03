@@ -18,18 +18,19 @@ $(document).ready(function() {
             setLight();
         };
 
-        function setDark() {
-            localStorage.setItem("theme", "dark");
-            document.getElementById("dark").href = "/stylesheets/dark.css";
-        }
-
-        function setLight() {
-            localStorage.setItem("theme", "light");
-            document.getElementById("dark").href = "";
-        }
     }
     catch(err) {
         console.log("Theme error.");
+    }
+
+    function setDark() {
+        localStorage.setItem("theme", "dark");
+        document.getElementById("dark").href = "/stylesheets/dark.css";
+    }
+
+    function setLight() {
+        localStorage.setItem("theme", "light");
+        document.getElementById("dark").href = "";
     }
 });
 
