@@ -4,9 +4,11 @@ $("#toggle").click(() => {
     $("#content").toggleClass("col-lg-12 col-lg-10");
 });
 
-// default
+
+// default values
 $("#population").prop("checked", true);
 Voyager.setState('marker', 'population');
+
 
 const slider = document.getElementById("myRange");
 const output = document.getElementById("demo");
@@ -20,12 +22,12 @@ slider.oninput = function() {
 }
 
 $("#internet").click(() => {
-    setState("marker", "internet");
+    Voyager.setState("marker", "internet");
     changeMarkers();
 });
 
 $("#population").click(() => {
-    setState("marker", "population");
+    Voyager.setState("marker", "population");
     changeMarkers();
 });
 
@@ -60,6 +62,7 @@ function getInputValues() {
     return obj;
 }
 
+
 function setAllStates() {
     const obj = getInputValues();
     Voyager.setState("pop", [obj.pop_min, obj.pop_max]);
@@ -68,13 +71,6 @@ function setAllStates() {
     changeMarkers();
 }
 
-function setState(property, newValue) {
-    Voyager.setState(property, newValue);
-}
-
-function getState() {
-    return Voyager.getState();
-}
 
 function changeMarkers() {
     const state = Voyager.getState();
@@ -92,6 +88,7 @@ function changeMarkers() {
         .then(data => Voyager.buildFeatures(data))
         .catch(error => console.error(error));
 }
+
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
 function postData(url = ``, data = {}) {

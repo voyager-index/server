@@ -49,6 +49,29 @@ var map = new Map({
   })
 });
 
+map.on('click', function(evt) {
+    var pixel = evt.pixel;
+    displayFeatureInfo(pixel);
+});
+
+var displayFeatureInfo = function(pixel) {
+    var features = [];
+    map.forEachFeatureAtPixel(pixel, function(feature, layer) {
+        features.push(feature);
+        console.log("feature:", feature.get('name'));
+    });
+    var container = document.getElementById('information');
+    if (features.length > 0) {
+        var info = [];
+        for (var i = 0, ii = features.length; i < ii; ++i) {
+            info.push(features[i].get('name'));
+        }
+        container.innerHTML = info.join(', ') || '(unknown)';
+    } else {
+        container.innerHTML = '';
+    }
+};
+
 // onMoveEnd is called anytime the map moves at all (scroll or zoom)
 map.on('moveend', onMoveEnd);
 
