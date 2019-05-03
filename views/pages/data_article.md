@@ -142,8 +142,37 @@ cg.geom::geography, 64000);
 
 # Elevation
 
-Elevation was obtained from the public dataset GTOPO30, downloaded from [Earth Explorer](https://earthexplorer.usgs.gov/). You are required to make an account, download both java, and a bulk download application, and then place an order, though the information is public and free. This data was slected over newer, more accurate information, because of the size of the download. Uncompressed, this elevation raster data was 1.5 GB, which was less than 10% of the size of the newer GTOPO2010 data. This raster data was imported into postgis with the raster2pgsql function. Using the same city geometries table as before, I was able to get elevation data for each of those points. Perhaps someone can share with me a faster way, as this query took 2 hours to compute on my machine.
+Elevation was obtained from the public dataset GTOPO30, downloaded from [Earth Explorer](https://earthexplorer.usgs.gov/). You are required to make an account, download both java, and a bulk download application, and then place an order, though the information is public and free. This data was slected over newer, more accurate information, because of the size of the download. Uncompressed, this elevation raster data was 1.5 GB, which was less than 10% of the size of the newer GTOPO2010 data. This raster data was imported into postgis with the raster2pgsql function. Using the same city geometries table as before, I was able to get elevation data for each of those points. Perhaps someone can share with me a faster way, as this query took 8 hours to compute on my machine!
 
 ```sql
 SELECT c.id, ST\_Value(e.rast, c.geom) AS elevation INTO TABLE elevationdata FROM citygeom c LEFT JOIN elevationRaster e ON ST\_Contains(ST\_Envelope(e.rast), c.geom);
 ```
+
+# Climate
+
+Climate data is gathered from WorldClim.org. There is monthly data, gathered from 1960-1990. 
+
+>Citation: 
+>Hijmans, R.J., S.E. Cameron, J.L. Parra, P.G. Jones and A. Jarvis, 2005. Very high resolution interpolated climate surfaces for global land areas. International Journal of Climatology 25: 1965-1978. 
+
+This raster data was included in PostGIS with the raster2pgsql function.
+
+```sql
+SELECT x.id, x.jan, x.feb, x.mar, x.apr, x.may, x.june, x.july, x.aug, x.sept, x.oct, x.nov, x.dec INTO TABLE temp FROM (
+SELECT j.id, j.temp AS jan, f.temp AS feb, m.temp AS mar, a.temp AS apr, ma.temp AS may, ju.temp AS june, jul.temp AS july, au.temp AS aug, s.temp AS sept, o.temp AS oct, n.temp AS nov, d.temp AS dec
+FROM jantemp AS j 
+INNER JOIN febtemp as f ON j.id = f.id
+INNER JOIN martemp as m ON j.id = m.id
+INNER JOIN aprtemp as a ON j.id = a.id
+INNER JOIN maytemp as ma ON j.id = ma.id
+INNER JOIN junetemp as ju ON j.id = ju.id
+INNER JOIN julytemp as jul ON j.id = jul.id
+INNER JOIN augtemp as au ON j.id = au.id
+INNER JOIN septtemp as s ON j.id = s.id
+INNER JOIN octtemp as o ON j.id = o.id
+INNER JOIN novtemp as n ON j.id = n.id
+INNER JOIN dectemp as d ON j.id = d.id
+) as x ORDER BY x.id;
+```
+
+This was repeated for precipitation. From this dataset, the temperatures are in C, multiplied by 10 (So that there can be one decimal place of accuracy, while using integer data types, to save space) Precipitation appears to be in mm.
