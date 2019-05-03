@@ -68,7 +68,7 @@ var displayFeatureInfo = function(pixel) {
         }
         container.innerHTML = info.join(', ') || '(unknown)';
     } else {
-        container.innerHTML = '';
+        container.innerHTML = 'City name.';
     }
 };
 
