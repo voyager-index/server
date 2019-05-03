@@ -129,21 +129,19 @@ C.lat <= ${top_right_lat}
 `;
 
     const pop_max = () => {
-        if (isNaN(req.body.pop_max)) {
-            return "POWER(2,31)";
-        }
-        else {
-            return req.body.pop_max
-        }
+        return (isNaN(req.body.pop_max)) ? "POWER(2,31)" : req.body.pop_max;
     }
 
     const pop_min = () => {
-        if (isNaN(req.body.pop_max)) {
-            return 0;
-        }
-        else {
-            return req.body.pop_min
-        }
+        return (isNaN(req.body.pop_min)) ? 0 : req.body.pop_min;
+    }
+
+    const internet_max = () => {
+        return (isNaN(req.body.internet_max)) ? "POWER(2,31)" : req.body.internet_max;
+    }
+
+    const internet_min = () => {
+        return (isNaN(req.body.internet_min)) ? 0 : req.body.internet_min;
     }
 
     const pop = `
@@ -151,7 +149,21 @@ AND P.total <= ${pop_max()}
 AND P.total >= ${pop_min()}
 `;
 
+    const internet = `
+AND I.speed <= ${internet_max()}
+AND I.speed >= ${internet_min()}
+`;
 
+    const inner_joins = `
+INNER JOIN Country CO ON CO.id = C.country
+INNER JOIN Internet_Speed I ON I.Country = CO.id
+INNER JOIN Population P ON (P.CityId = C.id)
+`
+    const common =
+        inner_joins
+    +   bound
+    +   pop
+    +   internet;
 
     let cities = [];
     try {
@@ -161,22 +173,16 @@ AND P.total >= ${pop_min()}
 
         if (type === 'internet'){
             query_string = `
-SELECT DISTINCT ON (CO.name) C.name, CO.name, C.lon, C.lat, I.speed FROM City C
-INNER JOIN Country CO ON CO.id = C.country
-INNER JOIN Internet_Speed I ON I.Country = CO.id
-INNER JOIN Population P ON (P.CityId = C.id)` 
-+ bound
-+ pop
+SELECT DISTINCT ON (CO.name) C.name, CO.name, C.lon, C.lat, I.speed FROM City C`
++ common
 +
 `LIMIT 100`
         }
         // default: population
         else {
             query_string = `
-SELECT C.name, C.lon, C.lat, TRUNC((P.total / 1e6), 1) FROM City C
-INNER JOIN Population P ON (P.CityId = C.id)` 
-+ bound
-+ pop
+SELECT C.name, C.lon, C.lat, TRUNC((P.total / 1e6), 1) FROM City C`
++ common
 +
 `ORDER BY P.total DESC
 LIMIT 100`

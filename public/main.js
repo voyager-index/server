@@ -16,9 +16,12 @@ var markerVectorLayer;
 let theme = localStorage.getItem("theme");
 let urlString = '';
 
-let _markerType = '';
 let _points = [];
-let _pops = []
+
+let state = new Object();
+state.pop = [],
+state.internet = [],
+state.marker = '';
 
 if (theme == "dark") {
     urlString = 'http://{a-c}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
@@ -51,7 +54,7 @@ map.on('moveend', onMoveEnd);
 
 function onMoveEnd(evt) {
   var map = evt.map;
-  console.log("onMoveEnd() markerType:", getMarkerType());
+  console.log("onMoveEnd() marker:", getState().marker);
   // This gets the bounding box, but as a different type of coordinate system
   var extent = map.getView().calculateExtent(map.getSize());
   var points = [];
@@ -74,9 +77,9 @@ function onMoveEnd(evt) {
 // which sends a POST request containing a bounding box array to the server.
 function makeBBoxRequest(){
   console.log("bbox request.");
-  const type = getMarkerType();
+  const type = getState().marker;
   const points = getPoints();
-  const pops = getPops();
+  const pop = getState().pop;
   var http = new XMLHttpRequest();
   http.open("POST", '/bounding', true);
   http.setRequestHeader("Content-Type", "application/json");
@@ -89,7 +92,14 @@ function makeBBoxRequest(){
       buildFeatures(cities);
     }
   }
-  var param = {'bounding_box': points, 'type': type, 'pop_min': pops[0], 'pop_max': pops[1]};
+  var param = {
+      'bounding_box': points,
+      'type': type,
+      'pop_min': pop[0],
+      'pop_max': pop[1],
+      'intern_min': internet[0],
+      'internet_max': internet[1]
+  };
 
   http.send(JSON.stringify(param));
 }
@@ -176,14 +186,6 @@ function clearMarkers(){
   cityMarkers = [];
 }
 
-function getMarkerType() {
-    return _markerType
-};
-
-function setMarkerType(newType) {
-    _markerType = newType
-}
-
 function getPoints() {
     return _points;
 }
@@ -192,19 +194,18 @@ function setPoints(newPoints) {
     _points = newPoints;
 }
 
-function getPops() {
-    return _pops;
-};
-
-function setPops(newPopMin, newPopMax) {
-    _pops = [newPopMin, newPopMax];
+function getState() {
+    return state;
 }
 
-export {clearMarkers};
-export {setMarkerType};
-export {getMarkerType};
-export {setPops};
-export {getPops};
+function setState(property, newValue) {
+    if (state.hasOwnProperty(property)) {
+        state[property] = newValue;
+    }
+}
+
+export {getState};
+export {setState};
 export {buildFeatures};
 export {getPoints};
 export {makeBBoxRequest};

@@ -3,8 +3,14 @@
     <div class="row">
         <div id="filter-col" class="col-lg-2">
             <div id="filter">
-                <input id="pop_min" type="text" placeholder="Min. Population"></input>
-                <input id="pop_max" type="text" placeholder="Max. Population"></input>
+                <p>Population (Millions):</p>
+                <input class="filter-input" id="pop_min" type="number" placeholder="Min. Population" step="0.1" min="0"></input>
+                <input class="filter-input" id="pop_max" type="number" placeholder="Max. Population" step="0.1" min="0"></input>
+
+                <p>Internet Speed (Mbps):</p>
+                <input class="filter-input" id="internet_min" type="number" placeholder="Min. Speed" step="0.1" min="0"></input>
+                <input class="filter-input" id="internet_max" type="number" placeholder="Max. Speed" step="0.1" min="0"></input>
+
                 <button class="submit big">Submit</button>
                 <button class="clear big">Clear</button>
 
