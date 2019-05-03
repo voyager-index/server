@@ -176,3 +176,42 @@ INNER JOIN dectemp as d ON j.id = d.id
 ```
 
 This was repeated for precipitation. From this dataset, the temperatures are in C, multiplied by 10 (So that there can be one decimal place of accuracy, while using integer data types, to save space) Precipitation appears to be in mm.
+
+
+I found UV information at https://neo.sci.gsfc.nasa.gov/view.php?datasetId=AURA_UVI_CLIM_M 
+```
+raster2pgsql -s 4326 -I -C -M *.tiff public.uvrasters > uv.sql
+psql -U postgres -f uv.sql
+```
+```sql
+SELECT c.id, ST_Value(u.rast, ST_SetSRID(ST_Point(c.lon, c.lat), 4326)) as uvidx into temp table januv from city c, uvrasters u where u.filename = 'JANUARY.TIFF';
+SELECT c.id, ST_Value(u.rast, ST_SetSRID(ST_Point(c.lon, c.lat), 4326)) as uvidx into temp table febuv from city c, uvrasters u where u.filename = 'FEB.TIFF';
+SELECT c.id, ST_Value(u.rast, ST_SetSRID(ST_Point(c.lon, c.lat), 4326)) as uvidx into temp table maruv from city c, uvrasters u where u.filename = 'MARCH.TIFF';
+SELECT c.id, ST_Value(u.rast, ST_SetSRID(ST_Point(c.lon, c.lat), 4326)) as uvidx into temp table apruv from city c, uvrasters u where u.filename = 'APRIL.TIFF';
+SELECT c.id, ST_Value(u.rast, ST_SetSRID(ST_Point(c.lon, c.lat), 4326)) as uvidx into temp table mayuv from city c, uvrasters u where u.filename = 'MAY.TIFF';
+SELECT c.id, ST_Value(u.rast, ST_SetSRID(ST_Point(c.lon, c.lat), 4326)) as uvidx into temp table junuv from city c, uvrasters u where u.filename = 'JUNE.TIFF';
+SELECT c.id, ST_Value(u.rast, ST_SetSRID(ST_Point(c.lon, c.lat), 4326)) as uvidx into temp table juluv from city c, uvrasters u where u.filename = 'JULY.TIFF';
+SELECT c.id, ST_Value(u.rast, ST_SetSRID(ST_Point(c.lon, c.lat), 4326)) as uvidx into temp table auguv from city c, uvrasters u where u.filename = 'AUGUST.TIFF';
+SELECT c.id, ST_Value(u.rast, ST_SetSRID(ST_Point(c.lon, c.lat), 4326)) as uvidx into temp table sepuv from city c, uvrasters u where u.filename = 'SEPTEMBER.TIFF';
+SELECT c.id, ST_Value(u.rast, ST_SetSRID(ST_Point(c.lon, c.lat), 4326)) as uvidx into temp table octuv from city c, uvrasters u where u.filename = 'OCTOBER.TIFF';
+SELECT c.id, ST_Value(u.rast, ST_SetSRID(ST_Point(c.lon, c.lat), 4326)) as uvidx into temp table novuv from city c, uvrasters u where u.filename = 'NOVEMBER.TIFF';
+SELECT c.id, ST_Value(u.rast, ST_SetSRID(ST_Point(c.lon, c.lat), 4326)) as uvidx into temp table decuv from city c, uvrasters u where u.filename = 'DECEMBER.TIFF';
+
+SELECT x.id, x.jan, x.feb, x.mar, x.apr, x.may, x.june, x.july, x.aug, x.sept, x.oct, x.nov, x.dec INTO TABLE uvindex FROM (
+SELECT j.id, j.uvidx AS jan, f.uvidx AS feb, m.uvidx AS mar, a.uvidx AS apr, ma.uvidx AS may, ju.uvidx AS june, jul.uvidx AS july, au.uvidx AS aug, s.uvidx AS sept, o.uvidx AS oct, n.uvidx AS nov, d.uvidx AS dec
+FROM januv AS j 
+INNER JOIN febuv as f ON j.id = f.id
+INNER JOIN maruv as m ON j.id = m.id
+INNER JOIN apruv as a ON j.id = a.id
+INNER JOIN maruv as ma ON j.id = ma.id
+INNER JOIN junuv as ju ON j.id = ju.id
+INNER JOIN juluv as jul ON j.id = jul.id
+INNER JOIN auguv as au ON j.id = au.id
+INNER JOIN sepuv as s ON j.id = s.id
+INNER JOIN octuv as o ON j.id = o.id
+INNER JOIN novuv as n ON j.id = n.id
+INNER JOIN decuv as d ON j.id = d.id
+) as x ORDER BY x.id;
+
+\copy (SELECT * FROM uvindex) to 'C:\Users\...\database\uv.csv' with csv
+```
