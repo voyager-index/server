@@ -1,5 +1,5 @@
 <div class="container-fluid">
-    <button id="toggle">Toggle Filters</button>
+    <button id="toggle" class="btn btn-success">Toggle Filters</button>
     <pre id="information">City name.</pre>
     <div class="row">
         <div id="filter-col" class="col-lg-2">
@@ -12,21 +12,20 @@
                 <input class="filter-input" id="internet_min" type="number" placeholder="Min. Speed" step="0.1" min="0"></input>
                 <input class="filter-input" id="internet_max" type="number" placeholder="Max. Speed" step="0.1" min="0"></input>
 
-                <button class="submit big">Submit</button>
-                <button class="clear big">Clear</button>
+                <button class="btn btn-primary">Submit</button>
+                <button class="btn btn-danger">Clear</button>
 
                 <hr />
-
-                <p>Change marker type:</p>
-                <div>
-                    <input type="radio" id="population" name="markers" value="population">
-                    <label for="population">population</label>
-                </div>
-
-                <div>
-                    <input type="radio" id="internet" name="markers" value="internet">
-                    <label for="internet">internet speed</label>
-                </div>
+				
+				<p>Change Marker Type:<p>
+				<label class="custom-radio-btn-container">Population
+				  <input type="radio" checked="checked" id="population" name="radio">
+				  <span class="checkmark"></span>
+				</label>
+				<label class="custom-radio-btn-container">Internet Speed
+				  <input type="radio" id="internet" name="radio">
+				  <span class="checkmark"></span>
+				</label>
 
                 <p>I'm a cool slider! <span id="demo"></span></p>
                 <div>
