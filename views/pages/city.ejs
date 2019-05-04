@@ -1,15 +1,11 @@
 <p>Search cities:</p>
 
-<form action="/city" method="post">
-    <input type="text" name="city" value="<%=city_name%>"/>
+<form>
+    <input type='text' name='city' id='city-name' value=''/>
     <br />
-    <input type="submit" value="Submit" />
+    <input id='submit' type='submit' value='Submit' />
 </form>
 
-<img src="<%=city_image%>"/>
+<img id='city-image' src=''/>
 
-<script>
-    document.getElementById("submit").addEventListener("click", function(event){
-        event.preventDefault();
-    });
-</script>
+<script src='city.js'></script>

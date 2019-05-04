@@ -65,6 +65,7 @@ var displayFeatureInfo = function(pixel) {
         var info = [];
         for (var i = 0, ii = features.length; i < ii; ++i) {
             info.push(features[i].get('name'));
+            cityImage(features[i].get('name'));
         }
         container.innerHTML = info.join(', ') || '(unknown)';
     } else {

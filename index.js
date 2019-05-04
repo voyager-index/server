@@ -54,11 +54,7 @@ app.get('/db', async (req, res) => {
 
 // city page
 app.get('/city', async(req, res) => {
-    const city = "portland";
-    const city_req = await getCity(city);
-    const city_name = city_req.name;
-    const city_image = city_req.image;
-    res.render('pages/city',{city_name:city_name, city_image:city_image});
+    res.render('pages/city');
 });
 
 
@@ -252,29 +248,6 @@ async function getThing(url, object) {
         .then(data => {
             return eval(object);
         })
-}
-
-
-// Returns a city's name and image.
-async function getCity(city) {
-    const city_search = "https://api.teleport.org/api/cities/?search=" + city;
-    const city_url = 'data._embedded["city:search-results"][0]._links["city:item"].href';
-    const city_guess = 'data._embedded["city:search-results"][0].matching_full_name';
-    const urban_url = 'data._links["city:urban_area"].href';
-    const image_url = 'data._links["ua:images"].href';
-    const mobile_url = 'data.photos[0].image.web';
-
-    const city_name = await getThing(city_search, city_guess);
-    const urban_search = await getThing(city_search, city_url);
-    const image_search = await getThing(urban_search, urban_url);
-    const mobile_search = await getThing(image_search, image_url);
-    const city_image = await getThing(mobile_search, mobile_url);
-
-    const ret = new Object();
-    ret.name = city_name;
-    ret.image = city_image;
-
-    return ret;
 }
 
 

@@ -1,6 +1,20 @@
 <div class="container-fluid">
     <button id="toggle">Toggle Filters</button>
-    <pre id="information">City name.</pre>
+    <div id="city-popup" class="hidden">
+        <div class='exit'>X</div>
+        <h2 id="information"></h2>
+        <div id='flex-container'>
+            <div id='image'>
+                <!-- https://old.reddit.com/r/loadingicon/comments/6h421f/winders_oc/ -->
+                <img id='city-image' src='loading-davebees.gif'/>
+            </div>
+            <div id='info'>
+                <p>This is a very cool city!</p>
+                <p>It receives 1.21 gigawatts of solar radiation every year!</p>
+                <p>Some believe this city is pathway to many abilities some consider to be unnatural.</p>
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div id="filter-col" class="col-lg-2">
             <div id="filter">
@@ -43,3 +57,4 @@
 </div>
 <script src="main.bundle.js"></script>
 <script src="filter.js"></script>
+<script src="city.js"></script>
