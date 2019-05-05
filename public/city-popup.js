@@ -8,8 +8,10 @@ $(window).keydown((e) => {
 });
 
 
-$('.exit').click(() => {
-    close_popup();
+$(document).ready(() => {
+    $('.exit').click(() => {
+        close_popup();
+    });
 });
 
 
