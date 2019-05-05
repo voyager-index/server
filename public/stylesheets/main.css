@@ -90,18 +90,9 @@ button {
     padding: 2%;
 }
 
-.clear {
-    background: rgba(255, 8, 8, 0.5);
-    border: 1px solid brown;
-}
-
 button:hover {
     background-color: #fff;
     color: rgba(0,60,136,.8);
-}
-
-.clear:hover {
-    color: rgba(255, 8, 8, 0.8);
 }
 
 input {
@@ -239,10 +230,4 @@ h2 {
 	height: 6px;
 	border-radius: 50%;
 	background: white;
-}
-
-/* Add vertical scroll box to div */
-.scroll-box {
-	height: 80vh; /* 80% screen height */
-	overflow-y: scroll;
 }
