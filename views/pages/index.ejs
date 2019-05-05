@@ -1,5 +1,5 @@
 <div class="container-fluid">
-    <button id="toggle" class="btn btn-success">Toggle Filters</button>
+    <button id="toggle" class="btn btn-success btn-sm">Toggle Filters</button>
     <div id="city-popup" class="hidden">
         <div class='exit'>X</div>
         <h2 id="information"></h2>
@@ -16,7 +16,7 @@
         </div>
     </div>
     <div class="row">
-        <div id="filter-col" class="col-lg-2">
+        <div id="filter-col" class="col-lg-2 scroll-box">
             <div id="filter">
                 <p>Population (Millions):</p>
                 <input class="filter-input" id="pop_min" type="number" placeholder="Min. Population" step="0.1" min="0"></input>
@@ -32,11 +32,11 @@
                 <hr />
 				
 				<p>Change Marker Type:<p>
-				<label class="custom-radio-btn-container">Population
+				<label class="custom-radio-btn-container">&#x1F3D9 Population
 				  <input type="radio" checked="checked" id="population" name="radio">
 				  <span class="checkmark"></span>
 				</label>
-				<label class="custom-radio-btn-container">Internet Speed
+				<label class="custom-radio-btn-container">&#x1F310 Internet Speed
 				  <input type="radio" id="internet" name="radio">
 				  <span class="checkmark"></span>
 				</label>
