@@ -69,4 +69,24 @@ async function cityInfo(features) {
         $('#popup-' + properties[i]).text(val);
     }
 
+    const tempProperties = ['tempJan', 'tempFeb', 'tempMar', 'tempApr', 'tempMay' , 'tempJun' , 'tempJul',
+        'tempAug' , 'tempSep' ,'tempOct' , 'tempNov' , 'tempDec'];
+    for (let i = 0; i < tempProperties.length; i++) {
+        const val = Number(features[tempProperties[i].toLowerCase()]) / 10;
+        $('#popup-' + tempProperties[i]).text(val);
+    }
+
+    const precipProperties = ['precipJan',  'precipFeb', 'precipMar' ,'precipApr' , 'precipMay' , 'precipJun', 
+    'precipJul' , 'precipAug' ,'precipSep' , 'precipOct' , 'precipNov' , 'precipDec'];
+    for (let i = 0; i < precipProperties.length; i++) {
+        const val = features[precipProperties[i].toLowerCase()];
+        $('#popup-' + precipProperties[i]).text(val);
+    }
+
+    const uvProperties = ['uvJan',  'uvFeb',  'uvMar' , 'uvApr' , 'uvMay' , 'uvJun' ,'uvJul' , 'uvAug' , 'uvSep' , 'uvOct' , 'uvNov' , 'uvDec'];
+    for (let i = 0; i < uvProperties.length; i++) {
+        const val = Math.round(Number(features[uvProperties[i].toLowerCase()]) / 16);
+        $('#popup-' + uvProperties[i]).text(val);
+    }
+
 }
