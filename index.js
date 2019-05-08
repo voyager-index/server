@@ -65,24 +65,38 @@ app.post('/city', async (req, res) => {
     const name = encodeURI(req.body.name);
     const lon = encodeURI(req.body.lon);
     const lat = encodeURI(req.body.lat);
+    console.log(name, lon, lat);
+    // Does this: ${variable_name} follow the usual convention for not allowing SQL injections?
+    // Also, Intl_aiports has not been added to the DB (database/data/data.sql) yet, if anyone is looking for a quick fix to do.
+            // INNER JOIN Intl_Airports ia ON ia.CityId = c.id
 
     const query = `
-SELECT C.name AS city, CO.name AS COUNTRY, TRUNC(C.lon, 2) AS lon, TRUNC(C.lat,2) AS lat, P.total AS population, I.speed AS mbps FROM City C
-INNER JOIN Country CO ON CO.id = C.country
-INNER JOIN Internet_Speed I ON I.Country = CO.id
-INNER JOIN Population P ON (P.CityId = C.id)
-
+SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat,
+p.total AS population, i.speed AS mbps,
+cl.NearCoast AS beach, a.Exists AS airport, 
+e.elevation AS elevation, ap.Index as pollution
+FROM City c 
+INNER JOIN Country co ON co.id = c.country
+INNER JOIN Internet_Speed i ON i.Country = co.id
+INNER JOIN Population p ON p.CityId = c.id
+INNER JOIN Coastlines cl ON  cl.CityId = c.id
+INNER JOIN Airports a ON a.CityId = c.id
+INNER JOIN Elevation e ON e.CityId = c.id
+INNER JOIN Air_pollution ap ON ap.CityId = c.id
 WHERE C.name = '${name}'
 AND TRUNC(C.lon, 2) = TRUNC(${lon}, 2)
 AND TRUNC(C.lat, 2) = TRUNC(${lat}, 2)
 ;
 `
-    console.log(query);
+
     try {
         const client = await pool.connect()
         const result = await client.query(query);
-        const results = { 'city_data': (result) ? result.rows : null};
-        console.log(results);
+        var results = null;
+        if (result.rows[0]){
+            results = result.rows[0];
+        }
+        console.log("QUERY RESULTS:", results);
         client.release();
         res.send(results);
     }

@@ -27,9 +27,6 @@ function close_popup() {
 
 
 async function cityImage(city, lat, lon) {
-    $('#city-popup').removeClass('hidden');
-
-    console.log("cityImage:", city);
     try {
         const city_req = await getCity(city);
         const city_image = city_req.image;
@@ -57,14 +54,19 @@ async function cityImage(city, lat, lon) {
     });
 }
 
-
+// Calls cityImage() now
 async function cityInfo(features) {
-    console.log("city info checking in:", features);
+    const name = features.city;
+    const lat = features.lat;
+    const lon = features.lon;
+    cityImage(name, lat, lon);
 
-    const properties = ['name', 'country', 'population', 'internet', 'lon', 'lat'];
+
+    // These properties must be present in both the the DB response, and the city-popup div in index.ejs 
+    const properties = ['city', 'country', 'population', 'mbps', 'lon', 'lat', 'elevation', 'pollution', 'airport', 'beach'];
     for (let i = 0; i < properties.length; i++) {
-        //console.log(features[0].get(properties[i]));
-        const val = features[0].get(properties[i]);
+        const val = features[properties[i]];
         $('#popup-' + properties[i]).text(val);
     }
+
 }

@@ -61,25 +61,33 @@ map.on('click', function(evt) {
 });
 
 var displayFeatureInfo = function(pixel) {
-    var features = [];
-    map.forEachFeatureAtPixel(pixel, function(feature, layer) {
-        features.push(feature);
-        console.log("feature:", feature);
-        //console.log("feature:", feature.get('name'));
-    });
-    var container = document.getElementById('information');
-    if (features.length > 0) {
-        var info = [];
-        for (var i = 0, ii = features.length; i < ii; ++i) {
-            const name = features[i].get('name');
-            const lat = features[i].get('lat');
-            const lon = features[i].get('lon');
-            cityImage(name, lat, lon);
-            cityInfo(features);
-        }
-    } else {
-        container.innerHTML = 'City name.';
-    }
+  var features = [];
+  map.forEachFeatureAtPixel(pixel, function(feature, layer) {
+      features.push(feature); // We may want to ensure this only works on one layer, and only gets one set of features.
+  });
+  if (features.length > 0) {
+    $('#city-popup').removeClass('hidden'); // Moved here for separation of concerns
+    const name = features[0].get('name'); // Removed the loop, there should only be one city displayed in the overlay.
+    const lat = features[0].get('lat');
+    const lon = features[0].get('lon');
+
+    // Make request for city info
+    var http = new XMLHttpRequest();
+    http.open("POST", '/city', true);
+    http.setRequestHeader("Content-Type", "application/json");
+    http.onreadystatechange = function() {
+      if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {     
+        const data = JSON.parse(this.response);
+        cityInfo(data); // found in public/city-popup.js
+      }
+    } // Could probably use an error message
+    var param = {
+      'name': name,
+      'lat': lat,
+      'lon': lon
+    };
+    http.send(JSON.stringify(param));
+  }
 };
 
 // onMoveEnd is called anytime the map moves at all (scroll or zoom)
@@ -87,7 +95,6 @@ map.on('moveend', onMoveEnd);
 
 function onMoveEnd(evt) {
   var map = evt.map;
-  console.log("onMoveEnd() marker:", getState().marker);
   // This gets the bounding box, but as a different type of coordinate system
   var extent = map.getView().calculateExtent(map.getSize());
   var points = [];
@@ -109,7 +116,6 @@ function onMoveEnd(evt) {
 // Every movement on the map, scroll or zoom, triggers the makeBBoxRequest() function,
 // which sends a POST request containing a bounding box array to the server.
 function makeBBoxRequest(){
-  console.log("bbox request.");
   const type = getState().marker;
   const points = getPoints();
   const pop = getState().pop;
@@ -192,8 +198,8 @@ function buildFeatures(cities) {
       lon: lon,
       lat: lat,
       country: country,
-      population: population,
-      internet: internet
+      //population: population, //I am removing these, as we don't want to tie up bandwidth by including everything in these features. We just need the first 4.
+      //internet: internet      //That will be important when we have more data
     });
 
     // Adds a style to the marker
@@ -220,7 +226,6 @@ function buildFeatures(cities) {
       })
     });
     cityMarkers[i].setStyle(iconStyle);
-
   }
 
   //New Source for the vector (set of points) layer

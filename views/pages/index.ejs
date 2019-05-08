@@ -2,7 +2,7 @@
     <button id="toggle" class="btn btn-success btn-sm">Toggle Filters</button>
     <div id="city-popup" class="hidden">
         <div class='exit'>X</div>
-        <h2 id="city-name"><span id="popup-name"></span>, <span id="popup-country"></span></h2>
+        <h2 id="city-name"><span id="popup-city"></span>, <span id="popup-country"></span></h2>
         <h5 id="lat-lon">(<span id="popup-lat"></span>, <span id="popup-lon"></span>)</h5>
         <div id='flex-container'>
             <div id='image'>
@@ -11,7 +11,11 @@
             </div>
             <div id='info'>
                 <p>Population: <span id="popup-population"></p>
-                <p>Internet (Mbps): <span id="popup-internet"></p>
+                <p>Internet (Mbps): <span id="popup-mbps"></p>
+                <p>Elevation <span id="popup-elevation"> M</p> 
+                <p>Air Pollution Index: <span id="popup-pollution"></p> 
+                <p>Is there an airport? <span id="popup-airport"></p> 
+                <p>Is there a beach? <span id="popup-beach"></p> 
             </div>
         </div>
     </div>
