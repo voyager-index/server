@@ -171,6 +171,11 @@ h2 {
     margin-top: 0;
 }
 
+#map-fallback {
+    height: 50vh;
+    width: 90%;
+}
+
 /* custom-radio-btn-container */
 .custom-radio-btn-container {
   display: block;

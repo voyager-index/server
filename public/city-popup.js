@@ -17,13 +17,16 @@ $(document).ready(() => {
 
 function close_popup() {
     $('#city-popup').addClass('hidden');
+
+    $('#image').empty();
     // https://old.reddit.com/r/loadingicon/comments/6h421f/winders_oc/
-    $('#city-image').attr('src', 'loading-davebees.gif');
+    $('#image').append("<img id='city-image' src='loading-davebees.gif'/>");
+
     $(window).off('click');
 }
 
 
-async function cityImage(city) {
+async function cityImage(city, lat, lon) {
     $('#city-popup').removeClass('hidden');
 
     console.log("cityImage:", city);
@@ -39,7 +42,10 @@ async function cityImage(city) {
     catch(error) {
         $(window).off('click');
         console.error(error);
-        $('#city-image').attr('src', '404.gif');
+        //$('#city-image').attr('src', '404.gif');
+        $('#image').empty();
+        $('#image').append("<div id='map-fallback'></div>");
+        const map = Voyager.makeMap(lon, lat, 11, 'map-fallback');
     }
 
     $(window).on('click', (e) => {

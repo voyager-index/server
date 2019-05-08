@@ -31,23 +31,29 @@ else {
     urlString = 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 }
 
-var map = new Map({
-  target: 'map',
-  layers: [
-    new TileLayer({
-      source: new XYZ({
-        url: urlString
+function makeMap(lon, lat, zoom, target) {
+    var map = new Map({
+      target: target,
+      layers: [
+        new TileLayer({
+          source: new XYZ({
+            url: urlString
+          })
+        })
+      ],
+      view: new View({
+        center: proj.fromLonLat([lon,lat]),
+        zoom: zoom,
+        minZoom: 1,
+        projection: "EPSG:3857"
+        //units: 'degrees'
       })
-    })
-  ],
-  view: new View({
-    center: proj.fromLonLat([0,0]),
-    zoom: 3,
-    minZoom: 1,
-    projection: "EPSG:3857"
-    //units: 'degrees'
-  })
-});
+    });
+
+    return map;
+}
+
+var map = makeMap(0, 0, 3, 'map');
 
 map.on('click', function(evt) {
     var pixel = evt.pixel;
@@ -66,7 +72,9 @@ var displayFeatureInfo = function(pixel) {
         var info = [];
         for (var i = 0, ii = features.length; i < ii; ++i) {
             const name = features[i].get('name');
-            cityImage(name);
+            const lat = features[i].get('lat');
+            const lon = features[i].get('lon');
+            cityImage(name, lat, lon);
             cityInfo(features);
         }
     } else {
@@ -259,3 +267,4 @@ export {setState};
 export {buildFeatures};
 export {getPoints};
 export {makeBBoxRequest};
+export {makeMap};
