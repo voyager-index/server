@@ -62,9 +62,9 @@ app.get('/city', async(req, res) => {
 app.post('/city', async (req, res) => {
 
     // get data from POST body.
-    const name = encodeURI(req.body.name);
-    const lon = encodeURI(req.body.lon);
-    const lat = encodeURI(req.body.lat);
+    const name = req.body.name;
+    const lon = req.body.lon;
+    const lat = req.body.lat;
 
     // Does this: ${variable_name} follow the usual convention for not allowing SQL injections?
     // Also, Intl_aiports has not been added to the DB (database/data/data.sql) yet, if anyone is looking for a quick fix to do.
@@ -105,7 +105,6 @@ AND TRUNC(C.lat, 2) = TRUNC(${lat}, 2)
             results = result.rows[0];
         }
         else {
-            console.log("index.js: Something went wrong!", name, req.body.name, lon, lat);
             //It should probably just show the data that it can get, or say that it can't find data.
         }
         client.release();
