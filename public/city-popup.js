@@ -26,6 +26,7 @@ function close_popup() {
 async function cityImage(city) {
     $('#city-popup').removeClass('hidden');
 
+    console.log("cityImage:", city);
     try {
         const city_req = await getCity(city);
         const city_name = city_req.name;
@@ -54,24 +55,13 @@ async function cityImage(city) {
 }
 
 
-async function cityInfo(name, lon, lat) {
-    console.log("city info checking in.");
-    const data_send = {
-        'name': name,
-        'lon': lon,
-        'lat': lat
-    };
+async function cityInfo(features) {
+    console.log("city info checking in:", features);
 
-    postData(`/city`, data_send)
-        .then(data => {
-            const prefix = JSON.stringify(data.city_data[0]);
-            console.log(prefix);
-            const properties = ['city', 'country', 'population', 'internet', 'lon', 'lat'];
-            for (let i = 0; i < properties.length; i++) {
-                console.log(data.city_data[0][properties[i]]);
-                const val = data.city_data[0][properties[i]];
-                $('#popup-' + properties[i]).text(val);
-            }
-        })
-        .catch(error => console.error(error));
+    const properties = ['name', 'country', 'population', 'internet', 'lon', 'lat'];
+    for (let i = 0; i < properties.length; i++) {
+        //console.log(features[0].get(properties[i]));
+        const val = features[0].get(properties[i]);
+        $('#popup-' + properties[i]).text(val);
+    }
 }

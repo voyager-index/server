@@ -175,25 +175,12 @@ INNER JOIN Population P ON (P.CityId = C.id)
     try {
         const client = await pool.connect()
 
-        let query_string;
-
-        if (type === 'internet'){
-            query_string = `
-SELECT DISTINCT ON (CO.name) C.name, C.lon, C.lat, TRUNC((P.total / 1e6), 1), CO.name AS country, I.speed FROM City C`
-+ common
-+
-`LIMIT 100`
-        }
-
-        // default: population
-        else {
-            query_string = `
-SELECT C.name, C.lon, C.lat, TRUNC((P.total / 1e6), 1), CO.name AS country, I.speed FROM City C`
+        let query_string = `
+SELECT C.name, C.lon, C.lat, P.total, CO.name AS country, I.speed FROM City C`
 + common
 +
 `ORDER BY P.total DESC
 LIMIT 100`
-        }
 
         if (DEBUG) {
             console.log("pop:", pop);

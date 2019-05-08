@@ -121,7 +121,10 @@ input {
 
 #city-name {
     color: snow;
-    padding-bottom: 2%;
+}
+
+#lat-lon {
+    color: #8e8c8c;
 }
 
 #info > p {

@@ -66,10 +66,8 @@ var displayFeatureInfo = function(pixel) {
         var info = [];
         for (var i = 0, ii = features.length; i < ii; ++i) {
             const name = features[i].get('name');
-            const lon = features[i].get('lon');
-            const lat = features[i].get('lat');
             cityImage(name);
-            cityInfo(name, lon, lat);
+            cityInfo(features);
         }
     } else {
         container.innerHTML = 'City name.';
@@ -166,7 +164,7 @@ function buildFeatures(cities) {
 
     else {
         var src;
-        rank = population.toString();
+        rank = (population / 1e6).toFixed(2).toString();
         if(population > 3.5){
           src = "greenMarker.png";
         }
