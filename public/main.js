@@ -58,7 +58,7 @@ var displayFeatureInfo = function(pixel) {
     var features = [];
     map.forEachFeatureAtPixel(pixel, function(feature, layer) {
         features.push(feature);
-        //console.log("feature:", feature);
+        console.log("feature:", feature);
         //console.log("feature:", feature.get('name'));
     });
     var container = document.getElementById('information');
@@ -142,20 +142,40 @@ function buildFeatures(cities) {
     var name = cities[i][0];
     var lon = Number(cities[i][1]);
     var lat = Number(cities[i][2]);
-    var rank = cities[i][3].toString();
+    var population = cities[i][3];
+    var country = cities[i][4];
+    var internet = cities[i][5];
 
     //console.log(i, name);
     //I have added 3 different marker png images to the folder for use
     // Credit to https://mapicons.mapsmarker.com. Creative commons license. (I edited the marker to erase icon)
-    var src;
-    if(cities[i][3] > 3.5){
-      src = "greenMarker.png";
+    var rank;
+    if (getState().marker === 'internet') {
+        rank = internet.toString();
+        var src;
+        if(internet > 3.5){
+          src = "greenMarker.png";
+        }
+        else if (internet > 2.5){
+          src = "yellowMarker.png";
+        }
+        else{
+           src = "redMarker.png";
+        }
     }
-    else if (cities[i][3] > 2.5){
-      src = "yellowMarker.png";
-    }
-    else{
-       src = "redMarker.png";
+
+    else {
+        var src;
+        rank = population.toString();
+        if(population > 3.5){
+          src = "greenMarker.png";
+        }
+        else if (population > 2.5){
+          src = "yellowMarker.png";
+        }
+        else{
+           src = "redMarker.png";
+        }
     }
 
     cityMarkers[i] = new Feature({
@@ -164,7 +184,10 @@ function buildFeatures(cities) {
       ),
       name: name,
       lon: lon,
-      lat: lat
+      lat: lat,
+      country: country,
+      population: population,
+      internet: internet
     });
 
     // Adds a style to the marker
@@ -228,7 +251,6 @@ function getState() {
 }
 
 function setState(property, newValue) {
-    console.log("new value:", newValue);
     if (state.hasOwnProperty(property)) {
         state[property] = newValue;
     }

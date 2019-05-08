@@ -179,7 +179,7 @@ INNER JOIN Population P ON (P.CityId = C.id)
 
         if (type === 'internet'){
             query_string = `
-SELECT DISTINCT ON (CO.name) C.name, CO.name, C.lon, C.lat, I.speed FROM City C`
+SELECT DISTINCT ON (CO.name) C.name, C.lon, C.lat, TRUNC((P.total / 1e6), 1), CO.name AS country, I.speed FROM City C`
 + common
 +
 `LIMIT 100`
@@ -188,7 +188,7 @@ SELECT DISTINCT ON (CO.name) C.name, CO.name, C.lon, C.lat, I.speed FROM City C`
         // default: population
         else {
             query_string = `
-SELECT C.name, C.lon, C.lat, TRUNC((P.total / 1e6), 1) FROM City C`
+SELECT C.name, C.lon, C.lat, TRUNC((P.total / 1e6), 1), CO.name AS country, I.speed FROM City C`
 + common
 +
 `ORDER BY P.total DESC

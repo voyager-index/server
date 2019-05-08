@@ -31,7 +31,7 @@ async function cityImage(city) {
         const city_name = city_req.name;
         const city_image = city_req.image;
 
-        $('#city-name').val(city_name);
+        //$('#city-name').text(city_name);
         $('#city-image').attr('src', city_image);
     }
 
@@ -70,7 +70,7 @@ async function cityInfo(name, lon, lat) {
             for (let i = 0; i < properties.length; i++) {
                 console.log(data.city_data[0][properties[i]]);
                 const val = data.city_data[0][properties[i]];
-                $('#' + properties[i]).text(val);
+                $('#popup-' + properties[i]).text(val);
             }
         })
         .catch(error => console.error(error));
