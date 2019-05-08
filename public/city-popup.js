@@ -32,17 +32,14 @@ async function cityImage(city, lat, lon) {
     console.log("cityImage:", city);
     try {
         const city_req = await getCity(city);
-        const city_name = city_req.name;
         const city_image = city_req.image;
 
-        //$('#city-name').text(city_name);
         $('#city-image').attr('src', city_image);
     }
 
     catch(error) {
         $(window).off('click');
         console.error(error);
-        //$('#city-image').attr('src', '404.gif');
         $('#image').empty();
         $('#image').append("<div id='map-fallback'></div>");
         const map = Voyager.makeMap(lon, lat, 11, 'map-fallback');
