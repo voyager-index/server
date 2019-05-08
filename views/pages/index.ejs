@@ -9,9 +9,12 @@
                 <img id='city-image' src='loading-davebees.gif'/>
             </div>
             <div id='info'>
-                <p>This is a very cool city!</p>
-                <p>It receives 1.21 gigawatts of solar radiation every year!</p>
-                <p>Some believe this city is pathway to many abilities some consider to be unnatural.</p>
+                <p>City: <span id="city"></p>
+                <p>Country: <span id="country"></p>
+                <p>Population: <span id="pop"></p>
+                <p>Internet (Mbps): <span id="internet"></p>
+                <p>Longitude: <span id="lon"></p>
+                <p>Latitude: <span id="lat"></p>
             </div>
         </div>
     </div>
@@ -30,16 +33,16 @@
                 <button class="btn btn-danger clear">Clear</button>
 
                 <hr />
-				
-				<p>Change Marker Type:<p>
-				<label class="custom-radio-btn-container">&#x1F3D9 Population
-				  <input type="radio" checked="checked" id="population" name="radio">
-				  <span class="checkmark"></span>
-				</label>
-				<label class="custom-radio-btn-container">&#x1F310 Internet Speed
-				  <input type="radio" id="internet" name="radio">
-				  <span class="checkmark"></span>
-				</label>
+
+                <p>Change Marker Type:<p>
+                <label class="custom-radio-btn-container">&#x1F3D9 Population
+                  <input type="radio" checked="checked" id="population" name="radio">
+                  <span class="checkmark"></span>
+                </label>
+                <label class="custom-radio-btn-container">&#x1F310 Internet Speed
+                  <input type="radio" id="internet" name="radio">
+                  <span class="checkmark"></span>
+                </label>
 
                 <p>I'm a cool slider! <span id="demo"></span></p>
                 <div>
@@ -54,6 +57,8 @@
     </div>
 
 </div>
+<script src="post.js"></script>
+<script src="city-popup.js"></script>
+<script src="city.js"></script>
 <script src="main.bundle.js"></script>
 <script src="filter.js"></script>
-<script src="city.js"></script>

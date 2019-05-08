@@ -61,23 +61,33 @@ app.get('/city', async(req, res) => {
 // city page
 app.post('/city', async (req, res) => {
 
-    // get city name from POST body.
-    const city = encodeURI(req.body.city);
+    // get data from POST body.
+    const name = encodeURI(req.body.name);
+    const lon = encodeURI(req.body.lon);
+    const lat = encodeURI(req.body.lat);
 
-    // error page
-    const err = () => {
-        res.render('pages/city',{city_name:"City not found.",city_image:"https://www.rust-lang.org/logos/error.png"});
-    }
+    const query = `
+SELECT C.name AS city, CO.name AS COUNTRY, TRUNC(C.lon, 2) AS lon, TRUNC(C.lat,2) AS lat, P.total AS population, I.speed AS mbps FROM City C
+INNER JOIN Country CO ON CO.id = C.country
+INNER JOIN Internet_Speed I ON I.Country = CO.id
+INNER JOIN Population P ON (P.CityId = C.id)
 
+WHERE C.name = '${name}'
+AND TRUNC(C.lon, 2) = TRUNC(${lon}, 2)
+AND TRUNC(C.lat, 2) = TRUNC(${lat}, 2)
+;
+`
+    console.log(query);
     try {
-        const city_req = await getCity(city);
-        const city_name = city_req.name;
-        const city_image = city_req.image;
-        res.render('pages/city',{city_name:city_name, city_image:city_image});
+        const client = await pool.connect()
+        const result = await client.query(query);
+        const results = { 'city_data': (result) ? result.rows : null};
+        console.log(results);
+        client.release();
+        res.send(results);
     }
     catch(error) {
         console.log(error);
-        err();
     }
 });
 
@@ -174,6 +184,7 @@ SELECT DISTINCT ON (CO.name) C.name, CO.name, C.lon, C.lat, I.speed FROM City C`
 +
 `LIMIT 100`
         }
+
         // default: population
         else {
             query_string = `

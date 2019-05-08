@@ -58,16 +58,19 @@ var displayFeatureInfo = function(pixel) {
     var features = [];
     map.forEachFeatureAtPixel(pixel, function(feature, layer) {
         features.push(feature);
-        console.log("feature:", feature.get('name'));
+        //console.log("feature:", feature);
+        //console.log("feature:", feature.get('name'));
     });
     var container = document.getElementById('information');
     if (features.length > 0) {
         var info = [];
         for (var i = 0, ii = features.length; i < ii; ++i) {
-            info.push(features[i].get('name'));
-            cityImage(features[i].get('name'));
+            const name = features[i].get('name');
+            const lon = features[i].get('lon');
+            const lat = features[i].get('lat');
+            cityImage(name);
+            cityInfo(name, lon, lat);
         }
-        container.innerHTML = info.join(', ') || '(unknown)';
     } else {
         container.innerHTML = 'City name.';
     }
@@ -160,6 +163,8 @@ function buildFeatures(cities) {
         proj.fromLonLat([lon, lat])
       ),
       name: name,
+      lon: lon,
+      lat: lat
     });
 
     // Adds a style to the marker
@@ -223,6 +228,7 @@ function getState() {
 }
 
 function setState(property, newValue) {
+    console.log("new value:", newValue);
     if (state.hasOwnProperty(property)) {
         state[property] = newValue;
     }

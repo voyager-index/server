@@ -224,16 +224,16 @@ h2 {
 
 /* Style the indicator (dot/circle) */
 .custom-radio-btn-container .checkmark:after {
- 	top: 6px;
-	left: 6px;
-	width: 6px;
-	height: 6px;
-	border-radius: 50%;
-	background: white;
+    top: 6px;
+    left: 6px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: white;
 }
 
 /* Add vertical scroll box to div */
 /* .scroll-box { */
-/* 	height: 80vh; /\* 80% screen height *\/ */
-/* 	overflow-y: scroll; */
+/*  height: 80vh; /\* 80% screen height *\/ */
+/*  overflow-y: scroll; */
 /* } */

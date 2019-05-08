@@ -34,10 +34,11 @@ async function cityImage(city) {
         $('#city-name').val(city_name);
         $('#city-image').attr('src', city_image);
     }
+
     catch(error) {
         $(window).off('click');
         console.error(error);
-        $('#city-image').attr('src', 'https://i.imgur.com/0kvtMLE.gif');
+        $('#city-image').attr('src', '404.gif');
     }
 
     $(window).on('click', (e) => {
@@ -50,4 +51,27 @@ async function cityImage(city) {
             close_popup();
         }
     });
+}
+
+
+async function cityInfo(name, lon, lat) {
+    console.log("city info checking in.");
+    const data_send = {
+        'name': name,
+        'lon': lon,
+        'lat': lat
+    };
+
+    postData(`/city`, data_send)
+        .then(data => {
+            const prefix = JSON.stringify(data.city_data[0]);
+            console.log(prefix);
+            const properties = ['city', 'country', 'population', 'internet', 'lon', 'lat'];
+            for (let i = 0; i < properties.length; i++) {
+                console.log(data.city_data[0][properties[i]]);
+                const val = data.city_data[0][properties[i]];
+                $('#' + properties[i]).text(val);
+            }
+        })
+        .catch(error => console.error(error));
 }
