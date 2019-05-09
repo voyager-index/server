@@ -1,96 +1,31 @@
-$("#toggle").click(() => {
+$(".toggle").click(() => {
     /* to toggle the sidebar, just switch the CSS classes */
     $("#filter").toggleClass("hidden");
     $("#content").toggleClass("col-lg-12 col-lg-10");
 });
 
-/*
-// default values
-$("#population").prop("checked", true);
-Voyager.setState('marker', 'population');
-
-
-
-$("#internet").click(() => {
-    console.log("changing to internet");
-    Voyager.setState("marker", "internet");
+$(".internet").click(() => {
     changeMarkers();
 });
 
-$("#population").click(() => {
-    Voyager.setState("marker", "population");
+$(".beaches").click(() => {
     changeMarkers();
 });
 
-$(".submit").click(() => {
-    setAllStates();
-});
-
-$(".clear").click(() => {
-    $(".filter-input").val('');
-    setAllStates();
+$(".pollution").click(() => {
     changeMarkers();
 });
-
-$(".filter-input").on('change input', function() {
-    console.log("changed.");
-    setAllStates();
-});
-
-function getInputValues() {
-    const pop_min = $("#pop_min").val() * Math.pow(10,6) || 0;
-    const pop_max = $("#pop_max").val() * Math.pow(10,6) || Math.pow(10,10);
-    const internet_min = $("#internet_min").val() || 0;
-    const internet_max = $("#internet_max").val() || Math.pow(10,10);
-
-    const obj = new Object();
-
-    obj.pop_min = pop_min;
-    obj.pop_max = pop_max;
-    obj.internet_min = internet_min;
-    obj.internet_max = internet_max;
-
-    return obj;
-}
-
-
-function setAllStates() {
-    const obj = getInputValues();
-    Voyager.setState("pop", [obj.pop_min, obj.pop_max]);
-    Voyager.setState("internet", [obj.internet_min, obj.internet_max]);
-
-    changeMarkers();
-}
-
 
 function changeMarkers() {
-    const state = Voyager.getState();
+    const filters = Voyager.getFilters();
+    console.log("filters:", filters);
 
     const data_send = {
         'bounding_box': Voyager.getPoints(),
-        'type': state.marker,
-        'pop_min': state.pop[0],
-        'pop_max': state.pop[1],
-        'internet_min': state.internet[0],
-        'internet_max': state.internet[1]
+        'filters': filters
     };
 
     postData(`/bounding`, data_send)
-        .then(data => Voyager.buildFeatures(data))
+        .then(data => Voyager.buildFeatures(data.cities))
         .catch(error => console.error(error));
 }
-
-*/
-/*
-const slider = document.getElementById("myRange");
-const output = document.getElementById("demo");
-output.innerHTML = slider.value; // Display the default slider value
-
-console.log("Voyager:", Voyager);
-
-// Update the current slider value (each time you drag the slider handle)
-slider.oninput = function() {
-    output.innerHTML = this.value;
-}
-
-*/

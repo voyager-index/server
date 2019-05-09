@@ -259,3 +259,4 @@ export {buildFeatures};
 export {getPoints};
 export {makeBBoxRequest};
 export {makeMap};
+export {getFilters};
