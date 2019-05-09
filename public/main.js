@@ -10,6 +10,22 @@ import VectorSource from 'ol/source/Vector';
 import Source from 'ol/source/Source';
 import Point from 'ol/geom/Point';
 
+bindButtons();
+
+function bindButtons(){
+  var buttons = document.getElementsByClassName("btn-default");
+  for (var i = 0; i < buttons.length; i++){
+    buttons[i].addEventListener("click", function(){
+      if (this.classList.contains("active")){
+        this.classList.remove("active");
+      }
+      else{
+        this.classList.add("active");
+      }
+    });
+  }
+}
+
 var cityMarkers = [];
 var markerVectorLayer;
 
@@ -17,11 +33,6 @@ let theme = localStorage.getItem("theme");
 let urlString = '';
 
 let _points = [];
-
-let state = new Object();
-state.pop = [],
-state.internet = [],
-state.marker = '';
 
 if (theme == "dark") {
     urlString = 'http://{a-c}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
@@ -109,16 +120,16 @@ function onMoveEnd(evt) {
 
   setPoints(points);
 
-  //Send bounding box coords to server.
+  // Send bounding box coords to server.
   makeBBoxRequest();
 }
 
 // Every movement on the map, scroll or zoom, triggers the makeBBoxRequest() function,
 // which sends a POST request containing a bounding box array to the server.
 function makeBBoxRequest(){
-  const type = getState().marker;
   const points = getPoints();
-  const pop = getState().pop;
+  const filters = getFilters();
+
   var http = new XMLHttpRequest();
   http.open("POST", '/bounding', true);
   http.setRequestHeader("Content-Type", "application/json");
@@ -127,67 +138,56 @@ function makeBBoxRequest(){
     if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
 
       //Turn a string into an array
-      const cities = JSON.parse(this.response);
-      buildFeatures(cities);
+      const cities = JSON.parse(this.response);    
+      const cityarr = cities.cities;
+      buildFeatures(cityarr);
     }
   }
   var param = {
       'bounding_box': points,
-      'type': type,
-      'pop_min': pop[0],
-      'pop_max': pop[1],
-      'intern_min': internet[0],
-      'internet_max': internet[1]
+      'filters': filters
   };
 
   http.send(JSON.stringify(param));
 }
 
+function getFilters(){
+  var buttons = document.getElementsByClassName("active");
+  var filters = [];
+  for (var i = 0; i < buttons.length; i++){
+    var classes = buttons[i].classList;
+    for(var j = 0; j < classes.length; j++){
+      if (classes[j] != 'btn' && classes[j] != 'btn-default' && classes[j] != 'active' ){
+        filters.push(classes[j]);
+        continue;
+      }
+    }
+  }
+  return filters;
+}
 
-//Turn city array into markers
+// Turn city array into markers
 // erases all previous markers from the map, and draws all new ones,
 // coloring them +  adding text based on the (currently fake) ranking.
 function buildFeatures(cities) {
   clearMarkers();
   for (var i = 0; i < cities.length; i++){
-    //Intentionally left these easy to modify, so that they can be changed to meet what is really being sent from server
     var name = cities[i][0];
-    var lon = Number(cities[i][1]);
-    var lat = Number(cities[i][2]);
-    var population = cities[i][3];
-    var country = cities[i][4];
-    var internet = cities[i][5];
+    var lon = cities[i][1];
+    var lat = cities[i][2];
+    var rank = cities[i][3];
 
-    //console.log(i, name);
     //I have added 3 different marker png images to the folder for use
     // Credit to https://mapicons.mapsmarker.com. Creative commons license. (I edited the marker to erase icon)
-    var rank;
-    if (getState().marker === 'internet') {
-        rank = internet.toString();
-        var src;
-        if(internet > 3.5){
-          src = "greenMarker.png";
-        }
-        else if (internet > 2.5){
-          src = "yellowMarker.png";
-        }
-        else{
-           src = "redMarker.png";
-        }
+    var src;
+    if(rank > 3.5){
+      src = "greenMarker.png";
     }
-
-    else {
-        var src;
-        rank = (population / 1e6).toFixed(2).toString();
-        if(population > 3.5){
-          src = "greenMarker.png";
-        }
-        else if (population > 2.5){
-          src = "yellowMarker.png";
-        }
-        else{
-           src = "redMarker.png";
-        }
+    else if (rank > 2.5){
+      src = "yellowMarker.png";
+    }
+    else{
+       src = "redMarker.png";
     }
 
     cityMarkers[i] = new Feature({
@@ -197,9 +197,7 @@ function buildFeatures(cities) {
       name: name,
       lon: lon,
       lat: lat,
-      country: country,
-      //population: population, //I am removing these, as we don't want to tie up bandwidth by including everything in these features. We just need the first 4.
-      //internet: internet      //That will be important when we have more data
+      rank: rank
     });
 
     // Adds a style to the marker
@@ -212,7 +210,7 @@ function buildFeatures(cities) {
         src: src,
       }),
       text: new Text({
-        text: rank,
+        text: rank.toString(),
         offsetY: -20, //Positive = shift down
         offsetX: 4, //Positive = shift right
         scale: 1.4,
@@ -257,18 +255,6 @@ function setPoints(newPoints) {
     _points = newPoints;
 }
 
-function getState() {
-    return state;
-}
-
-function setState(property, newValue) {
-    if (state.hasOwnProperty(property)) {
-        state[property] = newValue;
-    }
-}
-
-export {getState};
-export {setState};
 export {buildFeatures};
 export {getPoints};
 export {makeBBoxRequest};

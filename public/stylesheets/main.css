@@ -241,6 +241,18 @@ h2 {
     background: white;
 }
 
+.btn {
+  border: solid grey 1px;
+  margin: 1px;
+}
+
+.btn:hover {
+  background-color: #999999;
+}
+
+.active {
+  background-color: #BBBBBB;
+}
 /* Add vertical scroll box to div */
 /* .scroll-box { */
 /*  height: 80vh; /\* 80% screen height *\/ */

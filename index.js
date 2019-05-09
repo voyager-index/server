@@ -121,6 +121,154 @@ AND TRUNC(C.lat, 2) = TRUNC(${lat}, 2)
 // example: [["New York", -74, 40.7, 4.5], ["San Diego", -117, 33, 2.7], ["Dallas", -96, 33, 1.2]];
 app.post('/bounding', async (req, res) => {
     const bounding_box = req.body.bounding_box;
+    const filters = req.body.filters;
+
+    const bottom_left_lon = bounding_box[0];
+    const bottom_left_lat = bounding_box[1];
+    const top_right_lon = bounding_box[2];
+    const top_right_lat = bounding_box[3];
+
+    let lon_wrap = Number.MAX_SAFE_INTEGER;
+    let lon_wrap_neg = Number.MAX_SAFE_INTEGER;
+
+    // edge case: left side of map crosses 180 degress longitude.
+    // edge case: left side of map crosses 0 degress longitude.
+    lon_wrap = -1 * (bottom_left_lon + 180) % 360;
+    lon_wrap_neg = 1 * (bottom_left_lon + 180) % 360;
+
+    const bound = `WHERE
+        (C.lon >= ${bottom_left_lon} OR
+        C.lon >= ${lon_wrap}) AND
+        C.lat >= ${bottom_left_lat} AND
+
+        (C.lon <= ${lon_wrap_neg} OR
+        C.lon <= ${top_right_lon}) AND
+        C.lat <= ${top_right_lat}
+        `;
+
+   var select = 'SELECT C.name as name, C.lon as lon, C.lat as lat, P.total ';
+   var from = 'FROM City C INNER JOIN Population P on P.CityId = C.id INNER JOIN Country co ON C.Country = co.id ';
+   var where = bound;
+
+   for (var i = 0; i < filters.length; i++){
+        if(filters[i] == "internet"){
+            select += ', I.Speed ';
+            from += ' INNER JOIN Internet_Speed I ON I.Country = co.id ';
+            where += ' AND I.Speed > 2 ';
+        }
+        if(filters[i] == "pollution"){
+            select += ', ap.Index ';
+            from += ' INNER JOIN Air_pollution ap ON ap.CityId = C.id ';
+            where += ' AND (ap.Index = NULL OR ap.Index < 10) ';
+        }
+        if(filters[i] == "beaches"){
+            select += ', cl.NearCoast ';
+            from += ' INNER JOIN Coastlines cl ON cl.CityId = C.id ';
+            where += ' AND cl.NearCoast = true ';
+        }
+   }
+
+    var query = select + from + where + " ORDER BY P.total DESC LIMIT 100;";
+    
+    let cities = [];
+    try {
+        const client = await pool.connect()
+        const result = await client.query(query);
+        const results = { 'cities': (result) ? result.rows : null};
+
+        cities = obj_arr2arr(results.cities);
+
+        client.release();
+    } catch (err) {
+        console.error(err);
+        res.send("Error " + err);
+    }
+    var cityRank = rankCities(cities, filters);
+    res.send(cityRank);
+});
+
+function rankCities(cities, filters){
+    //True False values don't matter, because they are filtered out.
+    var rankedCities = [];
+    var i;
+    for (i = 0 ; i < cities.length; i++){
+        //name, lon, lat, rank
+        rankedCities.push([cities[i][0], Number(cities[i][1]), Number(cities[i][2]), 3]);
+    }
+    if(filters.includes("internet")){
+
+    }
+    if(filters.includes("pollution")){
+
+    }
+    var returnVal = {'cities': rankedCities};
+    return returnVal;
+}
+
+
+app.get('/data', (req, res) => {
+    res.render('pages/data_article');
+});
+
+app.get('/settings', (req, res) => {
+    res.render('pages/settings');
+});
+
+
+// -------------------- //
+// Helper functions
+// -------------------- //
+
+
+function obj_arr2arr(obj_arr) {
+    let arr = []
+
+    for (let i = 0; i < obj_arr.length; i++) {
+        let arr_new = obj2arr(obj_arr[i])
+        arr.push(arr_new);
+    }
+
+    return arr;
+}
+
+
+function obj2arr(obj) {
+    let arr = [];
+
+    for (let property in obj) {
+        arr.push(obj[property]);
+    }
+    //ranking
+    arr.push("3");
+    return arr;
+}
+
+// Used to interprete JSON objects returned by requests to API's.
+// Fetches "url" and returns whatever value is associated with the "object".
+async function getThing(url, object) {
+    return fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            return eval(object);
+        })
+}
+
+
+// Start app.
+app
+    .use(express.static(path.join(__dirname, 'public')))
+    .set('views', path.join(__dirname, 'views'))
+    .set('view engine', 'ejs')
+    .get('/', (req, res) => res.render('pages/index', { layout: 'layout-map' }))
+    .listen(PORT, () => console.log(`Listening at http://localhost:${ PORT }`))
+
+
+
+/*
+Saved old version.
+
+app.post('/bounding', async (req, res) => {
+    const bounding_box = req.body.bounding_box;
     const type = req.body.type;
 
     if (DEBUG) {
@@ -225,58 +373,4 @@ LIMIT 100`
 });
 
 
-app.get('/data', (req, res) => {
-    res.render('pages/data_article');
-});
-
-app.get('/settings', (req, res) => {
-    res.render('pages/settings');
-});
-
-
-// -------------------- //
-// Helper functions
-// -------------------- //
-
-
-function obj_arr2arr(obj_arr) {
-    let arr = []
-
-    for (let i = 0; i < obj_arr.length; i++) {
-        let arr_new = obj2arr(obj_arr[i])
-        arr.push(arr_new);
-    }
-
-    return arr;
-}
-
-
-function obj2arr(obj) {
-    let arr = [];
-
-    for (let property in obj) {
-        arr.push(obj[property]);
-    }
-    //ranking
-    arr.push("3");
-    return arr;
-}
-
-// Used to interprete JSON objects returned by requests to API's.
-// Fetches "url" and returns whatever value is associated with the "object".
-async function getThing(url, object) {
-    return fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            return eval(object);
-        })
-}
-
-
-// Start app.
-app
-    .use(express.static(path.join(__dirname, 'public')))
-    .set('views', path.join(__dirname, 'views'))
-    .set('view engine', 'ejs')
-    .get('/', (req, res) => res.render('pages/index', { layout: 'layout-map' }))
-    .listen(PORT, () => console.log(`Listening at http://localhost:${ PORT }`))
+*/

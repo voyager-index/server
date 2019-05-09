@@ -4,22 +4,12 @@ $("#toggle").click(() => {
     $("#content").toggleClass("col-lg-12 col-lg-10");
 });
 
-
+/*
 // default values
 $("#population").prop("checked", true);
 Voyager.setState('marker', 'population');
 
 
-const slider = document.getElementById("myRange");
-const output = document.getElementById("demo");
-output.innerHTML = slider.value; // Display the default slider value
-
-console.log("Voyager:", Voyager);
-
-// Update the current slider value (each time you drag the slider handle)
-slider.oninput = function() {
-    output.innerHTML = this.value;
-}
 
 $("#internet").click(() => {
     console.log("changing to internet");
@@ -89,3 +79,18 @@ function changeMarkers() {
         .then(data => Voyager.buildFeatures(data))
         .catch(error => console.error(error));
 }
+
+*/
+/*
+const slider = document.getElementById("myRange");
+const output = document.getElementById("demo");
+output.innerHTML = slider.value; // Display the default slider value
+
+console.log("Voyager:", Voyager);
+
+// Update the current slider value (each time you drag the slider handle)
+slider.oninput = function() {
+    output.innerHTML = this.value;
+}
+
+*/
