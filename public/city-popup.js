@@ -39,7 +39,7 @@ async function cityImage(city, lat, lon) {
         console.error(error);
         $('#image').empty();
         $('#image').append("<div id='map-fallback'></div>");
-        const map = Voyager.makeMap(lon, lat, 11, 'map-fallback');
+        const map = Voyager.makeMap(Number(lon), Number(lat), 11, 'map-fallback');
     }
 
     $(window).on('click', (e) => {
@@ -62,7 +62,7 @@ async function cityInfo(features) {
     cityImage(name, lat, lon);
 
 
-    // These properties must be present in both the the DB response, and the city-popup div in index.ejs 
+    // These properties must be present in both the the DB response, and the city-popup div in index.ejs
     const properties = ['city', 'country', 'population', 'mbps', 'lon', 'lat', 'elevation', 'pollution', 'airport', 'beach'];
     for (let i = 0; i < properties.length; i++) {
         const val = features[properties[i]];
@@ -76,7 +76,7 @@ async function cityInfo(features) {
         $('#popup-' + tempProperties[i]).text(val);
     }
 
-    const precipProperties = ['precipJan',  'precipFeb', 'precipMar' ,'precipApr' , 'precipMay' , 'precipJun', 
+    const precipProperties = ['precipJan',  'precipFeb', 'precipMar' ,'precipApr' , 'precipMay' , 'precipJun',
     'precipJul' , 'precipAug' ,'precipSep' , 'precipOct' , 'precipNov' , 'precipDec'];
     for (let i = 0; i < precipProperties.length; i++) {
         const val = features[precipProperties[i].toLowerCase()];

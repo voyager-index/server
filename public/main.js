@@ -87,7 +87,7 @@ var displayFeatureInfo = function(pixel) {
     http.open("POST", '/city', true);
     http.setRequestHeader("Content-Type", "application/json");
     http.onreadystatechange = function() {
-      if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {     
+      if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
         const data = JSON.parse(this.response);
         cityInfo(data); // found in public/city-popup.js
       }
@@ -138,7 +138,7 @@ function makeBBoxRequest(){
     if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
 
       //Turn a string into an array
-      const cities = JSON.parse(this.response);    
+      const cities = JSON.parse(this.response);
       const cityarr = cities.cities;
       buildFeatures(cityarr);
     }
