@@ -1,6 +1,11 @@
 {
   "events": {
-    "restart": "node docs.js"
+    "restart": "node docs.js",
+    "restart": "sass public/stylesheets/main.scss public/stylesheets/main.css"
   },
-  "ignore": ["data_article.ejs", "main.js"]
+  "ignore": [
+      "data_article.ejs",
+      "main.js",
+      "main.css"
+  ]
 }
