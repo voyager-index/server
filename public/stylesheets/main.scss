@@ -259,6 +259,16 @@ h2 {
   background-color: #BBBBBB;
 }
 
+td {
+    font-size: small;
+    padding: 0;
+}
+
+table {
+    overflow: scroll;
+    margin-left: -5%;
+}
+
 // Example usage:
 @include media-breakpoint-up(lg) {
     /* add vertical scroll box to div */
