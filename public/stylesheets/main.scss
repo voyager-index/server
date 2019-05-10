@@ -1,0 +1,270 @@
+@import "../../node_modules/bootstrap/scss/functions";
+@import "../../node_modules/bootstrap/scss/variables";
+@import "../../node_modules/bootstrap/scss/mixins";
+
+.jumbotron {
+    background: #532F8C;
+    color: white;
+padding-bottom: 80px; }
+.jumbotron .btn-primary {
+    background: #845ac7;
+border-color: #845ac7; }
+.jumbotron .btn-primary:hover {
+background: #7646c1; }
+.jumbotron p {
+    color: #d9ccee;
+    max-width: 75%;
+margin: 1em auto 2em; }
+.navbar + .jumbotron {
+margin-top: -20px; }
+.jumbotron .lang-logo {
+    display: block;
+    background: #B01302;
+    border-radius: 50%;
+    overflow: hidden;
+    width: 100px;
+    height: 100px;
+    margin: auto;
+border: 2px solid white; }
+.jumbotron .lang-logo img {
+max-width: 100%; }
+img {
+    max-width: 100%;
+}
+
+html, body {
+    height: 100%;
+}
+#map {
+    //position: absolute;
+    top: 7%;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 85%;
+}
+
+code {
+    color: #384cbd;
+    background-color: #f8f8f8;
+    font-weight: bold;
+}
+
+p {
+    font-size: 1.2em;
+}
+
+.navbar.navbar-default.navbar-static-top {
+    height: 7%;
+}
+
+#sidebar {
+    /* for the animation */
+    transition: margin 500ms;
+}
+
+.hidden {
+    /* hide it for small displays*/
+    display: none !important;
+}
+
+#row-main {
+    /* necessary to hide collapsed sidebar */
+    overflow-x: hidden;
+}
+
+#content {
+    /* for the animation */
+    //transition: width 500ms;
+}
+
+button {
+    color: #fff;
+    text-decoration: none;
+    text-align: center;
+    background-color: rgba(0,60,136,.5);
+    border: none;
+    transition: 500ms;
+    border: 1px solid rgba(0,60,136,.5);
+}
+
+.big {
+    margin-top: 0.5em;
+    font-size: 1.2em;
+    padding: 2%;
+}
+
+button:hover {
+    background-color: #fff;
+    color: rgba(0,60,136,.8);
+}
+
+input {
+    max-width: 100%;
+    margin: 0.5em;
+}
+
+.navbar-light, .navbar-default {
+    background-color: #f8f8f8;
+}
+
+#map {
+    height: 80vh;
+}
+
+#city-popup {
+    position: fixed;
+    z-index: 1;
+    height: 80vh;
+    width: 90%;
+    background: #000000e6;
+    margin-left: 5%;
+    margin-right: 5%;
+    padding: 2%;
+    color: snow;
+    overflow: scroll;
+}
+
+#city-name {
+    color: snow;
+}
+
+#lat-lon {
+    color: #8e8c8c;
+}
+
+#info > p {
+    color: snow;
+}
+
+#flex-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#image {
+    width: 40%;
+}
+
+#info {
+    width: 60%;
+}
+
+#city-image {
+    width: 85%;
+}
+
+.exit {
+    color: snow;
+    float: right;
+    font-size: xx-large;
+    border-radius: 50%;
+    height: 2em;
+    width: 2em;
+    text-align: center;
+    line-height: 2em;
+    cursor: pointer;
+    transition: 500ms;
+    margin-top: -2%;
+}
+
+.exit:hover {
+    transition: 500ms;
+    background: #7f9dc3;
+}
+
+h2 {
+    margin-top: 0;
+}
+
+#map-fallback {
+    height: 50vh;
+    width: 90%;
+}
+
+/* custom-radio-btn-container */
+.custom-radio-btn-container {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-size: 18px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hide the browser's default radio button */
+.custom-radio-btn-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Create a custom radio button */
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 18px;
+  width: 18px;
+  background-color: #eee;
+  border-radius: 50%;
+}
+
+/* On mouse-over, add a grey background color */
+.custom-radio-btn-container:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+
+/* When the radio button is checked, add a blue background */
+.custom-radio-btn-container input:checked ~ .checkmark {
+  background-color: #2196F3;
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+.custom-radio-btn-container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the indicator (dot/circle) */
+.custom-radio-btn-container .checkmark:after {
+    top: 6px;
+    left: 6px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: white;
+}
+
+.btn {
+  border: solid grey 1px;
+  margin: 1px;
+}
+
+.btn-default:hover {
+  background-color: #999999;
+}
+
+.active {
+  background-color: #BBBBBB;
+}
+
+// Example usage:
+@include media-breakpoint-up(lg) {
+    /* add vertical scroll box to div */
+    .scroll-box { 
+        height: 80vh; /* 80% screen height */
+        overflow-y: scroll; 
+    } 
+}
+ 
