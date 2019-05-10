@@ -1,15 +1,36 @@
-<h2>Database Results</h2>
-
-<ul>
+<h2>Database Contents</h2>
+<br>
+<h6>Note that climate data has been shrunk to yearly averages. The complete database stores them monthly.</h6>
+<h6>Ids have been left out. To view the full data, sources, and more, check out the Data Article in the nav bar at the top.</h6>
+<table>
+	<tr>
+		<th>Longitude</th>
+		<th>Latitude</th>
+		<th>City</th>
+		<th>Country</th>
+		<th>Elevation</th>
+		<th>Near Beach</th>
+		<th>Has Airport</th>
+		<th>Air Pollution Index</th>
+		<th>Population</th>
+		<th>Avg Temp C</th>
+		<th>Avg UV Index</th>
+		<th>Avg Precipitation (mm)</th>
+	</tr>
     <% results.results.forEach(function(r) { %>
-    <li><%= r.id %> - <%= r.name %> - <%= r.country_code %></li>
+    	<tr>
+    		<td><%= r.lon %></td>
+    		<td><%= r.lat %></td>
+    		<td><%= r.city %></td>
+    		<td><%= r.country %></td>
+    		<td><%= r.elevation %></td>
+    		<td><%= r.beach %></td>
+    		<td><%= r.airport %></td>
+    		<td><%= r.pollution %></td>
+    		<td><%= r.population %></td>
+    		<td><%= r.temp %></td>
+    		<td><%= r.uv %></td>
+    		<td><%= r.precip %></td>
+    	</tr>
     <% }); %>
-</ul>
-
-<h2>Database Tables</h2>
-
-<ul>
-    <% tables.tables.forEach(function(t) { %>
-    <li><%= t.table_name %></li>
-    <% }); %>
-</ul>
+</table>

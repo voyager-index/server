@@ -37,13 +37,49 @@ app.get('/db', async (req, res) => {
     try {
         const client = await pool.connect()
 
-        const result = await client.query('SELECT * FROM Country');
+        const query = `SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat,
+            p.total AS population, i.speed AS mbps,
+            cl.NearCoast AS beach, a.Exists AS airport,
+            e.elevation AS elevation, ap.Index as pollution,
+            t.Jan AS tempJan, t.Feb AS tempFeb, t.Mar AS tempMar ,t.April AS tempApr ,t.May AS tempMay ,t.June AS tempJun ,t.July AS tempJul ,t.Aug AS tempAug ,t.Sept AS tempSep ,t.Oct AS tempOct ,t.Nov AS tempNov ,t.Dec AS tempDec,
+            pr.Jan AS precipJan, pr.Feb AS precipFeb, pr.Mar AS precipMar ,pr.April AS precipApr ,pr.May AS precipMay ,pr.June AS precipJun ,pr.July AS precipJul ,pr.Aug AS precipAug ,pr.Sept AS precipSep ,pr.Oct AS precipOct ,pr.Nov AS precipNov ,pr.Dec AS precipDec,
+            uv.Jan AS uvJan, uv.Feb AS uvFeb, uv.Mar AS uvMar ,uv.April AS uvApr ,uv.May AS uvMay ,uv.June AS uvJun ,uv.July AS uvJul ,uv.Aug AS uvAug ,uv.Sept AS uvSep ,uv.Oct AS uvOct ,uv.Nov AS uvNov ,uv.Dec AS uvDec
+
+            FROM City c
+            INNER JOIN Country co ON co.id = c.country
+            INNER JOIN Internet_Speed i ON i.Country = co.id
+            INNER JOIN Population p ON p.CityId = c.id
+            INNER JOIN Coastlines cl ON  cl.CityId = c.id
+            INNER JOIN Airports a ON a.CityId = c.id
+            INNER JOIN Elevation e ON e.CityId = c.id
+            INNER JOIN Air_pollution ap ON ap.CityId = c.id
+            INNER JOIN Temp t ON t.CityId = c.id
+            INNER JOIN Precipitation pr ON pr.CityId = c.id
+            INNER JOIN UV_Index uv ON uv.CityId = c.id
+
+            ORDER BY p.total DESC;`
+
+        const result = await client.query(query);
         const results = { 'results': (result) ? result.rows : null};
 
-        const table = await client.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
-        const tables = {'tables': (table) ? table.rows : null};
+        for (var i = 0 ; i < results.results.length; i++){
+            var temp = results.results[i].tempjan + results.results[i].tempfeb + results.results[i].tempmar + results.results[i].tempapr + results.results[i].tempmay + results.results[i].tempjun + results.results[i].tempjul + 
+            results.results[i].tempaug + results.results[i].tempsep + results.results[i].tempoct + results.results[i].tempnov + results.results[i].tempdec;
+            temp = temp / 12;
+            temp = temp /10;
+            results.results[i].temp = Math.round(temp);
+            var precip = results.results[i].precipjan + results.results[i].precipfeb + results.results[i].precipmar + results.results[i].precipapr + results.results[i].precipmay + results.results[i].precipjun + results.results[i].precipjul + 
+            results.results[i].precipaug + results.results[i].precipsep + results.results[i].precipoct + results.results[i].precipnov + results.results[i].precipdec;
+            precip = precip / 12;
+            results.results[i].precip = Math.round(precip);
+            var uv = results.results[i].uvjan + results.results[i].uvfeb + results.results[i].uvmar + results.results[i].uvapr + results.results[i].uvmay + results.results[i].uvjun + results.results[i].uvjul + 
+            results.results[i].uvaug + results.results[i].uvsep + results.results[i].uvoct + results.results[i].uvnov + results.results[i].uvdec;
+            uv = uv / 12;
+            uv = uv /16;
+            results.results[i].uv = Math.round(uv);
+        }
 
-        res.render('pages/db', {tables:tables, results:results});
+        res.render('pages/db', {results:results});
         client.release();
     } catch (err) {
         console.error(err);
