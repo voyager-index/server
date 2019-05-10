@@ -247,7 +247,7 @@ h2 {
   margin: 1px;
 }
 
-.btn:hover {
+.btn-default:hover {
   background-color: #999999;
 }
 
