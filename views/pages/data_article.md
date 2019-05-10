@@ -1,3 +1,11 @@
+# Our Data Journey
+
+This article details our process gathering data from a variety of sources, and cleaning it and combining it, and turning into something we can use, to share information about cities from around the globe.
+
+## Technologies
+
+This project was completed using [PostgreSQL](https://www.postgresql.org/download/) wriuth the [PostGIS](https://postgis.net/install/) extension
+
 # City Data
 
 Downloaded from natural earth.
@@ -33,33 +41,6 @@ JOIN country AS c ON temptable.sov0name = c.name;
 ```
 
 Copied these with `\copy (SELECT * FROM country)` to `'\Users\user\...\MyFileName.csv\' with csv`
-
-# Beaches
-
-Using coastline data from the natural earth site, I have created a table using `shp2pgsql`.
-
-Then, I created a temp table from the city data, with postgis point geoms instead of lon/lat, using `ST_MakePoint(lon, lat)`
-Since this was actually wrong, and had no srid, I had to 
-
-Then, I merged these tables and used the `ST_DWithin` function from postgis with the following command: 
-
-```sql
-ALTER TABLE st_setsrid
-ALTER TABLE coastline
-ALTER COLUMN geom TYPE geometry(MULTILINESTRING, 4326)
-USING ST_SetSRID(geom,4326)
-
-SELECT id, ST_SetSRID(ST_MakePoint(lon, lat), 4326) 
-INTO TABLE citygeom FROM city;
-
-SELECT DISTINCT(cg.id), COALESCE(ST_DWithin(cl.geom:geography, cg.st_setsrid::geography, 80000), false) 
-INTO TABLE beaches FROM coastline cl 
-RIGHT JOIN citygeom cg ON ST_DWithin(cl.geom::geography, cg.st_setsrid::geography, 80000);
-```
-
-# Technologies
-
-This project was completed using [PostgreSQL](https://www.postgresql.org/download/) wriuth the [PostGIS](https://postgis.net/install/) extension
 
 # Cities and Countries
 
@@ -114,7 +95,6 @@ added to it:
 ```
 
 # Beaches
-
 
 The goal for this table was to find the cities that are close to the beach. To do this, coastline data was downloaded from the same Natural Earth website, and the highest resolution (10m) vector data was downloaded, called \"Coastlines.\" What defines close to the beach, for our purposes? We decided that within 40 miles from city center to coastline would be reasonable for now, until we have more user feedback. For reference, 40 miles is about 64,000 meters, which is what will be used in the ST\_DWithin() PostGIS function.
 
@@ -215,3 +195,27 @@ INNER JOIN decuv as d ON j.id = d.id
 
 \copy (SELECT * FROM uvindex) to 'C:\Users\...\database\uv.csv' with csv
 ```
+
+
+# References
+
+Cities: https://www.naturalearthdata.com/downloads/10m-cultural-vectors/, Populated Places dataset
+
+Countries: https://www.naturalearthdata.com/downloads/10m-cultural-vectors/, Populated Places dataset
+ 
+Population: https://www.naturalearthdata.com/downloads/10m-cultural-vectors/, Populated Places dataset
+
+Elevation: https://earthexplorer.usgs.gov/, GTOPO30 Dataset, all tiles
+
+Beaches: https://www.naturalearthdata.com/downloads/10m-physical-vectors/, Coastline Vectors
+
+Temperature: https://www.worldclim.org/version1, Current Conditions, Average Temperature, 5 minutes
+
+Precipitation: https://www.worldclim.org/version1, Current Conditions, Average Precipitation, 5 minutes
+
+UV index: https://neo.sci.gsfc.nasa.gov/view.php?datasetId=AURA_UVI_CLIM_M 
+
+Airports:
+
+Air Pollution:
+
