@@ -18,7 +18,6 @@ $(".pollution").click(() => {
 
 function changeMarkers() {
     const filters = Voyager.getFilters();
-    console.log("filters:", filters);
 
     const data_send = {
         'bounding_box': Voyager.getPoints(),

@@ -107,31 +107,31 @@ app.post('/city', async (req, res) => {
             // INNER JOIN Intl_Airports ia ON ia.CityId = c.id
 
     const query = `
-SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat,
-p.total AS population, i.speed AS mbps,
-cl.NearCoast AS beach, a.Exists AS airport,
-e.elevation AS elevation, ap.Index as pollution,
-t.Jan AS tempJan, t.Feb AS tempFeb, t.Mar AS tempMar ,t.April AS tempApr ,t.May AS tempMay ,t.June AS tempJun ,t.July AS tempJul ,t.Aug AS tempAug ,t.Sept AS tempSep ,t.Oct AS tempOct ,t.Nov AS tempNov ,t.Dec AS tempDec,
-pr.Jan AS precipJan, pr.Feb AS precipFeb, pr.Mar AS precipMar ,pr.April AS precipApr ,pr.May AS precipMay ,pr.June AS precipJun ,pr.July AS precipJul ,pr.Aug AS precipAug ,pr.Sept AS precipSep ,pr.Oct AS precipOct ,pr.Nov AS precipNov ,pr.Dec AS precipDec,
-uv.Jan AS uvJan, uv.Feb AS uvFeb, uv.Mar AS uvMar ,uv.April AS uvApr ,uv.May AS uvMay ,uv.June AS uvJun ,uv.July AS uvJul ,uv.Aug AS uvAug ,uv.Sept AS uvSep ,uv.Oct AS uvOct ,uv.Nov AS uvNov ,uv.Dec AS uvDec
+        SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat,
+        p.total AS population, i.speed AS mbps,
+        cl.NearCoast AS beach, a.Exists AS airport,
+        e.elevation AS elevation, ap.Index as pollution,
+        t.Jan AS tempJan, t.Feb AS tempFeb, t.Mar AS tempMar ,t.April AS tempApr ,t.May AS tempMay ,t.June AS tempJun ,t.July AS tempJul ,t.Aug AS tempAug ,t.Sept AS tempSep ,t.Oct AS tempOct ,t.Nov AS tempNov ,t.Dec AS tempDec,
+        pr.Jan AS precipJan, pr.Feb AS precipFeb, pr.Mar AS precipMar ,pr.April AS precipApr ,pr.May AS precipMay ,pr.June AS precipJun ,pr.July AS precipJul ,pr.Aug AS precipAug ,pr.Sept AS precipSep ,pr.Oct AS precipOct ,pr.Nov AS precipNov ,pr.Dec AS precipDec,
+        uv.Jan AS uvJan, uv.Feb AS uvFeb, uv.Mar AS uvMar ,uv.April AS uvApr ,uv.May AS uvMay ,uv.June AS uvJun ,uv.July AS uvJul ,uv.Aug AS uvAug ,uv.Sept AS uvSep ,uv.Oct AS uvOct ,uv.Nov AS uvNov ,uv.Dec AS uvDec
 
-FROM City c
-INNER JOIN Country co ON co.id = c.country
-INNER JOIN Internet_Speed i ON i.Country = co.id
-INNER JOIN Population p ON p.CityId = c.id
-INNER JOIN Coastlines cl ON  cl.CityId = c.id
-INNER JOIN Airports a ON a.CityId = c.id
-INNER JOIN Elevation e ON e.CityId = c.id
-INNER JOIN Air_pollution ap ON ap.CityId = c.id
-INNER JOIN Temp t ON t.CityId = c.id
-INNER JOIN Precipitation pr ON pr.CityId = c.id
-INNER JOIN UV_Index uv ON uv.CityId = c.id
+        FROM City c
+        INNER JOIN Country co ON co.id = c.country
+        INNER JOIN Internet_Speed i ON i.Country = co.id
+        INNER JOIN Population p ON p.CityId = c.id
+        INNER JOIN Coastlines cl ON  cl.CityId = c.id
+        INNER JOIN Airports a ON a.CityId = c.id
+        INNER JOIN Elevation e ON e.CityId = c.id
+        INNER JOIN Air_pollution ap ON ap.CityId = c.id
+        INNER JOIN Temp t ON t.CityId = c.id
+        INNER JOIN Precipitation pr ON pr.CityId = c.id
+        INNER JOIN UV_Index uv ON uv.CityId = c.id
 
-WHERE C.name = '${name}'
-AND TRUNC(C.lon, 2) = TRUNC(${lon}, 2)
-AND TRUNC(C.lat, 2) = TRUNC(${lat}, 2)
-;
-`
+        WHERE C.name = '${name}'
+        AND TRUNC(C.lon, 2) = TRUNC(${lon}, 2)
+        AND TRUNC(C.lat, 2) = TRUNC(${lat}, 2)
+        ;
+        `
 
     try {
         const client = await pool.connect()
@@ -172,7 +172,27 @@ app.post('/bounding', async (req, res) => {
     lon_wrap = -1 * (bottom_left_lon + 180) % 360;
     lon_wrap_neg = 1 * (bottom_left_lon + 180) % 360;
 
-    const bound = `WHERE
+    var query = `SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat,
+        p.total AS population, i.speed AS mbps,
+        cl.NearCoast AS beach, a.Exists AS airport,
+        e.elevation AS elevation, ap.Index as pollution,
+        t.Jan AS tempJan, t.Feb AS tempFeb, t.Mar AS tempMar ,t.April AS tempApr ,t.May AS tempMay ,t.June AS tempJun ,t.July AS tempJul ,t.Aug AS tempAug ,t.Sept AS tempSep ,t.Oct AS tempOct ,t.Nov AS tempNov ,t.Dec AS tempDec,
+        pr.Jan AS precipJan, pr.Feb AS precipFeb, pr.Mar AS precipMar ,pr.April AS precipApr ,pr.May AS precipMay ,pr.June AS precipJun ,pr.July AS precipJul ,pr.Aug AS precipAug ,pr.Sept AS precipSep ,pr.Oct AS precipOct ,pr.Nov AS precipNov ,pr.Dec AS precipDec,
+        uv.Jan AS uvJan, uv.Feb AS uvFeb, uv.Mar AS uvMar ,uv.April AS uvApr ,uv.May AS uvMay ,uv.June AS uvJun ,uv.July AS uvJul ,uv.Aug AS uvAug ,uv.Sept AS uvSep ,uv.Oct AS uvOct ,uv.Nov AS uvNov ,uv.Dec AS uvDec
+
+        FROM City c
+        INNER JOIN Country co ON co.id = c.country
+        INNER JOIN Internet_Speed i ON i.Country = co.id
+        INNER JOIN Population p ON p.CityId = c.id
+        INNER JOIN Coastlines cl ON  cl.CityId = c.id
+        INNER JOIN Airports a ON a.CityId = c.id
+        INNER JOIN Elevation e ON e.CityId = c.id
+        INNER JOIN Air_pollution ap ON ap.CityId = c.id
+        INNER JOIN Temp t ON t.CityId = c.id
+        INNER JOIN Precipitation pr ON pr.CityId = c.id
+        INNER JOIN UV_Index uv ON uv.CityId = c.id
+
+        WHERE
         (C.lon >= ${bottom_left_lon} OR
         C.lon >= ${lon_wrap}) AND
         C.lat >= ${bottom_left_lat} AND
@@ -182,60 +202,90 @@ app.post('/bounding', async (req, res) => {
         C.lat <= ${top_right_lat}
         `;
 
-   var select = 'SELECT C.name as name, C.lon as lon, C.lat as lat, P.total ';
-   var from = 'FROM City C INNER JOIN Population P on P.CityId = C.id INNER JOIN Country co ON C.Country = co.id ';
-   var where = bound;
 
    for (var i = 0; i < filters.length; i++){
         if(filters[i] == "internet"){
-            select += ', I.Speed ';
-            from += ' INNER JOIN Internet_Speed I ON I.Country = co.id ';
-            where += ' AND I.Speed > 2 ';
+            query += ' AND I.Speed > 1 ';
         }
         if(filters[i] == "pollution"){
-            select += ', ap.Index ';
-            from += ' INNER JOIN Air_pollution ap ON ap.CityId = C.id ';
-            where += ' AND (ap.Index = NULL OR ap.Index < 10) ';
+            query += ' AND (ap.Index = NULL OR ap.Index < 30) ';
         }
         if(filters[i] == "beaches"){
-            select += ', cl.NearCoast ';
-            from += ' INNER JOIN Coastlines cl ON cl.CityId = C.id ';
-            where += ' AND cl.NearCoast = true ';
+            query += ' AND cl.NearCoast = true ';
         }
    }
 
-    var query = select + from + where + " ORDER BY P.total DESC LIMIT 100;";
+    query += " ORDER BY P.total DESC LIMIT 100;";
 
     let cities = [];
     try {
         const client = await pool.connect()
         const result = await client.query(query);
-        const results = { 'cities': (result) ? result.rows : null};
+        const results = result ? result.rows : null;
 
-        cities = obj_arr2arr(results.cities);
+        var cityRank = rankCities(results, filters);
+        res.send(cityRank);
+//        cities = obj_arr2arr(results.cities);
 
         client.release();
     } catch (err) {
         console.error(err);
         res.send("Error " + err);
     }
-    var cityRank = rankCities(cities, filters);
-    res.send(cityRank);
+
 });
 
 function rankCities(cities, filters){
     //True False values don't matter, because they are filtered out.
+    //console.log(cities[0]);
     var rankedCities = [];
     var i;
     for (i = 0 ; i < cities.length; i++){
+        // This section builds initial ranking. Obviously, it will need to be changed/ improved, I don't think bigger = better with cities
+        // This is more just to get something down, feel free to edit and improve.
+        var rank;
+        const pop = Number(cities[i]["population"]);
+        if ( pop > 100000){
+            rank = 4.5;
+        } else if (pop > 500000) {
+            rank = 3.5;
+        } else if ( pop > 100000) {
+            rank = 2.5;
+        } else {
+            rank = 1.5;
+        }
+
+        
+        // Rank based on filter buttons. These names are in the class list for each button on index.ejs
+        // Obviously we also need to improve this, but just to get something in place for us to build on.
+        if(filters.includes("internet")){
+            var mbps = cities[i]["mbps"];
+            if (mbps > 10){
+                rank += 2;
+            } else if (mbps > 4){
+                rank += 1.5;
+            } else if (mbps > 2){
+                rank += .5;
+            } else {
+                rank -= 1;
+            }
+        }
+        if(filters.includes("pollution")){
+            var pollution = Number(cities[i]["pollution"]);
+            if (pollution < 5){
+                rank += 2;
+            } else if (pollution < 10){
+                rank += 1;
+            } else if (pollution < 20) {
+                rank -= 1;
+            } else {
+                rank -= 2;
+            }
+        }
+
+
         //name, lon, lat, rank
-        rankedCities.push([cities[i][0], Number(cities[i][1]), Number(cities[i][2]), 3]);
-    }
-    if(filters.includes("internet")){
-
-    }
-    if(filters.includes("pollution")){
-
+        rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), rank]);
     }
     var returnVal = {'cities': rankedCities};
     return returnVal;
