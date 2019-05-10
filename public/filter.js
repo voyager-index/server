@@ -1,4 +1,4 @@
-$(".toggle").click(() => {
+$("#toggle").click(() => {
     /* to toggle the sidebar, just switch the CSS classes */
     $("#filter").toggleClass("hidden");
     $("#content").toggleClass("col-lg-12 col-lg-10");
