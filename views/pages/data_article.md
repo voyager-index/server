@@ -196,26 +196,42 @@ INNER JOIN decuv as d ON j.id = d.id
 \copy (SELECT * FROM uvindex) to 'C:\Users\...\database\uv.csv' with csv
 ```
 
+# Internet Speeds
+
+Raw internet speed data was retrieved from a [spreadsheet file](https://s3-eu-west-1.amazonaws.com/assets.cable.co.uk/broadband-speedtest/worldwide-broadband-speed-league-2018.xlsx) provided by a private [broadband company](https://www.cable.co.uk/broadband/speed/worldwide-speed-league/) (Cable). The source of data is from [M-lab](https://www.measurementlab.net/), a coalition of reasearch institutes involved with internet statitics:
+
+> The data was collected for the second year in a row across the 12 months up to 29 May this year by M-Lab, a partnership between New America's Open Technology Institute, Google Open Source Research, Princeton University's PlanetLab and other supporting partners, and compiled by Cable
+
+After copying the raw values from the above spreadsheet value into a CSV file (internet_speed.csv), the data was inserted into the database with the following command:
+
+
+```sql
+-- Internet Speed
+\copy Internet_Speed(Country, Speed) FROM 'data/internet_speed.csv' DELIMITER ',' CSV HEADER;
+```
+
 
 # References
 
-Cities: https://www.naturalearthdata.com/downloads/10m-cultural-vectors/, Populated Places dataset
+Cities: <https://www.naturalearthdata.com/downloads/10m-cultural-vectors/>, Populated Places dataset
 
-Countries: https://www.naturalearthdata.com/downloads/10m-cultural-vectors/, Populated Places dataset
+Countries: <https://www.naturalearthdata.com/downloads/10m-cultural-vectors/>, Populated Places dataset
  
-Population: https://www.naturalearthdata.com/downloads/10m-cultural-vectors/, Populated Places dataset
+Population: <https://www.naturalearthdata.com/downloads/10m-cultural-vectors/>, Populated Places dataset
 
-Elevation: https://earthexplorer.usgs.gov/, GTOPO30 Dataset, all tiles
+Elevation: <https://earthexplorer.usgs.gov/>, GTOPO30 Dataset, all tiles
 
-Beaches: https://www.naturalearthdata.com/downloads/10m-physical-vectors/, Coastline Vectors
+Beaches: <https://www.naturalearthdata.com/downloads/10m-physical-vectors/>, Coastline Vectors
 
-Temperature: https://www.worldclim.org/version1, Current Conditions, Average Temperature, 5 minutes
+Temperature: <https://www.worldclim.org/version1>, Current Conditions, Average Temperature, 5 minutes
 
-Precipitation: https://www.worldclim.org/version1, Current Conditions, Average Precipitation, 5 minutes
+Precipitation: <https://www.worldclim.org/version1>, Current Conditions, Average Precipitation, 5 minutes
 
-UV index: https://neo.sci.gsfc.nasa.gov/view.php?datasetId=AURA_UVI_CLIM_M 
+UV index: <https://neo.sci.gsfc.nasa.gov/view.php?datasetId=AURA_UVI_CLIM_M>
 
 Airports:
 
 Air Pollution:
+
+Internet: <https://www.cable.co.uk/broadband/speed/worldwide-speed-league/>, [data file](https://s3-eu-west-1.amazonaws.com/assets.cable.co.uk/broadband-speedtest/worldwide-broadband-speed-league-2018.xlsx)
 
