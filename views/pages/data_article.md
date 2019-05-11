@@ -210,6 +210,14 @@ After copying the raw values from the above spreadsheet value into a CSV file (i
 \copy Internet_Speed(Country, Speed) FROM 'data/internet_speed.csv' DELIMITER ',' CSV HEADER;
 ```
 
+This data was only found at the country level. It was merged with our countries, on the country name. There ended up being some countries that were not in one database or the other, such as Somaliland, or Aruba. Some of these, we just left as NULL values. There were other countries that we had data for, but the names weren't listed exactly the same, such as "United States" and "United States of America." For these, there ended up only being a handful, and they were easy to identify. This was done using
+
+```sql
+SELECT country.name FROM country WHERE country.name NOT IN (SELECT country FROM internet_speed);
+```
+
+Crafting a statement like this for both databases (ie, finding the countries in the country table that were not in the internet table, and finding the countries that were in the internet table that were not in the country table) gave us two lists we could compare by hand, and just copy the extra missing information into our final table.
+
 
 # References
 
