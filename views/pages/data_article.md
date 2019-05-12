@@ -196,6 +196,36 @@ INNER JOIN decuv as d ON j.id = d.id
 \copy (SELECT * FROM uvindex) to 'C:\Users\...\database\uv.csv' with csv
 ```
 
+# Air Pollution
+
+Air pollution data was obtained from The World Health Organization <a href="https://www.who.int" class="uri">website</a>, which include PM25 (small particle matter) and PM10 (large particle matter) data.  We combined these values to use in our overall air pollution levels.
+
+Since there was a possibility of different spellings of cities or smaller cities that did not have readings, we used the air pollution latitute and longitude points to find the closest reading with 100 miles.
+
+This was done by comparing the geometric points created from latitude and longitude using PostGIS.  To create the points and place them into a TEMP table, we used:
+
+```sql
+SELECT id, ST\_SetSRID(ST\_MakePoint(lon, lat), 4326) INTO TEMP TABLE
+citygeom FROM city;
+SELECT id, ST\_SetSRID(ST\_MakePoint(lon, lat), 4326) INTO TEMP TABLE
+air-poll-temp FROM air-poll;
+```
+
+Then used this query to select the nearest reading within a 100 mile range:
+
+```sql
+SELECT id, ST\_SetSRID(ST\_MakePoint(lon, lat), 4326) INTO TEMP TABLE citygeom FROM city;
+SELECT DISTINCT(cg.id), COALESCE(ST\_DWithin(ap.geom:geography, cg.geom::geography, 161000), false)
+INTO TABLE air-pollution FROM air-poll-temp ap
+RIGHT JOIN citygeom cg ON ST\_DWithin(ap.geom::geography, cg.geom::geography, 161000);
+```
+
+# Airports
+
+Airport data was found from the website [Our Airports](http://ourairports.com/data/).
+
+This data was etnered into the database similar to the Air Pollution data, using the PostGIS geometric points and comparing distance between, this time using only a 50 mile range.
+
 # Internet Speeds
 
 Raw internet speed data was retrieved from a [spreadsheet file](https://s3-eu-west-1.amazonaws.com/assets.cable.co.uk/broadband-speedtest/worldwide-broadband-speed-league-2018.xlsx) provided by a private [broadband company](https://www.cable.co.uk/broadband/speed/worldwide-speed-league/) (Cable). The source of data is from [M-lab](https://www.measurementlab.net/), a coalition of reasearch institutes involved with internet statitics:
@@ -237,9 +267,9 @@ Precipitation: <https://www.worldclim.org/version1>, Current Conditions, Average
 
 UV index: <https://neo.sci.gsfc.nasa.gov/view.php?datasetId=AURA_UVI_CLIM_M>
 
-Airports:
+Air Pollution: <https://www.who.int/airpollution/data/cities/en/>, Ambient air pollution dataset
 
-Air Pollution:
+Airports: <http://ourairports.com/data/>, Airport dataset
 
 Internet: <https://www.cable.co.uk/broadband/speed/worldwide-speed-league/>, [data file](https://s3-eu-west-1.amazonaws.com/assets.cable.co.uk/broadband-speedtest/worldwide-broadband-speed-league-2018.xlsx)
 
