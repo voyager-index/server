@@ -277,6 +277,16 @@ table {
   overflow: scroll;
 }
 
+/*.btn-group .city-type {
+		visibility:hidden;
+}*/
+
+input[type=radio] {
+    display:none; 
+    margin:20px;
+	vertical-align:middle;
+}
+
 @media (min-width: 992px) {
   /* add vertical scroll box to div */
   .scroll-box {

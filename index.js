@@ -213,6 +213,18 @@ app.post('/bounding', async (req, res) => {
         if(filters[i] == "beaches"){
             query += ' AND cl.NearCoast = true ';
         }
+		if(filters[i] == "rural"){
+			query += ' AND (population < 20000)';
+		}
+		if(filters[i] == "town"){
+            query += ' AND (population < 100000 AND population > 20000)';
+        }
+        if(filters[i] == "city"){
+			query += ' AND (population < 300000 AND population > 100000)';
+        }
+		if(filters[i] == "metro"){
+			query += ' AND (population > 300000)';
+		}
    }
 
     query += " ORDER BY P.total DESC LIMIT 100;";
