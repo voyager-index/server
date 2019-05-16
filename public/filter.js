@@ -4,15 +4,7 @@ $("#toggle").click(() => {
     $("#content").toggleClass("col-lg-12 col-lg-10");
 });
 
-$(".internet").click(() => {
-    changeMarkers();
-});
-
-$(".beaches").click(() => {
-    changeMarkers();
-});
-
-$(".pollution").click(() => {
+$(".btn").click(() => {
     changeMarkers();
 });
 
@@ -50,6 +42,7 @@ button_group('cold', 'temperate', 'warm', 'hot');
 // Calls Voayger.buildFeatures() with city array.
 function changeMarkers() {
     const filters = Voyager.getFilters();
+    console.log('filters:', filters);
 
     const data_send = {
         'bounding_box': Voyager.getPoints(),
