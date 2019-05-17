@@ -208,22 +208,22 @@ app.post('/bounding', async (req, res) => {
             query += ' AND I.Speed > 1 ';
         }
         if(filters[i] == "pollution"){
-            query += ' AND (ap.Index = NULL OR ap.Index < 30) ';
+            query += ' AND (ap.Index = NULL OR ap.Index < 100) ';
         }
         if(filters[i] == "beaches"){
             query += ' AND cl.NearCoast = true ';
         }
 		if(filters[i] == "rural"){
-			query += ' AND (population < 20000)';
+			query += ' AND (p.total < 20000)';
 		}
 		if(filters[i] == "town"){
-            query += ' AND (population < 100000 AND population > 20000)';
+            query += ' AND (p.total < 100000 AND p.total > 20000)';
         }
         if(filters[i] == "city"){
-			query += ' AND (population < 300000 AND population > 100000)';
+			query += ' AND (p.total < 300000 AND p.total > 100000)';
         }
 		if(filters[i] == "metro"){
-			query += ' AND (population > 300000)';
+			query += ' AND (p.total > 300000)';
 		}
    }
 
