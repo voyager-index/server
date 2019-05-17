@@ -63,16 +63,16 @@ app.get('/db', async (req, res) => {
         const results = { 'results': (result) ? result.rows : null};
 
         for (var i = 0 ; i < results.results.length; i++){
-            var temp = results.results[i].tempjan + results.results[i].tempfeb + results.results[i].tempmar + results.results[i].tempapr + results.results[i].tempmay + results.results[i].tempjun + results.results[i].tempjul + 
+            var temp = results.results[i].tempjan + results.results[i].tempfeb + results.results[i].tempmar + results.results[i].tempapr + results.results[i].tempmay + results.results[i].tempjun + results.results[i].tempjul +
             results.results[i].tempaug + results.results[i].tempsep + results.results[i].tempoct + results.results[i].tempnov + results.results[i].tempdec;
             temp = temp / 12;
             temp = temp /10;
             results.results[i].temp = Math.round(temp);
-            var precip = results.results[i].precipjan + results.results[i].precipfeb + results.results[i].precipmar + results.results[i].precipapr + results.results[i].precipmay + results.results[i].precipjun + results.results[i].precipjul + 
+            var precip = results.results[i].precipjan + results.results[i].precipfeb + results.results[i].precipmar + results.results[i].precipapr + results.results[i].precipmay + results.results[i].precipjun + results.results[i].precipjul +
             results.results[i].precipaug + results.results[i].precipsep + results.results[i].precipoct + results.results[i].precipnov + results.results[i].precipdec;
             precip = precip / 12;
             results.results[i].precip = Math.round(precip);
-            var uv = results.results[i].uvjan + results.results[i].uvfeb + results.results[i].uvmar + results.results[i].uvapr + results.results[i].uvmay + results.results[i].uvjun + results.results[i].uvjul + 
+            var uv = results.results[i].uvjan + results.results[i].uvfeb + results.results[i].uvmar + results.results[i].uvapr + results.results[i].uvmay + results.results[i].uvjun + results.results[i].uvjul +
             results.results[i].uvaug + results.results[i].uvsep + results.results[i].uvoct + results.results[i].uvnov + results.results[i].uvdec;
             uv = uv / 12;
             uv = uv /16;
@@ -213,18 +213,18 @@ app.post('/bounding', async (req, res) => {
         if(filters[i] == "beaches"){
             query += ' AND cl.NearCoast = true ';
         }
-		if(filters[i] == "rural"){
-			query += ' AND (p.total < 20000)';
-		}
-		if(filters[i] == "town"){
+        if(filters[i] == "rural"){
+            query += ' AND (p.total < 20000)';
+        }
+        if(filters[i] == "town"){
             query += ' AND (p.total < 100000 AND p.total > 20000)';
         }
         if(filters[i] == "city"){
-			query += ' AND (p.total < 300000 AND p.total > 100000)';
+            query += ' AND (p.total < 300000 AND p.total > 100000)';
         }
-		if(filters[i] == "metro"){
-			query += ' AND (p.total > 300000)';
-		}
+        if(filters[i] == "metro"){
+            query += ' AND (p.total > 300000)';
+        }
    }
 
     query += " ORDER BY P.total DESC LIMIT 100;";
@@ -305,7 +305,7 @@ function rankCities(cities, filters){
             rank = 1.5;
         }
 
-        
+
         // Rank based on filter buttons. These names are in the class list for each button on index.ejs
         // Obviously we also need to improve this, but just to get something in place for us to build on.
         if(filters.includes("internet")){
