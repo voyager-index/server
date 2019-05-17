@@ -273,3 +273,5 @@ Airports: <http://ourairports.com/data/>, Airport dataset
 
 Internet: <https://www.cable.co.uk/broadband/speed/worldwide-speed-league/>, [data file](https://s3-eu-west-1.amazonaws.com/assets.cable.co.uk/broadband-speedtest/worldwide-broadband-speed-league-2018.xlsx)
 
+Purchasing Power Parity: <https://data.worldbank.org/indicator/PA.NUS.PPPC.RF?end=2017&start=2017&view=map>
+
