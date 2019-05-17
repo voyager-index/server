@@ -4,7 +4,7 @@ $("#toggle").click(() => {
     $("#content").toggleClass("col-lg-12 col-lg-10");
 });
 
-$(".btn").click(() => {
+$("filter > .btn").click(() => {
     changeMarkers();
 });
 
