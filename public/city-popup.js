@@ -1,3 +1,5 @@
+let _state = {};
+
 $(window).keydown((e) => {
     e = e || window.event;
     let key = e.which || e.keyCode; // keyCode detection
@@ -12,6 +14,27 @@ $(document).ready(() => {
     $('.exit').click(() => {
         close_popup();
     });
+
+    $('#select-image').click(() => {
+        const state = getState();
+        const city = state[0];
+        const lat = state[1];
+        const lon = state[2];
+
+        $('#image').empty();
+        $('#image').append("<img id='city-image' class='w-85' src='loading-davebees.gif'/>");
+        cityImage(city, lat, lon);
+    });
+
+    $('#select-map').click(() => {
+        const state = getState();
+        const lat = state[1];
+        const lon = state[2];
+
+        $('#image').empty();
+        $('#image').append("<div id='map-fallback'></div>");
+        const map = Voyager.makeMap(Number(lon), Number(lat), 11, 'map-fallback');
+    });
 });
 
 
@@ -20,13 +43,18 @@ function close_popup() {
 
     $('#image').empty();
     // https://old.reddit.com/r/loadingicon/comments/6h421f/winders_oc/
-    $('#image').append("<img id='city-image' src='loading-davebees.gif'/>");
+    $('#image').append("<img id='city-image' class='w-85' src='loading-davebees.gif'/>");
 
     $(window).off('click');
 }
 
 
 async function cityImage(city, lat, lon) {
+    console.log('city:', city);
+    console.log('lat:', lat);
+    console.log('lon:', lon);
+    saveState(city, lat, lon);
+
     try {
         const city_req = await getCity(city);
         const city_image = city_req.image;
@@ -37,9 +65,9 @@ async function cityImage(city, lat, lon) {
     catch(error) {
         $(window).off('click');
         console.error(error);
-        $('#image').empty();
-        $('#image').append("<div id='map-fallback'></div>");
-        const map = Voyager.makeMap(Number(lon), Number(lat), 11, 'map-fallback');
+
+        const city_req = await getCityFallback(city);
+        $('#city-image').attr('src', city_req);
     }
 
     $(window).on('click', (e) => {
@@ -60,7 +88,6 @@ async function cityInfo(features) {
     const lat = features.lat;
     const lon = features.lon;
     cityImage(name, lat, lon);
-
 
     // These properties must be present in both the the DB response, and the city-popup div in index.ejs
     const properties = ['city', 'country', 'population', 'mbps', 'lon', 'lat', 'elevation', 'pollution', 'airport', 'beach'];
@@ -89,4 +116,17 @@ async function cityInfo(features) {
         $('#popup-' + uvProperties[i]).text(val);
     }
 
+}
+
+function getState() {
+    return _state;
+}
+
+function saveState(...args) {
+    let i = 0;
+    args.forEach((arg) => {
+        _state[i] = arg;
+        i += 1;
+    });
+    console.log(_state);
 }
