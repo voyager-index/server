@@ -2,7 +2,6 @@
 
 $(document).ready(async () => {
     const gridItems = document.getElementsByClassName("grid-item");
-
     for (var i = 0; i < gridItems.length; i++){
         gridItems[i].addEventListener("mouseover", function(e) {
             this.lastElementChild.textContent = "hi from public/grid.js";
