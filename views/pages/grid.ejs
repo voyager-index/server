@@ -1,16 +1,28 @@
+<% include ../partials/city-popup.ejs %>
 <div class="grid-container" style="display: grid;
     grid-template-columns: 200px 200px 200px 200px;
     grid-gap: 20px;">
 
    <% cities.forEach(function(c) { %>
-   		<div class="grid-item" style="text-align:center; border: 1px solid black; border-radius:3px; height:200px;">
-      	 	<h3><%= c[0] %></h3>
-      	 	<p></p>
-      	</div>
+        <div class="grid-item" style="text-align:center; border: 1px solid black; border-radius:3px; height:200px;">
+            <img class='city-image' src=''></img>
+            <h3 class='city-name' data-name='<%= c[0] %>'><%= c[0] %></h3>
+            <div data-lon='<%= c[1] %>'></div>
+            <div data-lat='<%= c[2] %>'></div>
+            <script>console.log("<%= c %>");</script>
+            <p></p>
+        </div>
     <% }); %>
 
+    <div id='map-hide'></div>
 </div>
 
 
 <script src="city.js"></script>
+<script src="post.js"></script>
 <script src="grid.js"></script>
+<script src="main.bundle.js"></script>
+<script src="city-popup.js"></script>
+
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=***REMOVED***&libraries=places"></script>
+<script src="city-fallback.js"></script>

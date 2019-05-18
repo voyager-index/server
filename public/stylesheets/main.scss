@@ -150,7 +150,7 @@ input {
     width: 60%;
 }
 
-#city-image {
+.w-85 {
     width: 85%;
 }
 
@@ -271,9 +271,35 @@ table {
 // Example usage:
 @include media-breakpoint-up(lg) {
     /* add vertical scroll box to div */
-    .scroll-box { 
+    .scroll-box {
         height: 80vh; /* 80% screen height */
-        overflow-y: scroll; 
-    } 
+        overflow-y: scroll;
+    }
 }
- 
+
+
+.grid-item {
+    display: flex;
+
+    h3, p {
+        position: absolute;
+        background-color: black;
+        color: snow;
+    }
+
+    p {
+        margin-top: 10%;
+    }
+}
+
+#map-hide {
+    display: none;
+}
+
+#select {
+    cursor: pointer;
+
+    a {
+        padding-right: 1%;
+    }
+}
