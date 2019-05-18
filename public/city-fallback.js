@@ -4,7 +4,6 @@ async function getCityFallback(city) {
     const city_search = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${city}&inputtype=textquery&fields=name&key=${key}`
 
     const res = await getThingFallback(city);
-    console.log('res:', res);
     return res;
 }
 
@@ -20,7 +19,7 @@ async function getThingFallback(city) {
     infowindow = new google.maps.InfoWindow();
 
     map = new google.maps.Map(
-        document.getElementById('map'), {center: sydney, zoom: 15});
+        document.getElementById('map-hide'), {center: sydney, zoom: 15});
 
     var request = {
         query: city,
