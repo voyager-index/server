@@ -9,6 +9,7 @@ $("filter > .btn").click(() => {
 });
 
 // mimics radio button for filters
+// trying out rest parameter syntax
 function button_group(...args) {
     args.forEach((arg) => {
         $('.' + arg).click((e) => {
@@ -46,7 +47,7 @@ function changeMarkers() {
 
     const data_send = {
         'bounding_box': Voyager.getPoints(),
-        'filters': filters
+        'filters': filters,
     };
 
     postData(`/bounding`, data_send)
@@ -63,7 +64,7 @@ $(function(){
         {
             $radio.prop('checked', false);
             $radio.data('waschecked', false);
-			$radio.class += " active";
+            $radio.class += " active";
         }
         else
             $radio.data('waschecked', true);
@@ -74,10 +75,10 @@ $(function(){
 });
 
 $(function() {
-	    // When the value of the radio change
-	    $('input[name="city-type"]').on('change', function() {
-	        $(this).parent()
-	        .addClass('active')
-	        .siblings().removeClass('active');
-	    });
-	});
+        // When the value of the radio change
+        $('input[name="city-type"]').on('change', function() {
+            $(this).parent()
+            .addClass('active')
+            .siblings().removeClass('active');
+        });
+    });

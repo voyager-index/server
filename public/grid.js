@@ -12,7 +12,20 @@ $(document).ready(async () => {
         });
 
         gridItems[i].addEventListener("click", function(e) {
-            window.alert("Eventually there will be an overlay that appears instead.");
+            $('#city-popup').removeClass('hidden'); // Moved here for separation of concerns
+            const city = $(this)[0].children[1].getAttribute('data-name');
+            const lat = $(this)[0].children[2].getAttribute('data-lon');
+            const lon = $(this)[0].children[3].getAttribute('data-lat');
+            const data_send = {
+                'name': city,
+                'lat': lat,
+                'lon': lon,
+            };
+
+            postData(`/city`, data_send)
+                .then(data => cityInfo(data))
+                .catch(error => console.error(error));
+
         });
 
         const city = gridItems[i].innerText;
@@ -21,7 +34,6 @@ $(document).ready(async () => {
 
         try {
             const city_req = await getCity(city);
-            console.log('city_req:', city_req);
             const city_name = city_req.name;
             const city_image = city_req.image;
             cityImage.src = city_image;
@@ -29,7 +41,6 @@ $(document).ready(async () => {
         catch(err) {
             console.log(err);
             const city_req = await getCityFallback(city);
-            console.log('city_req:', city_req);
             cityImage.src = city_req;
         }
     }
