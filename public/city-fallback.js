@@ -1,8 +1,5 @@
 // Returns a city's name and image.
 async function getCityFallback(city) {
-    const key = '***REMOVED***';
-    const city_search = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${city}&inputtype=textquery&fields=name&key=${key}`
-
     const res = await getThingFallback(city);
     return res;
 }
