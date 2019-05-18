@@ -159,7 +159,7 @@ input {
   width: 60%;
 }
 
-#city-image {
+.w-85 {
   width: 85%;
 }
 
@@ -284,6 +284,28 @@ table {
     /* 80% screen height */
     overflow-y: scroll;
   }
+}
+.grid-item {
+  display: flex;
+}
+.grid-item h3, .grid-item p {
+  position: absolute;
+  background-color: black;
+  color: snow;
+}
+.grid-item p {
+  margin-top: 10%;
+}
+
+#map-hide {
+  display: none;
+}
+
+#select {
+  cursor: pointer;
+}
+#select a {
+  padding-right: 1%;
 }
 
 /*# sourceMappingURL=main.css.map */

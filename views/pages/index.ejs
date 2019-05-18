@@ -1,89 +1,6 @@
 <div class="container-fluid">
     <button id="toggle" class="btn btn-success btn-sm">Toggle Filters</button>
-    <div id="city-popup" class="hidden">
-        <div class='exit'>X</div>
-        <h2 id="city-name"><span id="popup-city"></span>, <span id="popup-country"></span></h2>
-        <h5 id="lat-lon">(<span id="popup-lat"></span>, <span id="popup-lon"></span>)</h5>
-        <div id='flex-container'>
-            <div id='image'>
-                <!-- https://old.reddit.com/r/loadingicon/comments/6h421f/winders_oc/ -->
-                <img id='city-image' src='loading-davebees.gif'/>
-            </div>
-            <div id='info'>
-                <p>Population: <span id="popup-population"></p>
-                <p>Internet (Mbps): <span id="popup-mbps"></p>
-                <p>Elevation <span id="popup-elevation"> M</p>
-                <p>Air Pollution Index: <span id="popup-pollution"></p>
-                <p>Is there an airport? <span id="popup-airport"></p>
-                <p>Is there a beach? <span id="popup-beach"></p>
-
-            </div>
-        </div>
-        <div id='weather'>
-            <table>
-                <tr>
-                    <th> </th>
-                    <th> Jan </th>
-                    <th> Feb </th>
-                    <th> March </th>
-                    <th> April </th>
-                    <th> May </th>
-                    <th> June </th>
-                    <th> July </th>
-                    <th> Aug </th>
-                    <th> Sept </th>
-                    <th> Oct </th>
-                    <th> Nov </th>
-                    <th> Dec </th>
-                </tr>
-                <tr>
-                    <td> Temperature (C) </td>
-                    <td> <span id="popup-tempJan"> </td>
-                    <td> <span id="popup-tempFeb"> </td>
-                    <td> <span id="popup-tempMar"> </td>
-                    <td> <span id="popup-tempApr"> </td>
-                    <td> <span id="popup-tempMay"> </td>
-                    <td> <span id="popup-tempJun"> </td>
-                    <td> <span id="popup-tempJul"> </td>
-                    <td> <span id="popup-tempAug"> </td>
-                    <td> <span id="popup-tempSep"> </td>
-                    <td> <span id="popup-tempOct"> </td>
-                    <td> <span id="popup-tempNov"> </td>
-                    <td> <span id="popup-tempDec"> </td>
-                </tr>
-                <tr>
-                    <td> Precipitation (in) </td>
-                    <td> <span id="popup-precipJan"> </td>
-                    <td> <span id="popup-precipFeb"> </td>
-                    <td> <span id="popup-precipMar"> </td>
-                    <td> <span id="popup-precipApr"> </td>
-                    <td> <span id="popup-precipMay"> </td>
-                    <td> <span id="popup-precipJun"> </td>
-                    <td> <span id="popup-precipJul"> </td>
-                    <td> <span id="popup-precipAug"> </td>
-                    <td> <span id="popup-precipSep"> </td>
-                    <td> <span id="popup-precipOct"> </td>
-                    <td> <span id="popup-precipNov"> </td>
-                    <td> <span id="popup-precipDec"> </td>
-                </tr>
-                <tr>
-                    <td> UV index </td>
-                    <td> <span id="popup-uvJan"> </td>
-                    <td> <span id="popup-uvFeb"> </td>
-                    <td> <span id="popup-uvMar"> </td>
-                    <td> <span id="popup-uvApr"> </td>
-                    <td> <span id="popup-uvMay"> </td>
-                    <td> <span id="popup-uvJun"> </td>
-                    <td> <span id="popup-uvJul"> </td>
-                    <td> <span id="popup-uvAug"> </td>
-                    <td> <span id="popup-uvSep"> </td>
-                    <td> <span id="popup-uvOct"> </td>
-                    <td> <span id="popup-uvNov"> </td>
-                    <td> <span id="popup-uvDec"> </td>
-                </tr>
-            </table>
-        </div>
-    </div>
+    <% include ../partials/city-popup.ejs %>
     <div class="row">
         <!-- Filter area -->
         <div id="filter-col" class="col-lg-2 scroll-box">
@@ -129,9 +46,13 @@
         </div>
     </div>
 
+    <div id="map-hide"></div>
 </div>
 <script src="post.js"></script>
 <script src="city-popup.js"></script>
 <script src="city.js"></script>
 <script src="main.bundle.js"></script>
 <script src="filter.js"></script>
+
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0HDekZyCAyDNNKgs2oE1n55OjtSD8ahE&libraries=places"></script>
+<script src="city-fallback.js"></script>

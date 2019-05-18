@@ -63,16 +63,16 @@ app.get('/db', async (req, res) => {
         const results = { 'results': (result) ? result.rows : null};
 
         for (var i = 0 ; i < results.results.length; i++){
-            var temp = results.results[i].tempjan + results.results[i].tempfeb + results.results[i].tempmar + results.results[i].tempapr + results.results[i].tempmay + results.results[i].tempjun + results.results[i].tempjul + 
+            var temp = results.results[i].tempjan + results.results[i].tempfeb + results.results[i].tempmar + results.results[i].tempapr + results.results[i].tempmay + results.results[i].tempjun + results.results[i].tempjul +
             results.results[i].tempaug + results.results[i].tempsep + results.results[i].tempoct + results.results[i].tempnov + results.results[i].tempdec;
             temp = temp / 12;
             temp = temp /10;
             results.results[i].temp = Math.round(temp);
-            var precip = results.results[i].precipjan + results.results[i].precipfeb + results.results[i].precipmar + results.results[i].precipapr + results.results[i].precipmay + results.results[i].precipjun + results.results[i].precipjul + 
+            var precip = results.results[i].precipjan + results.results[i].precipfeb + results.results[i].precipmar + results.results[i].precipapr + results.results[i].precipmay + results.results[i].precipjun + results.results[i].precipjul +
             results.results[i].precipaug + results.results[i].precipsep + results.results[i].precipoct + results.results[i].precipnov + results.results[i].precipdec;
             precip = precip / 12;
             results.results[i].precip = Math.round(precip);
-            var uv = results.results[i].uvjan + results.results[i].uvfeb + results.results[i].uvmar + results.results[i].uvapr + results.results[i].uvmay + results.results[i].uvjun + results.results[i].uvjul + 
+            var uv = results.results[i].uvjan + results.results[i].uvfeb + results.results[i].uvmar + results.results[i].uvapr + results.results[i].uvmay + results.results[i].uvjun + results.results[i].uvjul +
             results.results[i].uvaug + results.results[i].uvsep + results.results[i].uvoct + results.results[i].uvnov + results.results[i].uvdec;
             uv = uv / 12;
             uv = uv /16;
@@ -107,14 +107,14 @@ app.post('/city', async (req, res) => {
             // INNER JOIN Intl_Airports ia ON ia.CityId = c.id
 
     const query = `
-        SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat,
+		SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat,
         p.total AS population, i.speed AS mbps,
         cl.NearCoast AS beach, a.Exists AS airport,
         e.elevation AS elevation, ap.Index as pollution,
         t.Jan AS tempJan, t.Feb AS tempFeb, t.Mar AS tempMar ,t.April AS tempApr ,t.May AS tempMay ,t.June AS tempJun ,t.July AS tempJul ,t.Aug AS tempAug ,t.Sept AS tempSep ,t.Oct AS tempOct ,t.Nov AS tempNov ,t.Dec AS tempDec,
         pr.Jan AS precipJan, pr.Feb AS precipFeb, pr.Mar AS precipMar ,pr.April AS precipApr ,pr.May AS precipMay ,pr.June AS precipJun ,pr.July AS precipJul ,pr.Aug AS precipAug ,pr.Sept AS precipSep ,pr.Oct AS precipOct ,pr.Nov AS precipNov ,pr.Dec AS precipDec,
-        uv.Jan AS uvJan, uv.Feb AS uvFeb, uv.Mar AS uvMar ,uv.April AS uvApr ,uv.May AS uvMay ,uv.June AS uvJun ,uv.July AS uvJul ,uv.Aug AS uvAug ,uv.Sept AS uvSep ,uv.Oct AS uvOct ,uv.Nov AS uvNov ,uv.Dec AS uvDec
-
+        uv.Jan AS uvJan, uv.Feb AS uvFeb, uv.Mar AS uvMar ,uv.April AS uvApr ,uv.May AS uvMay ,uv.June AS uvJun ,uv.July AS uvJul ,uv.Aug AS uvAug ,uv.
+        Sept AS uvSep ,uv.Oct AS uvOct ,uv.Nov AS uvNov ,uv.Dec AS uvDec
         FROM City c
         INNER JOIN Country co ON co.id = c.country
         INNER JOIN Internet_Speed i ON i.Country = co.id
@@ -128,11 +128,11 @@ app.post('/city', async (req, res) => {
         INNER JOIN UV_Index uv ON uv.CityId = c.id
 
         WHERE C.name = '${name}'
-        AND TRUNC(C.lon, 2) = TRUNC(${lon}, 2)
-        AND TRUNC(C.lat, 2) = TRUNC(${lat}, 2)
+        --AND TRUNC(C.lon, 2) = TRUNC(${lon}, 2)
+        --AND TRUNC(C.lat, 2) = TRUNC(${lat}, 2)
         ;
         `
-
+    //console.log(query);
     try {
         const client = await pool.connect()
         const result = await client.query(query);
@@ -213,18 +213,18 @@ app.post('/bounding', async (req, res) => {
         if(filters[i] == "beaches"){
             query += ' AND cl.NearCoast = true ';
         }
-		if(filters[i] == "rural"){
-			query += ' AND (p.total < 20000)';
-		}
-		if(filters[i] == "town"){
+        if(filters[i] == "rural"){
+            query += ' AND (p.total < 20000)';
+        }
+        if(filters[i] == "town"){
             query += ' AND (p.total < 100000 AND p.total > 20000)';
         }
         if(filters[i] == "city"){
-			query += ' AND (p.total < 300000 AND p.total > 100000)';
+            query += ' AND (p.total < 300000 AND p.total > 100000)';
         }
-		if(filters[i] == "metro"){
-			query += ' AND (p.total > 300000)';
-		}
+        if(filters[i] == "metro"){
+            query += ' AND (p.total > 300000)';
+        }
    }
 
     query += " ORDER BY P.total DESC LIMIT 100;";
@@ -305,7 +305,7 @@ function rankCities(cities, filters){
             rank = 1.5;
         }
 
-        
+
         // Rank based on filter buttons. These names are in the class list for each button on index.ejs
         // Obviously we also need to improve this, but just to get something in place for us to build on.
         if(filters.includes("internet")){
