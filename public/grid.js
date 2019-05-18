@@ -2,6 +2,7 @@
 
 $(document).ready(async () => {
     const gridItems = document.getElementsByClassName("grid-item");
+
     for (var i = 0; i < gridItems.length; i++){
         gridItems[i].addEventListener("mouseover", function(e) {
             this.lastElementChild.textContent = "hi from public/grid.js";
@@ -27,7 +28,9 @@ $(document).ready(async () => {
                 .catch(error => console.error(error));
 
         });
+    }
 
+    for (var i = 0; i < gridItems.length; i++) {
         const city = gridItems[i].innerText;
         const cityImage = gridItems[i].childNodes[1];
         //cityImage.src = 'loading-davebees.gif';
