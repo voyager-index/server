@@ -11,7 +11,7 @@ npm run start
 # Requirements
 
 - [Node.js](https://nodejs.org/) (runs the server).
-- [pandoc](https://pandoc.org/) (converts views/pages/data_article.md to views/pages/data_article.ejs).
+- [pandoc](https://pandoc.org/) (converts `views/pages/data_article.md` to `views/pages/data_article.ejs`).
 - [PostgreSQL](https://www.postgresql.org/) (runs the database).
 - [Git](https://git-scm.com/) (moves the code around).
 - A shell and terminal (runs the code).
