@@ -1,6 +1,6 @@
 // Returns a city's name and image.
 async function getCityFallback(city) {
-    const res = await getThingFallback(city);
+    const res = getThingFallback(city);
     return res;
 }
 
