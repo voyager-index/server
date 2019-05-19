@@ -8,6 +8,24 @@ source .env
 npm run build
 npm run start
 ```
+# Requirements
+
+- [Node.js](https://nodejs.org/) (runs the server).
+- [pandoc](https://pandoc.org/) (converts `views/pages/data_article.md` to `views/pages/data_article.ejs`).
+- [PostgreSQL](https://www.postgresql.org/) (runs the database).
+- [Git](https://git-scm.com/) (moves the code around).
+- A shell and terminal (runs the code).
+
+If you'd rather skip the pandoc installation, change this line in `nodemon.json`:
+
+```json
+    "restart": "node docs.js; sass public/stylesheets/main.scss public/stylesheets/main.css"
+```
+to:
+
+```json
+    "restart": "sass public/stylesheets/main.scss public/stylesheets/main.css"
+```
 
 # Server Setup
 
