@@ -22,11 +22,13 @@ async function getThingFallback(city) {
         query: city,
         fields: ['name', 'place_id'],
     };
+    // console.log('status:', status);
 
     var service = new google.maps.places.PlacesService(map);
 
     return new Promise(function (resolve, reject) {
         service.findPlaceFromQuery(request, function(results, status) {
+            // console.log('status:', status);
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (var i = 0; i < results.length; i++) {
                     const place_id = results[i].place_id;
@@ -43,6 +45,9 @@ async function getThingFallback(city) {
                         }
                     }
                 }
+            }
+            else {
+                reject('Google places API error.');
             }
         });
     });
