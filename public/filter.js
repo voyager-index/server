@@ -33,6 +33,9 @@ button_group('rural', 'town', 'city', 'metro');
 // temperature filter
 button_group('cold', 'temperate', 'warm', 'hot');
 
+// Months
+button_group('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec');
+
 // Gets list of filters from Voyager module (/public/main.js).
 // Gets bouding box from Voyager module (/public/main.js).
 // Sends both to /bounding as POST request.
