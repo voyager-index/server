@@ -239,17 +239,13 @@ app.post('/bounding', async (req, res) => {
         const client = await pool.connect()
         const result = await client.query(query);
         const results = result ? result.rows : null;
-
         var cityRank = rankCities(results, filters);
         res.send(cityRank);
-//        cities = obj_arr2arr(results.cities);
-
         client.release();
     } catch (err) {
         console.error(err);
         res.send("Error " + err);
     }
-
 });
 
 app.get('/grid', async (req, res) => {
@@ -307,9 +303,8 @@ function rankCities(cities, filters){
     var rankedCities = [];
     var i;
     for (i = 0 ; i < cities.length; i++){
-
         var rank = 0; // Starting rank for each city
-        var weight = 1; // Weight to be used for each section.
+        var weight; // Weight given to each section depending on whether or not it was selected as filter
         const pop = Number(cities[i]["population"]);
 
         // Rank based on filter buttons. These names are in the class list for each button on index.ejs
@@ -351,11 +346,11 @@ function rankCities(cities, filters){
             avgUV = getAvgUV(cities[i]);
             avgPrecip = getAvgPrecip(cities[i]);
             avgTemp = getAvgTemp(cities[i]);
-        } else { // Get weather with month
+        } else { // Get weather with month filter included
             // get averages
-                avgUV = getMonthUV(cities[i], selectedMonth);
-                avgPrecip = getMonthPrecip(cities[i], selectedMonth);
-                avgTemp = getMonthTemp(cities[i], selectedMonth);
+            avgUV = getMonthUV(cities[i], selectedMonth);
+            avgPrecip = getMonthPrecip(cities[i], selectedMonth);
+            avgTemp = getMonthTemp(cities[i], selectedMonth);
         }
 
 
@@ -388,8 +383,8 @@ RANKING DONE BELOW
                weight = 1;
         }
         rank += precipRank * weight;
-
             
+        // Temp ranking
         if (filters.includes('cold') ){
             // 0 f to 45 f == -17.7 C to 7.2
             if (avgTemp >= -177 && avgTemp <= 72){
@@ -444,7 +439,7 @@ RANKING DONE BELOW
         }
         rank += tempRank * weight;
 
-
+        // Population
         var popRank = 0;
         if(filters.includes('rural')){
                     // < 20k
@@ -458,7 +453,7 @@ RANKING DONE BELOW
         } else if(filters.includes('metro')){
             popRank += pop/1000000;
         } else { // No filter
-            if (pop > 35000 && pop < 1500000){
+            if (pop > 35000 && pop < 1500000){ // I just made up what to do here, feel free to make more complex. 2 pts gained if between 35k and 1.5mil
                 popRank += 10;
             }
         }
@@ -467,7 +462,6 @@ RANKING DONE BELOW
             weight = 1;
         }
         rank += popRank * weight;
-
 
         // Purchasing power
         var purchasePower = cities[i]["purchasingpower"];
@@ -478,12 +472,14 @@ RANKING DONE BELOW
         }
         rank += pppRank* weight;
 
+        // Adjust to onle 1 decimal place
         var roundedRank = Math.round(rank * 10)/10;
         //name, lon, lat, rank
         rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), roundedRank]);
     }
 
     // Adjust to relative rank
+    // Rank range: 0 - 10
     var maxRank = -100, minRank = 100000, thisRank;
     for (var k = 0; k < rankedCities.length; k++){
         thisRank = rankedCities[k][3];
@@ -509,7 +505,6 @@ RANKING DONE BELOW
             rankedCities[l][3] = (rankedCities[l][3]).toFixed(1);
         }
     }
-
 
     var returnVal = {'cities': rankedCities};
     return returnVal;
@@ -549,10 +544,9 @@ function getMonthTemp(city, month){
     return city[index];
 }
 
-
-
-
-
+/*
+Data and settings page routers
+*/
 
 app.get('/data', (req, res) => {
     res.render('pages/data_article');
