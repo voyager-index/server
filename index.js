@@ -205,13 +205,13 @@ app.post('/bounding', async (req, res) => {
 
    for (var i = 0; i < filters.length; i++){
         if(filters[i] == "internet"){
-            query += ' AND I.Speed > 1 ';
+            query += ' AND I.Speed > 1';
         }
         if(filters[i] == "pollution"){
-            query += ' AND (ap.Index = NULL OR ap.Index < 100) ';
+            query += ' AND (ap.Index = NULL OR ap.Index < 100)';
         }
         if(filters[i] == "beaches"){
-            query += ' AND cl.NearCoast = true ';
+            query += ' AND cl.NearCoast = true';
         }
         if(filters[i] == "rural"){
             query += ' AND (p.total < 20000)';
@@ -224,6 +224,9 @@ app.post('/bounding', async (req, res) => {
         }
         if(filters[i] == "metro"){
             query += ' AND (p.total > 500000)';
+        }
+        if(filters[i] == "airports"){
+            query += ' AND (a.Exists = true)'
         }
    }
 
