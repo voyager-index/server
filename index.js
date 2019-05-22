@@ -178,7 +178,8 @@ app.post('/bounding', async (req, res) => {
         e.elevation AS elevation, ap.Index as pollution,
         t.Jan AS tempJan, t.Feb AS tempFeb, t.Mar AS tempMar ,t.April AS tempApr ,t.May AS tempMay ,t.June AS tempJun ,t.July AS tempJul ,t.Aug AS tempAug ,t.Sept AS tempSep ,t.Oct AS tempOct ,t.Nov AS tempNov ,t.Dec AS tempDec,
         pr.Jan AS precipJan, pr.Feb AS precipFeb, pr.Mar AS precipMar ,pr.April AS precipApr ,pr.May AS precipMay ,pr.June AS precipJun ,pr.July AS precipJul ,pr.Aug AS precipAug ,pr.Sept AS precipSep ,pr.Oct AS precipOct ,pr.Nov AS precipNov ,pr.Dec AS precipDec,
-        uv.Jan AS uvJan, uv.Feb AS uvFeb, uv.Mar AS uvMar ,uv.April AS uvApr ,uv.May AS uvMay ,uv.June AS uvJun ,uv.July AS uvJul ,uv.Aug AS uvAug ,uv.Sept AS uvSep ,uv.Oct AS uvOct ,uv.Nov AS uvNov ,uv.Dec AS uvDec
+        uv.Jan AS uvJan, uv.Feb AS uvFeb, uv.Mar AS uvMar ,uv.April AS uvApr ,uv.May AS uvMay ,uv.June AS uvJun ,uv.July AS uvJul ,uv.Aug AS uvAug ,uv.Sept AS uvSep ,uv.Oct AS uvOct ,uv.Nov AS uvNov ,uv.Dec AS uvDec,
+        ppp.ppp AS purchasingpower 
 
         FROM City c
         INNER JOIN Country co ON co.id = c.country
@@ -191,6 +192,7 @@ app.post('/bounding', async (req, res) => {
         INNER JOIN Temp t ON t.CityId = c.id
         INNER JOIN Precipitation pr ON pr.CityId = c.id
         INNER JOIN UV_Index uv ON uv.CityId = c.id
+        INNER JOIN Puchasing_Power_Parity ppp ON ppp.Country = co.id
 
         WHERE
         (C.lon >= ${bottom_left_lon} OR
@@ -466,6 +468,16 @@ RANKING DONE BELOW
         }
         rank += popRank * weight;
 
+
+        // Purchasing power
+        var purchasePower = cities[i]["purchasingpower"];
+        var pppRank = Math.round((1 - purchasePower)*10);
+        weight = .2;
+        if(filters.includes('purchase')){
+            weight = 1;
+        }
+        rank += pppRank* weight;
+
         var roundedRank = Math.round(rank * 10)/10;
         //name, lon, lat, rank
         rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), roundedRank]);
@@ -488,7 +500,7 @@ RANKING DONE BELOW
             rankedCities[l][3] += addToRank;
         }
     }
-    if (maxRank > 10){
+    if (maxRank > 10 || maxRank - minRank > 10 ){
         for (var l = 0; l < rankedCities.length; l++){
             rankedCities[l][3] = ((rankedCities[l][3] * 10) / maxRank).toFixed(1); // toFixed converts to string, so to stat consistent we do it whether or not maxRank is > 10
         }
