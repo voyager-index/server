@@ -276,6 +276,7 @@ app.get('/grid', async (req, res) => {
         const results = result ? result.rows : null;
 
         const filters = [];
+        console.log(results.length);
         var cityRank = rankCities(results, filters);
         res.render('pages/grid', cityRank);
         client.release();
@@ -287,7 +288,17 @@ app.get('/grid', async (req, res) => {
 
 function rankCities(cities, filters){
     //True False values don't matter, because they are filtered out.
-    //console.log(cities[0]);
+    var selectedMonth;
+    // Month included?
+    const group = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    var includeMonth = false;
+    for (var j = 0; j < 12; j++){
+        if (filters.includes(group[j])){
+            includeMonth = true;
+            selectedMonth = group[j];
+        }
+    }
+    
     var rankedCities = [];
     var i;
     for (i = 0 ; i < cities.length; i++){
@@ -299,12 +310,11 @@ function rankCities(cities, filters){
             rank = 4.5;
         } else if (pop > 500000) {
             rank = 3.5;
-        } else if ( pop > 100000) {
+        } else if ( pop > 1000000) {
             rank = 2.5;
         } else {
             rank = 1.5;
         }
-
 
         // Rank based on filter buttons. These names are in the class list for each button on index.ejs
         // Obviously we also need to improve this, but just to get something in place for us to build on.
@@ -333,6 +343,40 @@ function rankCities(cities, filters){
             }
         }
 
+        // Weather
+        if( filters.includes('uv') || filters.includes('precipitation') || filters.includes('cold') || filters.includes('temperate') || filters.includes('warm') || filters.includes('hot') ) {
+            var avgUV;     // Integer, index of 0 - 16, * 16       For higher accuracy, so its 0 through 256
+            var avgPrecip; // Integer, mm
+            var avgTemp; // Integer, degrees C * 10
+
+            // Get weather without month
+            if (includeMonth == false){
+                // get averages
+                if( filters.includes('uv') ){
+                    avgUV = getAvgUV(cities[i]);
+                } 
+                if ( filters.includes('precipitation') ){
+                    avgPrecip = getAvgPrecip(cities[i]);
+                }
+                if (filters.includes('cold') || filters.includes('temperate') || filters.includes('warm') || filters.includes('hot')){
+                    avgTemp = getAvgTemp(cities[i]);
+               }
+
+            } else { // Get weather with month
+                // get averages
+                if( filters.includes('uv') ){
+                    avgUV = getMonthUV(cities[i], selectedMonth);
+                } 
+                if ( filters.includes('precipitation') ){
+                    avgPrecip = getMonthPrecip(cities[i], selectedMonth);
+                }
+                if (filters.includes('cold') || filters.includes('temperate') || filters.includes('warm') || filters.includes('hot')){
+                    avgTemp = getMonthTemp(cities[i], selectedMonth);
+               }
+            }
+
+        }
+
 
         //name, lon, lat, rank
         rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), rank]);
@@ -340,6 +384,44 @@ function rankCities(cities, filters){
     var returnVal = {'cities': rankedCities};
     return returnVal;
 }
+
+function getAvgUV(city){
+    const uvTotal = (city['uvjan']) + (city['uvfeb']) + (city['uvmar']) + (city['uvapr']) + (city['uvmay']) + (city['uvjun']) + 
+                    (city['uvjul']) + (city['uvaug']) + (city['uvsep']) + (city['uvoct']) + (city['uvnov']) + (city['uvdec']);
+    return Math.round(uvTotal/12);
+}
+
+function getAvgPrecip(city){
+   //console.log(city['precipdec']);
+    const precipTotal = city['precipjan'] + city['precipfeb'] + city['precipmar'] + city['precipapr'] + city['precipmay'] + city['precipjun'] + 
+                        city['precipjul'] + city['precipaug'] + city['precipsep'] + city['precipoct'] + city['precipnov'] + city['precipdec'];
+    return Math.round(precipTotal/12);
+}
+
+function getAvgTemp(city){
+    const tempTotal = city['tempjan'] + city['tempfeb'] + city['tempmar'] + city['tempapr'] + city['tempmay'] + city['tempjun'] + 
+                      city['tempjul'] + city['tempaug'] + city['tempsep'] + city['tempoct'] + city['tempnov'] + city['tempdec'];
+    return Math.round(tempTotal/12);
+}
+
+function getMonthUV(city, month){
+    const index = "uv" +  month;
+    return city[index];
+}
+
+function getMonthPrecip(city, month){
+    const index = "precip" +  month;
+    return city[index];
+}
+
+function getMonthTemp(city, month){
+    const index = "temp" +  month;
+    return city[index];
+}
+
+
+
+
 
 
 app.get('/data', (req, res) => {
