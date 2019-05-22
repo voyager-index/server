@@ -180,10 +180,10 @@ function buildFeatures(cities) {
     //I have added 3 different marker png images to the folder for use
     // Credit to https://mapicons.mapsmarker.com. Creative commons license. (I edited the marker to erase icon)
     var src;
-    if(rank > 3.5){
+    if(Number(rank) > 3.5){
       src = "greenMarker.png";
     }
-    else if (rank > 2.5){
+    else if (Number(rank) > 2.5){
       src = "yellowMarker.png";
     }
     else{
@@ -210,7 +210,7 @@ function buildFeatures(cities) {
         src: src,
       }),
       text: new Text({
-        text: rank.toString(),
+        text: rank,
         offsetY: -20, //Positive = shift down
         offsetX: 4, //Positive = shift right
         scale: 1.4,

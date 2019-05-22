@@ -469,6 +469,31 @@ RANKING DONE BELOW
     }
 
     // Adjust to relative rank
+    var maxRank = -100, minRank = 100000, thisRank;
+    for (var k = 0; k < rankedCities.length; k++){
+        thisRank = rankedCities[k][3];
+        if (thisRank > maxRank){
+            maxRank = thisRank;
+        }
+        if (thisRank < minRank){
+            minRank = thisRank;
+        }
+    }
+    if (minRank < 0){
+        const addToRank = Math.abs(minRank);
+        for (var l = 0; l < rankedCities.length; l++){
+            rankedCities[l][3] += addToRank;
+        }
+    }
+    if (maxRank > 10){
+        for (var l = 0; l < rankedCities.length; l++){
+            rankedCities[l][3] = ((rankedCities[l][3] * 10) / maxRank).toFixed(1); // toFixed converts to string, so to stat consistent we do it whether or not maxRank is > 10
+        }
+    } else {
+        for (var l = 0; l < rankedCities.length; l++){
+            rankedCities[l][3] = (rankedCities[l][3]).toFixed(1);
+        }
+    }
 
 
     var returnVal = {'cities': rankedCities};
