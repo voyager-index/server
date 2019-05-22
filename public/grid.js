@@ -25,7 +25,6 @@ $(document).ready(async () => {
             postData(`/city`, data_send)
                 .then(data => cityInfo(data))
                 .catch(error => console.error(error));
-
         });
     }
 
@@ -33,17 +32,25 @@ $(document).ready(async () => {
         const city = gridItems[i].innerText;
         const cityImage = gridItems[i].childNodes[1];
         //cityImage.src = 'loading-davebees.gif';
+        const id = gridItems[i].children[5].getAttribute('data-id');
+        const data_send = {
+            'id': id,
+        };
 
-        try {
-            const city_req = await getCity(city);
-            const city_name = city_req.name;
-            const city_image = city_req.image;
-            cityImage.src = city_image;
-        }
-        catch(err) {
-            console.log(err);
-            const city_req = await getCityFallback(city);
-            cityImage.src = city_req;
-        }
+        postData(`/city-image`, data_send)
+            .then(data => cityImage.src = data.src)
+            .catch(async () => {
+                try {
+                    const city_req = await getCity(city);
+                    const city_name = city_req.name;
+                    const city_image = city_req.image;
+                    cityImage.src = city_image;
+                }
+                catch(err) {
+                    console.log(err);
+                    const city_req = await getCityFallback(city);
+                    cityImage.src = city_req;
+                }
+            });
     }
 });

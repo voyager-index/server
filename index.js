@@ -248,7 +248,7 @@ app.post('/bounding', async (req, res) => {
 });
 
 app.get('/grid', async (req, res) => {
-     var query = `SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat,
+     var query = `SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat, c.id,
         p.total AS population, i.speed AS mbps,
         cl.NearCoast AS beach, a.Exists AS airport,
         e.elevation AS elevation, ap.Index as pollution,
@@ -267,7 +267,7 @@ app.get('/grid', async (req, res) => {
         INNER JOIN Temp t ON t.CityId = c.id
         INNER JOIN Precipitation pr ON pr.CityId = c.id
         INNER JOIN UV_Index uv ON uv.CityId = c.id
-        ORDER BY P.total DESC LIMIT 24;`
+        ORDER BY P.total DESC LIMIT 100;`
 
     let cities = [];
     try {
@@ -335,11 +335,41 @@ function rankCities(cities, filters){
 
 
         //name, lon, lat, rank
-        rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), rank]);
+        rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), rank, cities[i]["id"]]);
     }
     var returnVal = {'cities': rankedCities};
     return returnVal;
 }
+
+// city page
+app.post('/city-image', async (req, res) => {
+
+    // get data from POST body.
+    const id = req.body.id;
+
+    const query = `
+    SELECT src FROM City_Image CI
+    WHERE CI.cityid = ${id}
+        ;
+        `
+    //console.log(query);
+    try {
+        const client = await pool.connect()
+        const result = await client.query(query);
+        var results = null;
+        if (result.rows[0]){
+            results = result.rows[0];
+        }
+        else {
+            //It should probably just show the data that it can get, or say that it can't find data.
+        }
+        client.release();
+        res.send(results);
+    }
+    catch(error) {
+        console.log(error);
+    }
+});
 
 
 app.get('/data', (req, res) => {
