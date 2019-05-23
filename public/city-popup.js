@@ -20,10 +20,11 @@ $(document).ready(() => {
         const city = state[0];
         const lat = state[1];
         const lon = state[2];
+        const id = state[3];
 
         $('#image').empty();
         $('#image').append("<img id='city-image' class='w-85' src='loading-davebees.gif'/>");
-        cityImage(city, lat, lon);
+        cityImage(city, lat, lon, id);
     });
 
     $('#select-map').click(() => {
@@ -49,26 +50,42 @@ function close_popup() {
 }
 
 
-async function cityImage(city, lat, lon) {
+async function cityImage(city, lat, lon, id) {
     console.log('city:', city);
     console.log('lat:', lat);
     console.log('lon:', lon);
-    saveState(city, lat, lon);
+    console.log('id:', id);
+    saveState(city, lat, lon, id);
 
-    try {
-        const city_req = await getCity(city);
-        const city_image = city_req.image;
+    const data_send = {
+        'name': city,
+        'lat': lat,
+        'lon': lon,
+        'id': id,
+    };
 
-        $('#city-image').attr('src', city_image);
-    }
-
-    catch(error) {
-        $(window).off('click');
-        console.error(error);
-
-        const city_req = await getCityFallback(city);
-        $('#city-image').attr('src', city_req);
-    }
+    postData(`/city-image`, data_send)
+        .then(data => $('#city-image').attr('src', data.src))
+        .catch(async (err) => {
+            console.error(err);
+            try {
+                const city_req = await getCity(city);
+                const city_name = city_req.name;
+                const city_image = city_req.image;
+                $('#city-image').attr('src', city_image);
+            } catch(err) {
+                console.error(err);
+                try {
+                    const city_req = await getCityFallback(city);
+                    console.log('city_req:', city_req);
+                    cityImage.src = city_req;
+                    $('#city-image').attr('src', city_req);
+                } catch(err) {
+                    console.error(err);
+                    console.error('Could not find image for city ' + id);
+                }
+            }
+        });
 
     $(window).on('click', (e) => {
         e = e || window.event;
@@ -87,7 +104,8 @@ async function cityInfo(features) {
     const name = features.city;
     const lat = features.lat;
     const lon = features.lon;
-    cityImage(name, lat, lon);
+    const id = features.id;
+    cityImage(name, lat, lon, id);
 
     // These properties must be present in both the the DB response, and the city-popup div in index.ejs
     const properties = ['city', 'country', 'population', 'mbps', 'lon', 'lat', 'elevation', 'pollution', 'airport', 'beach'];
@@ -104,7 +122,7 @@ async function cityInfo(features) {
     }
 
     const precipProperties = ['precipJan',  'precipFeb', 'precipMar' ,'precipApr' , 'precipMay' , 'precipJun',
-    'precipJul' , 'precipAug' ,'precipSep' , 'precipOct' , 'precipNov' , 'precipDec'];
+        'precipJul' , 'precipAug' ,'precipSep' , 'precipOct' , 'precipNov' , 'precipDec'];
     for (let i = 0; i < precipProperties.length; i++) {
         const val = features[precipProperties[i].toLowerCase()];
         $('#popup-' + precipProperties[i]).text(val);

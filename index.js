@@ -107,7 +107,7 @@ app.post('/city', async (req, res) => {
             // INNER JOIN Intl_Airports ia ON ia.CityId = c.id
 
     const query = `
-		SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat,
+		SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat, c.id,
         p.total AS population, i.speed AS mbps,
         cl.NearCoast AS beach, a.Exists AS airport,
         e.elevation AS elevation, ap.Index as pollution,
@@ -172,7 +172,7 @@ app.post('/bounding', async (req, res) => {
     lon_wrap = -1 * (bottom_left_lon + 180) % 360;
     lon_wrap_neg = 1 * (bottom_left_lon + 180) % 360;
 
-    var query = `SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat,
+    var query = `SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat, c.id,
         p.total AS population, i.speed AS mbps,
         cl.NearCoast AS beach, a.Exists AS airport,
         e.elevation AS elevation, ap.Index as pollution,
@@ -334,7 +334,8 @@ function rankCities(cities, filters){
         }
 
 
-        //name, lon, lat, rank
+        //name, lon, lat, rank, id
+        //console.log('rank:', cities[i]);
         rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), rank, cities[i]["id"]]);
     }
     var returnVal = {'cities': rankedCities};

@@ -81,6 +81,8 @@ var displayFeatureInfo = function(pixel) {
     const name = features[0].get('name'); // Removed the loop, there should only be one city displayed in the overlay.
     const lat = features[0].get('lat');
     const lon = features[0].get('lon');
+    const id = features[0].get('id');
+    console.log('features:', features);
 
     // Make request for city info
     var http = new XMLHttpRequest();
@@ -95,7 +97,8 @@ var displayFeatureInfo = function(pixel) {
     var param = {
       'name': name,
       'lat': lat,
-      'lon': lon
+      'lon': lon,
+      'id': id,
     };
     http.send(JSON.stringify(param));
   }
@@ -176,6 +179,7 @@ function buildFeatures(cities) {
     var lon = cities[i][1];
     var lat = cities[i][2];
     var rank = cities[i][3];
+    var id = cities[i][4];
 
     //I have added 3 different marker png images to the folder for use
     // Credit to https://mapicons.mapsmarker.com. Creative commons license. (I edited the marker to erase icon)
@@ -197,7 +201,8 @@ function buildFeatures(cities) {
       name: name,
       lon: lon,
       lat: lat,
-      rank: rank
+      rank: rank,
+      id: id,
     });
 
     // Adds a style to the marker
