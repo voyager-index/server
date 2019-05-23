@@ -475,7 +475,7 @@ RANKING DONE BELOW
         // Adjust to onle 1 decimal place
         var roundedRank = Math.round(rank * 10)/10;
         //name, lon, lat, rank, id
-            rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), roundedRank, cities[i]["id]);
+            rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), roundedRank, cities[i]["id"]]);
     }
 
     // Adjust to relative rank
