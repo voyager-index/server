@@ -1,0 +1,77 @@
+<!--<form action="https://api.github.com/repos/cs361-group24/database/issues" method="post" name="issues">-->
+<!--<form action="https://webdev.liambeckman.com/getpost" method="post" name="issues">-->
+
+<p>This form submits issues to <a href="https://github.com/cs467-map/database/issues">this issue collector</a>.</p>
+<br />
+
+<form id="form" action="/issues-submit" method="post" name="issues">
+
+    <fieldset>
+        <legend>Submit issue</legend>
+        <p><label for="city">City:</label></p>
+        <select id="city">
+            <option value="N/A">N/A</option>
+
+            <option value="New Disposal Center">New Disposal Center</option>
+           <% city.forEach(function(c) { %>
+               <!-- <option value="{{name}}">{{name}}</option> -->
+                <script>console.log('context:', '<%= city[c] %>'.replace('&#39;', ''));</script>
+            <% }); %>
+        </select>
+
+        <br />
+        <p><label for="comments">Title:</label></p>
+        <textarea rows="2" cols="100" id="title" spellcheck="false" name="title" placeholder="Devilish Disposal: "></textarea>
+
+        <br />
+        <p><label for="comments">Bug fix or suggestion:</label></p>
+        <textarea rows="9" cols="100" id="body" name="body" placeholder="Wrong schedule. The correct schedule is 9am - 6pm Mondays to Fridays."></textarea>
+
+        <br />
+        <p><label for="comments">(Optional) Tell us about yourself:</label></p>
+        <textarea rows="2" cols="100" id="author" name="author" placeholder="I am the owner of the above center."></textarea>
+        <br />
+        <br />
+        <input type="submit" value="Submit">
+
+    </fieldset>
+</form>
+
+<script>
+let centers = document.getElementById('centers');
+let title = document.getElementById('title');
+let body = document.getElementById('body');
+let form = document.getElementById('form');
+
+form.addEventListener('submit', function(event) {
+console.log('title.lentgh:', title.value.length);
+console.log('body.lentgh:', body.value.length);
+        if (title.value.length == 0) {
+            event.preventDefault();
+            alert('Title can not be empty.');
+        }
+
+        else if (body.value.length == 0) {
+            event.preventDefault();
+            alert('Bug fix or suggestion can not be empty.');
+        }
+});
+
+centers.addEventListener('change', update);
+
+function update() {
+    title.innerHTML = centers.options[centers.selectedIndex].value + ': ';
+}
+</script>
+
+<script src='https://www.google.com/recaptcha/api.js?render=6Leul4QUAAAAAEysqr5FwFdNh4czou70Klw_Iqpe'></script>
+
+<script>
+grecaptcha.ready(function() {
+        grecaptcha.execute('6Leul4QUAAAAAEysqr5FwFdNh4czou70Klw_Iqpe', {action: 'action_name'})
+        .then(function(token) {
+                // Verify the token on the server.
+        });
+});
+</script>
+

@@ -12,6 +12,8 @@ const bodyParser = require('body-parser');
 // Used to connect to PostgreSQL database.
 const pool = require('./config.js');
 
+const issue_auth = require('./issue-auth.js');
+
 // Use express for the web server.
 const express = require('express')
 const app = express();
@@ -107,7 +109,7 @@ app.post('/city', async (req, res) => {
             // INNER JOIN Intl_Airports ia ON ia.CityId = c.id
 
     const query = `
-		SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat, c.id,
+        SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat, c.id,
         p.total AS population, i.speed AS mbps,
         cl.NearCoast AS beach, a.Exists AS airport,
         e.elevation AS elevation, ap.Index as pollution,
@@ -179,7 +181,7 @@ app.post('/bounding', async (req, res) => {
         t.Jan AS tempJan, t.Feb AS tempFeb, t.Mar AS tempMar ,t.April AS tempApr ,t.May AS tempMay ,t.June AS tempJun ,t.July AS tempJul ,t.Aug AS tempAug ,t.Sept AS tempSep ,t.Oct AS tempOct ,t.Nov AS tempNov ,t.Dec AS tempDec,
         pr.Jan AS precipJan, pr.Feb AS precipFeb, pr.Mar AS precipMar ,pr.April AS precipApr ,pr.May AS precipMay ,pr.June AS precipJun ,pr.July AS precipJul ,pr.Aug AS precipAug ,pr.Sept AS precipSep ,pr.Oct AS precipOct ,pr.Nov AS precipNov ,pr.Dec AS precipDec,
         uv.Jan AS uvJan, uv.Feb AS uvFeb, uv.Mar AS uvMar ,uv.April AS uvApr ,uv.May AS uvMay ,uv.June AS uvJun ,uv.July AS uvJul ,uv.Aug AS uvAug ,uv.Sept AS uvSep ,uv.Oct AS uvOct ,uv.Nov AS uvNov ,uv.Dec AS uvDec,
-        ppp.ppp AS purchasingpower 
+        ppp.ppp AS purchasingpower
 
         FROM City c
         INNER JOIN Country co ON co.id = c.country
@@ -299,7 +301,7 @@ function rankCities(cities, filters){
             selectedMonth = group[j];
         }
     }
-    
+
     var rankedCities = [];
     var i;
     for (i = 0 ; i < cities.length; i++){
@@ -367,7 +369,7 @@ RANKING DONE BELOW
         weight = .2;
         if(filters.includes('uv')){
             weight = 1;
-        } 
+        }
         rank += uvRank * weight;
 
         //Precip ranking
@@ -383,7 +385,7 @@ RANKING DONE BELOW
                weight = 1;
         }
         rank += precipRank * weight;
-            
+
         // Temp ranking
         if (filters.includes('cold') ){
             // 0 f to 45 f == -17.7 C to 7.2
@@ -542,20 +544,20 @@ app.post('/city-image', async (req, res) => {
 
 
 function getAvgUV(city){
-    const uvTotal = (city['uvjan']) + (city['uvfeb']) + (city['uvmar']) + (city['uvapr']) + (city['uvmay']) + (city['uvjun']) + 
+    const uvTotal = (city['uvjan']) + (city['uvfeb']) + (city['uvmar']) + (city['uvapr']) + (city['uvmay']) + (city['uvjun']) +
                     (city['uvjul']) + (city['uvaug']) + (city['uvsep']) + (city['uvoct']) + (city['uvnov']) + (city['uvdec']);
     return Math.round(uvTotal/12);
 }
 
 function getAvgPrecip(city){
    //console.log(city['precipdec']);
-    const precipTotal = city['precipjan'] + city['precipfeb'] + city['precipmar'] + city['precipapr'] + city['precipmay'] + city['precipjun'] + 
+    const precipTotal = city['precipjan'] + city['precipfeb'] + city['precipmar'] + city['precipapr'] + city['precipmay'] + city['precipjun'] +
                         city['precipjul'] + city['precipaug'] + city['precipsep'] + city['precipoct'] + city['precipnov'] + city['precipdec'];
     return Math.round(precipTotal/12);
 }
 
 function getAvgTemp(city){
-    const tempTotal = city['tempjan'] + city['tempfeb'] + city['tempmar'] + city['tempapr'] + city['tempmay'] + city['tempjun'] + 
+    const tempTotal = city['tempjan'] + city['tempfeb'] + city['tempmar'] + city['tempapr'] + city['tempmay'] + city['tempjun'] +
                       city['tempjul'] + city['tempaug'] + city['tempsep'] + city['tempoct'] + city['tempnov'] + city['tempdec'];
     return Math.round(tempTotal/12);
 }
@@ -585,6 +587,82 @@ app.get('/data', (req, res) => {
 
 app.get('/settings', (req, res) => {
     res.render('pages/settings');
+});
+
+
+// issue page
+
+app.get('/issues',function(req,res,next){
+    var context = {};
+    sql = 'SELECT * FROM city ORDER BY name';
+    pool.query(sql, function(err, rows, fields){
+        if(err){
+            next(err);
+            return;
+        }
+        console.log(rows.rows[0]);
+        res.render('pages/issues', {city: rows.rows[0]});
+    });
+});
+
+// POST request
+app.post('/issues-submit', function(req,res){
+    var qParams = [];
+    for (var p in req.body){
+        qParams.push({'name':p,'value':req.body[p]})
+    }
+    console.log(qParams[0]);
+    console.log(req.body);
+    var context = {};
+    context.dataList = qParams;
+    context.title = qParams[0].value;
+    context.body = qParams[1].value + '\n' + qParams[2].value;
+    //res.render('post.handlebars', context);
+
+    console.log("qParams[0]):", qParams[0].value);
+    console.log("qParams[1]):", qParams[1].value);
+    console.log("qParams[2]):", qParams[2].value);
+    // https://stackoverflow.com/questions/6158933/how-to-make-an-http-post-request-in-node-js
+    function PostCode(codestring) {
+        // Build the post string from an object
+        var post_data = JSON.stringify({
+            'title' : qParams[0].value,
+            'body': qParams[1].value + '\n' + qParams[2].value
+        });
+        console.log("postdata:", post_data);
+
+        // An object of options to indicate where to post to
+        var post_options = {
+            //host: 'webdev.liambeckman.com',
+            //path: '/getpost',
+            host: 'api.github.com',
+            path: '/repos/cs361-group24/database/issues',
+            port: '443',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(post_data),
+                'Authorization': issue_auth,
+                'User-Agent': 'issuebot3000'
+            }
+        };
+
+        // Set up the request
+        var post_req = https.request(post_options, function(res) {
+            res.setEncoding('utf8');
+            res.on('data', function (chunk) {
+                console.log('Response: ' + chunk);
+            });
+        });
+
+        // post the data
+        post_req.write(post_data);
+        post_req.end();
+
+    }
+
+    PostCode('');
+    res.render("issues-submit.handlebars", context);
 });
 
 
