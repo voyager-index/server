@@ -592,77 +592,66 @@ app.get('/settings', (req, res) => {
 
 // issue page
 
-app.get('/issues',function(req,res,next){
-    var context = {};
-    sql = 'SELECT * FROM city ORDER BY name';
-    pool.query(sql, function(err, rows, fields){
-        if(err){
-            next(err);
-            return;
-        }
-        console.log(rows.rows[0]);
-        res.render('pages/issues', {city: rows.rows[0]});
-    });
+app.get('/issues', async (req, res) => {
+    const id = req.query.id;
+
+    const query = `
+    SELECT C.name AS city, CO.name AS country FROM City C
+    INNER JOIN Country CO ON CO.id = C.country
+    WHERE C.id = ${id}
+        ;
+        `
+    let city = '';
+    let country = '';
+    //console.log(query);
+    const client = await pool.connect()
+    const result = await client.query(query);
+    var results = null;
+    if (result.rows[0]){
+        results = result.rows[0];
+        console.log(results);
+        city = results.city;
+        country = results.country;
+    }
+    else {
+        //It should probably just show the data that it can get, or say that it can't find data.
+    }
+    client.release();
+    res.render('pages/issues', {city: city, country: country, id: id});
 });
 
 // POST request
-app.post('/issues-submit', function(req,res){
-    var qParams = [];
-    for (var p in req.body){
-        qParams.push({'name':p,'value':req.body[p]})
+app.post('/issues-submit', (req, res) => {
+    const arr = []
+    for (let p in req.body){
+        arr.push({'name':p, 'value':req.body[p]});
     }
-    console.log(qParams[0]);
-    console.log(req.body);
-    var context = {};
-    context.dataList = qParams;
-    context.title = qParams[0].value;
-    context.body = qParams[1].value + '\n' + qParams[2].value;
-    //res.render('post.handlebars', context);
+    console.log(arr);
+    const issue_title = arr[0].value;
+    const issue_body = arr[1].value;
 
-    console.log("qParams[0]):", qParams[0].value);
-    console.log("qParams[1]):", qParams[1].value);
-    console.log("qParams[2]):", qParams[2].value);
-    // https://stackoverflow.com/questions/6158933/how-to-make-an-http-post-request-in-node-js
-    function PostCode(codestring) {
-        // Build the post string from an object
-        var post_data = JSON.stringify({
-            'title' : qParams[0].value,
-            'body': qParams[1].value + '\n' + qParams[2].value
-        });
-        console.log("postdata:", post_data);
+    const host = 'https://api.github.com';
+    const path = '/repos/cs467-map/database/issues';
+    const url = host + path;
 
-        // An object of options to indicate where to post to
-        var post_options = {
-            //host: 'webdev.liambeckman.com',
-            //path: '/getpost',
-            host: 'api.github.com',
-            path: '/repos/cs361-group24/database/issues',
-            port: '443',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(post_data),
-                'Authorization': issue_auth,
-                'User-Agent': 'issuebot3000'
-            }
-        };
+    const post_data = JSON.stringify({
+        'title' : issue_title,
+        'body': issue_body,
+    });
 
-        // Set up the request
-        var post_req = https.request(post_options, function(res) {
-            res.setEncoding('utf8');
-            res.on('data', function (chunk) {
-                console.log('Response: ' + chunk);
-            });
-        });
-
-        // post the data
-        post_req.write(post_data);
-        post_req.end();
-
-    }
-
-    PostCode('');
-    res.render("issues-submit.handlebars", context);
+    fetch(url, {
+        port: '443',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(post_data),
+            'Authorization': issue_auth,
+            'User-Agent': 'issuebot3000'
+        },
+        body: post_data,
+    })
+    .then(response => response.json())
+    .then (res.render("pages/issues-submit", {issue_title: issue_title, issue_body: issue_body}));
 });
 
 

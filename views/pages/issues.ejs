@@ -5,73 +5,54 @@
 <br />
 
 <form id="form" action="/issues-submit" method="post" name="issues">
-
     <fieldset>
         <legend>Submit issue</legend>
-        <p><label for="city">City:</label></p>
-        <select id="city">
-            <option value="N/A">N/A</option>
-
-            <option value="New Disposal Center">New Disposal Center</option>
-           <% city.forEach(function(c) { %>
-               <!-- <option value="{{name}}">{{name}}</option> -->
-                <script>console.log('context:', '<%= city[c] %>'.replace('&#39;', ''));</script>
-            <% }); %>
-        </select>
-
+        <p><label for="issue-title">Title:</label></p>
+        <% if (city.length > 0) { %>
+        <textarea rows="2" cols="100" id="issue-title" name="issue-title" spellcheck="false" id="issue-title"><%= city %>, <%= country %> (id: <%= id %>)</textarea>
         <br />
-        <p><label for="comments">Title:</label></p>
-        <textarea rows="2" cols="100" id="title" spellcheck="false" name="title" placeholder="Devilish Disposal: "></textarea>
-
+        <p><label for="issue-body">Bug fix or suggestion:</label></p>
+        <textarea rows="9" cols="100" id="issue-body" name="issue-body" placeholder="Image shows <%= city %>, Oregon. A pox on your household!"></textarea>
+        <% } else { %>
+        <textarea rows="2" cols="100" id="issue-title" name="issue-title" spellcheck="false" id="issue-title" placeholder="Portland, Maine: Wrong Image."></textarea>
         <br />
-        <p><label for="comments">Bug fix or suggestion:</label></p>
-        <textarea rows="9" cols="100" id="body" name="body" placeholder="Wrong schedule. The correct schedule is 9am - 6pm Mondays to Fridays."></textarea>
+        <p><label for="issue-body">Bug fix or suggestion:</label></p>
+        <textarea rows="9" cols="100" id="issue-body" name="issue-body" placeholder="Image shows Portland, Oregon. A pox on your household!"></textarea>
+        <% } %>
 
-        <br />
-        <p><label for="comments">(Optional) Tell us about yourself:</label></p>
-        <textarea rows="2" cols="100" id="author" name="author" placeholder="I am the owner of the above center."></textarea>
         <br />
         <br />
         <input type="submit" value="Submit">
-
     </fieldset>
 </form>
 
 <script>
-let centers = document.getElementById('centers');
-let title = document.getElementById('title');
-let body = document.getElementById('body');
-let form = document.getElementById('form');
+    $('#form').submit((event) => {
+        const title_length = $('#issue-title')[0].value.length;
+        const body_length = $('#issue-body')[0].value.length;
+        // console.log(title_length);
+        // console.log(body_length);
 
-form.addEventListener('submit', function(event) {
-console.log('title.lentgh:', title.value.length);
-console.log('body.lentgh:', body.value.length);
-        if (title.value.length == 0) {
+        if (title_length == 0) {
             event.preventDefault();
             alert('Title can not be empty.');
         }
 
-        else if (body.value.length == 0) {
+        else if (body_length == 0) {
             event.preventDefault();
             alert('Bug fix or suggestion can not be empty.');
         }
-});
-
-centers.addEventListener('change', update);
-
-function update() {
-    title.innerHTML = centers.options[centers.selectedIndex].value + ': ';
-}
+    });
 </script>
 
 <script src='https://www.google.com/recaptcha/api.js?render=6Leul4QUAAAAAEysqr5FwFdNh4czou70Klw_Iqpe'></script>
 
 <script>
-grecaptcha.ready(function() {
+    grecaptcha.ready(function() {
         grecaptcha.execute('6Leul4QUAAAAAEysqr5FwFdNh4czou70Klw_Iqpe', {action: 'action_name'})
-        .then(function(token) {
+            .then(function(token) {
                 // Verify the token on the server.
-        });
-});
+            });
+    });
 </script>
 

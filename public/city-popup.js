@@ -1,4 +1,5 @@
 let _state = {};
+const DEBUG = false;
 
 $(window).keydown((e) => {
     e = e || window.event;
@@ -15,6 +16,7 @@ $(document).ready(() => {
         close_popup();
     });
 
+    // show image of the city
     $('#select-image').click(() => {
         const state = getState();
         const city = state[0];
@@ -27,6 +29,7 @@ $(document).ready(() => {
         cityImage(city, lat, lon, id);
     });
 
+    // show map of the city
     $('#select-map').click(() => {
         const state = getState();
         const lat = state[1];
@@ -34,6 +37,8 @@ $(document).ready(() => {
 
         $('#image').empty();
         $('#image').append("<div id='map-fallback'></div>");
+
+        // call makeMap() function in /public/main.js
         const map = Voyager.makeMap(Number(lon), Number(lat), 11, 'map-fallback');
     });
 });
@@ -43,18 +48,24 @@ function close_popup() {
     $('#city-popup').addClass('hidden');
 
     $('#image').empty();
-    // https://old.reddit.com/r/loadingicon/comments/6h421f/winders_oc/
+
+    // loading animation
+    // source: https://old.reddit.com/r/loadingicon/comments/6h421f/winders_oc/
     $('#image').append("<img id='city-image' class='w-85' src='loading-davebees.gif'/>");
 
     $(window).off('click');
 }
 
 
+// loads city image.
 async function cityImage(city, lat, lon, id) {
-    console.log('city:', city);
-    console.log('lat:', lat);
-    console.log('lon:', lon);
-    console.log('id:', id);
+    if (DEBUG) {
+        console.log('city:', city);
+        console.log('lat:', lat);
+        console.log('lon:', lon);
+        console.log('id:', id);
+    }
+
     saveState(city, lat, lon, id);
 
     const data_send = {
@@ -64,11 +75,14 @@ async function cityImage(city, lat, lon, id) {
         'id': id,
     };
 
+    // tries very hard to get city image.
+    // option 1: see if image is in database.
     postData(`/city-image`, data_send)
         .then(data => $('#city-image').attr('src', data.src))
         .catch(async (err) => {
             console.error(err);
             try {
+                // option 2: use teleport api to get image.
                 const city_req = await getCity(city);
                 const city_name = city_req.name;
                 const city_image = city_req.image;
@@ -76,11 +90,13 @@ async function cityImage(city, lat, lon, id) {
             } catch(err) {
                 console.error(err);
                 try {
+                    // option 3: use google places api to get image.
                     const city_req = await getCityFallback(city);
                     console.log('city_req:', city_req);
                     cityImage.src = city_req;
                     $('#city-image').attr('src', city_req);
                 } catch(err) {
+                    // no image found.
                     console.error(err);
                     console.error('Could not find image for city ' + id);
                 }
@@ -114,6 +130,8 @@ async function cityInfo(features) {
         $('#popup-' + properties[i]).text(val);
     }
 
+    $('#popup-issues').attr('href', '/issues/?id=' + id);
+
     const tempProperties = ['tempJan', 'tempFeb', 'tempMar', 'tempApr', 'tempMay' , 'tempJun' , 'tempJul',
         'tempAug' , 'tempSep' ,'tempOct' , 'tempNov' , 'tempDec'];
     for (let i = 0; i < tempProperties.length; i++) {
@@ -140,6 +158,7 @@ function getState() {
     return _state;
 }
 
+// saves the current name, lat, lon, and id of the city for global use.
 function saveState(...args) {
     let i = 0;
     args.forEach((arg) => {
