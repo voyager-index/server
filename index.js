@@ -321,25 +321,31 @@ app.get('/settings', (req, res) => {
 
 // issues page
 app.get('/issues', async (req, res) => {
-    const id = req.query.id;
-    const query = `
+    if (req.query.id) {
+        const id = req.query.id;
+        const query = `
         SELECT C.name AS city, CO.name AS country FROM City C
         INNER JOIN Country CO ON CO.id = C.country
         WHERE C.id = ${id}
     ;`;
-    //console.log(query);
+        //console.log(query);
 
-    const action = (results) => {
-        let city = results[0].city;
-        let country = results[0].country;
-        res.render('pages/issues', {city: city, country: country, id: id});
-    };
+        const action = (results) => {
+            let city = results[0].city;
+            let country = results[0].country;
+            res.render('pages/issues', {city: city, country: country, id: id});
+        };
 
-    try {
-        const results = await swimming_pool(query, action);
-    } catch(err) {
-        console.error(err);
+        try {
+            const results = await swimming_pool(query, action);
+        } catch(err) {
+            console.error(err);
+        }
     }
+    else {
+        res.render('pages/issues', {city: '', country: '', id: ''});
+    }
+
 
 });
 

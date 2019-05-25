@@ -39,7 +39,7 @@ function build_grid(arr) {
         let i = 1;
 
         arr.forEach((element) => {
-            const div = $('<div>');  
+            const div = $('<div>');
             div.attr(`data-${element}`, city[i]);
             item.append(div);
             i += 1;
