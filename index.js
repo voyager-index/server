@@ -576,28 +576,26 @@ app.get('/settings', (req, res) => {
 
 app.get('/issues', async (req, res) => {
     const id = req.query.id;
-
     const query = `
-    SELECT C.name AS city, CO.name AS country FROM City C
-    INNER JOIN Country CO ON CO.id = C.country
-    WHERE C.id = ${id}
-        ;
-        `
+        SELECT C.name AS city, CO.name AS country FROM City C
+        INNER JOIN Country CO ON CO.id = C.country
+        WHERE C.id = ${id}
+    ;`;
+    //console.log(query);
     let city = '';
     let country = '';
-    //console.log(query);
     const client = await pool.connect()
-    const result = await client.query(query);
-    var results = null;
-    if (result.rows[0]){
-        results = result.rows[0];
+
+    try {
+        const result = await client.query(query);
+        let results = result.rows[0];
         console.log(results);
         city = results.city;
         country = results.country;
+    } catch(err) {
+        console.error(err);
     }
-    else {
-        //It should probably just show the data that it can get, or say that it can't find data.
-    }
+
     client.release();
     res.render('pages/issues', {city: city, country: country, id: id});
 });
