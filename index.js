@@ -146,6 +146,32 @@ app.post('/city', async (req, res) => {
     }
 });
 
+// city page
+app.post('/city-search', async (req, res) => {
+    // get data from POST body.
+    const search_string = req.body.search_string;
+
+    const query = `
+        ${common}
+        WHERE C.name ILIKE '%${search_string}%'
+        ORDER BY P.total DESC
+        LIMIT 10
+    ;`;
+
+    const action = (results) => {
+        const filters = [];
+        var cityRank = rankCities(results, filters);
+        res.send(cityRank);
+    }
+
+    try {
+        const results = await swimming_pool(query, action);
+    }
+    catch(err) {
+        console.error(err);
+        res.send('Error:', err);
+    }
+});
 
 // Basic post request that receives bounding box, returns city points
 // returns array with the form: [ [City, lon, lat, rank] ],

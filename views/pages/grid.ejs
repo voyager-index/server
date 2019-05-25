@@ -1,4 +1,8 @@
 <% include ../partials/city-popup.ejs %>
+
+<input id="city-search" type="text" name="search" placeholder="Search..." />
+<button id="clear">x</button>
+
 <div class="grid-container" style="display: grid;
     grid-template-columns: 200px 200px 200px 200px;
     grid-gap: 20px;">
@@ -29,3 +33,4 @@
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=<%= process.env.apikey %>&libraries=places"></script>
 
 <script src="city-fallback.js"></script>
+<script src="searchbar.js"></script>
