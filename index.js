@@ -620,6 +620,8 @@ app.post('/issues-submit', (req, res) => {
         'body': issue_body,
     });
 
+    console.log('issue_auth:', issue_auth);
+
     fetch(url, {
         port: '443',
         method: 'POST',
