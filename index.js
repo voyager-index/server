@@ -632,6 +632,8 @@ app.post('/issues-submit', (req, res) => {
         body: post_data,
     })
     .then(response => response.json())
+    .catch(error => console.error(error))
+    .then(response => console.log('Success:', JSON.stringify(response)))
     .then(res.render("pages/issues-submit", {issue_title: issue_title, issue_body: issue_body}));
 });
 
