@@ -31,31 +31,39 @@ app.use(expressLayouts);
 
 const DEBUG = false;
 
-// common string used in all city queries.
+// common database string used in all city queries.
 const common = `
     SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat, c.id,
     p.total AS population, i.speed AS mbps,
     cl.NearCoast AS beach, a.Exists AS airport,
     e.elevation AS elevation, ap.Index as pollution,
-    t.Jan AS tempJan, t.Feb AS tempFeb, t.Mar AS tempMar ,t.April AS tempApr ,t.May AS tempMay ,t.June AS tempJun ,t.July AS tempJul ,t.Aug AS tempAug ,t.Sept AS tempSep ,t.Oct AS tempOct ,t.Nov AS tempNov ,t.Dec AS tempDec,
-    pr.Jan AS precipJan, pr.Feb AS precipFeb, pr.Mar AS precipMar ,pr.April AS precipApr ,pr.May AS precipMay ,pr.June AS precipJun ,pr.July AS precipJul ,pr.Aug AS precipAug ,pr.Sept AS precipSep ,pr.Oct AS precipOct ,pr.Nov AS precipNov ,pr.Dec AS precipDec,
-    uv.Jan AS uvJan, uv.Feb AS uvFeb, uv.Mar AS uvMar ,uv.April AS uvApr ,uv.May AS uvMay ,uv.June AS uvJun ,uv.July AS uvJul ,uv.Aug AS uvAug ,uv.Sept AS uvSep ,uv.Oct AS uvOct ,uv.Nov AS uvNov ,uv.Dec AS uvDec,
+
+    -- temperature
+    t.Jan AS tempJan, t.Feb AS tempFeb, t.Mar AS tempMar, t.April AS tempApr, t.May AS tempMay, t.June AS tempJun, t.July AS tempJul, t.Aug AS tempAug, t.Sept AS tempSep, t.Oct AS tempOct, t.Nov AS tempNov, t.Dec AS tempDec,
+
+    -- precipitation
+    pr.Jan AS precipJan, pr.Feb AS precipFeb, pr.Mar AS precipMar, pr.April AS precipApr, pr.May AS precipMay, pr.June AS precipJun, pr.July AS precipJul, pr.Aug AS precipAug, pr.Sept AS precipSep, pr.Oct AS precipOct, pr.Nov AS precipNov, pr.Dec AS precipDec,
+
+    -- uv
+    uv.Jan AS uvJan, uv.Feb AS uvFeb, uv.Mar AS uvMar, uv.April AS uvApr, uv.May AS uvMay, uv.June AS uvJun, uv.July AS uvJul, uv.Aug AS uvAug, uv.Sept AS uvSep, uv.Oct AS uvOct, uv.Nov AS uvNov, uv.Dec AS uvDec,
+
+    -- socioeconomic
     ppp.ppp AS purchasingpower,
     pi.percent AS povertyIndex
 
     FROM City c
+    INNER JOIN Air_pollution ap ON ap.CityId = c.id
+    INNER JOIN Airports a ON a.CityId = c.id
+    INNER JOIN Coastlines cl ON  cl.CityId = c.id
     INNER JOIN Country co ON co.id = c.country
+    INNER JOIN Elevation e ON e.CityId = c.id
     INNER JOIN Internet_Speed i ON i.Country = co.id
     INNER JOIN Population p ON p.CityId = c.id
-    INNER JOIN Coastlines cl ON  cl.CityId = c.id
-    INNER JOIN Airports a ON a.CityId = c.id
-    INNER JOIN Elevation e ON e.CityId = c.id
-    INNER JOIN Air_pollution ap ON ap.CityId = c.id
-    INNER JOIN Temp t ON t.CityId = c.id
-    INNER JOIN Precipitation pr ON pr.CityId = c.id
-    INNER JOIN UV_Index uv ON uv.CityId = c.id
-    INNER JOIN Puchasing_Power_Parity ppp ON ppp.Country = co.id
     INNER JOIN Poverty_Index pi ON pi.Country = co.id
+    INNER JOIN Precipitation pr ON pr.CityId = c.id
+    INNER JOIN Puchasing_Power_Parity ppp ON ppp.Country = co.id
+    INNER JOIN Temp t ON t.CityId = c.id
+    INNER JOIN UV_Index uv ON uv.CityId = c.id
 `;
 
 // ---------- //
@@ -64,39 +72,47 @@ const common = `
 
 // database page
 app.get('/db', async (req, res) => {
-    try {
-        const client = await pool.connect()
+    const query = `
+        ${common}
+        ORDER BY p.total DESC
+    ;`;
 
-        const query = `
-            ${common}
-            ORDER BY p.total DESC
-        ;`
+    const action = (results) => {
+        for (var i = 0 ; i < results.length; i++) {
+            let temp = 0;
+            let uv = 0;
+            let precip = 0;
+            let obj = results[i]
+            Object.keys(obj).forEach(key => {
+                if (key.substring(0,4) == 'temp') {
+                    temp += obj[key];
+                }
+                else if (key.substring(0, 4) == 'precip') {
+                    precip += obj[key];
+                }
+                else if (key.substring(0, 2) == 'uv') {
+                    uv += obj[key];
+                }
+            });
 
-        const result = await client.query(query);
-        const results = { 'results': (result) ? result.rows : null};
+            temp = temp / 12 / 10;
+            results[i].temp = Math.round(temp);
 
-        for (var i = 0 ; i < results.results.length; i++){
-            var temp = results.results[i].tempjan + results.results[i].tempfeb + results.results[i].tempmar + results.results[i].tempapr + results.results[i].tempmay + results.results[i].tempjun + results.results[i].tempjul +
-            results.results[i].tempaug + results.results[i].tempsep + results.results[i].tempoct + results.results[i].tempnov + results.results[i].tempdec;
-            temp = temp / 12;
-            temp = temp /10;
-            results.results[i].temp = Math.round(temp);
-            var precip = results.results[i].precipjan + results.results[i].precipfeb + results.results[i].precipmar + results.results[i].precipapr + results.results[i].precipmay + results.results[i].precipjun + results.results[i].precipjul +
-            results.results[i].precipaug + results.results[i].precipsep + results.results[i].precipoct + results.results[i].precipnov + results.results[i].precipdec;
             precip = precip / 12;
-            results.results[i].precip = Math.round(precip);
-            var uv = results.results[i].uvjan + results.results[i].uvfeb + results.results[i].uvmar + results.results[i].uvapr + results.results[i].uvmay + results.results[i].uvjun + results.results[i].uvjul +
-            results.results[i].uvaug + results.results[i].uvsep + results.results[i].uvoct + results.results[i].uvnov + results.results[i].uvdec;
-            uv = uv / 12;
-            uv = uv /16;
-            results.results[i].uv = Math.round(uv);
+            results[i].precip = Math.round(precip);
+
+            uv = uv / 12 / 16;
+            results[i].uv = Math.round(uv);
         }
 
         res.render('pages/db', {results:results});
-        client.release();
+    }
+
+    try {
+        const results = await swimming_pool(query);
     } catch (err) {
         console.error(err);
-        res.send("Error " + err);
+        res.send('Error:', err);
     }
 });
 
@@ -129,20 +145,12 @@ app.post('/city', async (req, res) => {
     //console.log(query);
 
     try {
-        const client = await pool.connect()
-        const result = await client.query(query);
-        var results = null;
-        if (result.rows[0]){
-            results = result.rows[0];
-        }
-        else {
-            //It should probably just show the data that it can get, or say that it can't find data.
-        }
-        client.release();
+        const results = await swimming_pool(query);
         res.send(results);
     }
-    catch(error) {
-        console.log(error);
+    catch(err) {
+        console.error(err);
+        res.send('Error:', err);
     }
 });
 
@@ -172,6 +180,29 @@ app.post('/city-search', async (req, res) => {
         res.send('Error:', err);
     }
 });
+
+// city page
+app.post('/city-image', async (req, res) => {
+
+    // get data from POST body.
+    const id = req.body.id;
+
+    const query = `
+        SELECT src FROM City_Image CI
+        WHERE CI.cityid = ${id}
+    ;`;
+
+    try {
+        const results = await swimming_pool(query);
+        res.send(results);
+    }
+    catch(err) {
+        console.error(err);
+        res.send('Error:', err);
+    }
+});
+
+
 
 // Basic post request that receives bounding box, returns city points
 // returns array with the form: [ [City, lon, lat, rank] ],
@@ -237,43 +268,127 @@ app.post('/bounding', async (req, res) => {
     query += " ORDER BY P.total DESC LIMIT 100;";
     //console.log(query);
 
-    let cities = [];
-    try {
-        const client = await pool.connect()
-        const result = await client.query(query);
-        const results = result ? result.rows : null;
+    const action = (results) => {
         var cityRank = rankCities(results, filters);
         res.send(cityRank);
-        client.release();
+    }
+
+    try {
+        const results = await swimming_pool(query, action);
     } catch (err) {
         console.error(err);
-        res.send("Error " + err);
+        res.send('Error:', err);
     }
+
+
 });
+
 
 app.get('/grid', async (req, res) => {
     var query = `
         ${common}
-        ORDER BY P.total DESC LIMIT 100
+        ORDER BY P.total DESC LIMIT 50
     ;`;
     //console.log(query);
 
-    let cities = [];
-    try {
-        const client = await pool.connect()
-        const result = await client.query(query);
-        const results = result ? result.rows : null;
-
+    const action = (results) => {
         const filters = [];
-        console.log(results.length);
         var cityRank = rankCities(results, filters);
         res.render('pages/grid', cityRank);
-        client.release();
+    }
+
+    let cities = [];
+    try {
+        const results = await swimming_pool(query, action);
     } catch (err) {
         console.error(err);
-        res.send("Error " + err);
+        res.send('Error:', err);
     }
 });
+
+/*
+Data and settings page routers
+*/
+
+app.get('/data', (req, res) => {
+    res.render('pages/data_article');
+});
+
+app.get('/settings', (req, res) => {
+    res.render('pages/settings');
+});
+
+
+// issues page
+app.get('/issues', async (req, res) => {
+    const id = req.query.id;
+    const query = `
+        SELECT C.name AS city, CO.name AS country FROM City C
+        INNER JOIN Country CO ON CO.id = C.country
+        WHERE C.id = ${id}
+    ;`;
+    //console.log(query);
+
+    const action = (results) => {
+        let city = results[0].city;
+        let country = results[0].country;
+        res.render('pages/issues', {city: city, country: country, id: id});
+    };
+
+    try {
+        const results = await swimming_pool(query, action);
+    } catch(err) {
+        console.error(err);
+    }
+
+});
+
+// POST request
+app.post('/issues-submit', (req, res) => {
+    const arr = []
+    for (let p in req.body){
+        arr.push({'name':p, 'value':req.body[p]});
+    }
+    const issue_title = arr[0].value;
+    const issue_body = arr[1].value;
+
+    const host = 'https://api.github.com';
+    const path = '/repos/cs467-map/database/issues';
+    const url = host + path;
+
+    const post_data = JSON.stringify({
+        'title' : issue_title,
+        'body': issue_body,
+    });
+
+    fetch(url, {
+        port: '443',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(post_data),
+            'Authorization': auth_issue,
+            'User-Agent': 'issuebot3000'
+        },
+        body: post_data,
+    })
+    .then(response => response.json())
+    .catch(err => console.error('Error:', err))
+    .then(response => console.log('Success:', response))
+    .then(res.render("pages/issues-submit", {issue_title: issue_title, issue_body: issue_body}));
+});
+
+// Start app.
+app
+    .use(express.static(path.join(__dirname, 'public')))
+    .set('views', path.join(__dirname, 'views'))
+    .set('view engine', 'ejs')
+    .get('/', (req, res) => res.render('pages/index', { layout: 'layout-map' }))
+    .listen(PORT, () => console.log(`Listening at http://localhost:${ PORT }`))
+
+// -------------------- //
+// Helper functions
+// -------------------- //
 
 function rankCities(cities, filters){
     //True False values don't matter, because they are filtered out.
@@ -331,16 +446,17 @@ function rankCities(cities, filters){
         // Get weather without month
         if (includeMonth == false){
             // get averages
-            avgUV = getAvgUV(cities[i]);
-            avgPrecip = getAvgPrecip(cities[i]);
-            avgTemp = getAvgTemp(cities[i]);
+            avgUV = getAvgThing(cities[i], 'uv');
+            avgPrecip = getAvgThing(cities[i], 'precip');
+            avgTemp = getAvgThing(cities[i], 'temp');
+
+
         } else { // Get weather with month filter included
             // get averages
             avgUV = getMonthUV(cities[i], selectedMonth);
             avgPrecip = getMonthPrecip(cities[i], selectedMonth);
             avgTemp = getMonthTemp(cities[i], selectedMonth);
         }
-
 
         /*
 RANKING DONE BELOW
@@ -513,6 +629,7 @@ RANKING DONE BELOW
         }
     }
     */
+
     for (var l = 0; l < rankedCities.length; l++){
         rankedCities[l][3] = (rankedCities[l][3]).toFixed(1);
     }
@@ -521,54 +638,42 @@ RANKING DONE BELOW
     return returnVal;
 }
 
-// city page
-app.post('/city-image', async (req, res) => {
-
-    // get data from POST body.
-    const id = req.body.id;
-
-    const query = `
-    SELECT src FROM City_Image CI
-    WHERE CI.cityid = ${id}
-        ;
-        `
-    //console.log(query);
+// a sleep deprived attempt to standardize interactions with the client.
+// makes for an error handling experience with fewer suprises.
+async function swimming_pool(query = '', action) {
     try {
         const client = await pool.connect()
         const result = await client.query(query);
-        var results = null;
-        if (result.rows[0]){
-            results = result.rows[0];
-        }
-        else {
-            //It should probably just show the data that it can get, or say that it can't find data.
-        }
+        const results = result ? result.rows : null;
         client.release();
-        res.send(results);
-    }
-    catch(error) {
-        console.log(error);
-    }
-});
 
+        // return results
+        if (arguments.length == 1) {
+            return results;
+        }
+        // do assigned action with results
+        else {
+            action(results);
+        }
 
-function getAvgUV(city){
-    const uvTotal = (city['uvjan']) + (city['uvfeb']) + (city['uvmar']) + (city['uvapr']) + (city['uvmay']) + (city['uvjun']) +
-                    (city['uvjul']) + (city['uvaug']) + (city['uvsep']) + (city['uvoct']) + (city['uvnov']) + (city['uvdec']);
-    return Math.round(uvTotal/12);
+    //TODO: It should probably just show the data that it can get, or say that it can't find data.
+    } catch (err) {
+        console.error(err);
+    }
 }
 
-function getAvgPrecip(city){
-   //console.log(city['precipdec']);
-    const precipTotal = city['precipjan'] + city['precipfeb'] + city['precipmar'] + city['precipapr'] + city['precipmay'] + city['precipjun'] +
-                        city['precipjul'] + city['precipaug'] + city['precipsep'] + city['precipoct'] + city['precipnov'] + city['precipdec'];
-    return Math.round(precipTotal/12);
-}
+function getAvgThing(obj, prefix = '') {
+    let total = [];
+    Object.keys(obj).forEach(key => {
+        if (key.substring(0, prefix.length) == prefix) {
+            total.push(obj[key]);
+        }
+    });
 
-function getAvgTemp(city){
-    const tempTotal = city['tempjan'] + city['tempfeb'] + city['tempmar'] + city['tempapr'] + city['tempmay'] + city['tempjun'] +
-                      city['tempjul'] + city['tempaug'] + city['tempsep'] + city['tempoct'] + city['tempnov'] + city['tempdec'];
-    return Math.round(tempTotal/12);
+    // cool reduce operation
+    // https://stackoverflow.com/questions/1230233/how-to-find-the-sum-of-an-array-of-numbers
+    const sum = total.reduce((a, b) => a + b);
+    return Math.round(sum / total.length);
 }
 
 function getMonthUV(city, month){
@@ -585,128 +690,3 @@ function getMonthTemp(city, month){
     const index = "temp" +  month;
     return city[index];
 }
-
-/*
-Data and settings page routers
-*/
-
-app.get('/data', (req, res) => {
-    res.render('pages/data_article');
-});
-
-app.get('/settings', (req, res) => {
-    res.render('pages/settings');
-});
-
-
-// issue page
-
-app.get('/issues', async (req, res) => {
-    const id = req.query.id;
-    const query = `
-        SELECT C.name AS city, CO.name AS country FROM City C
-        INNER JOIN Country CO ON CO.id = C.country
-        WHERE C.id = ${id}
-    ;`;
-    //console.log(query);
-    let city = '';
-    let country = '';
-    const client = await pool.connect()
-
-    try {
-        const result = await client.query(query);
-        let results = result.rows[0];
-        console.log(results);
-        city = results.city;
-        country = results.country;
-    } catch(err) {
-        console.error(err);
-    }
-
-    client.release();
-    res.render('pages/issues', {city: city, country: country, id: id});
-});
-
-// POST request
-app.post('/issues-submit', (req, res) => {
-    const arr = []
-    for (let p in req.body){
-        arr.push({'name':p, 'value':req.body[p]});
-    }
-    console.log(arr);
-    const issue_title = arr[0].value;
-    const issue_body = arr[1].value;
-
-    const host = 'https://api.github.com';
-    const path = '/repos/cs467-map/database/issues';
-    const url = host + path;
-
-    const post_data = JSON.stringify({
-        'title' : issue_title,
-        'body': issue_body,
-    });
-
-    fetch(url, {
-        port: '443',
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(post_data),
-            'Authorization': auth_issue,
-            'User-Agent': 'issuebot3000'
-        },
-        body: post_data,
-    })
-    .then(response => response.json())
-    .catch(error => console.error('Error:', error))
-    .then(response => console.log('Success:', response))
-    .then(res.render("pages/issues-submit", {issue_title: issue_title, issue_body: issue_body}));
-});
-
-
-// -------------------- //
-// Helper functions
-// -------------------- //
-
-
-function obj_arr2arr(obj_arr) {
-    let arr = []
-
-    for (let i = 0; i < obj_arr.length; i++) {
-        let arr_new = obj2arr(obj_arr[i])
-        arr.push(arr_new);
-    }
-
-    return arr;
-}
-
-
-function obj2arr(obj) {
-    let arr = [];
-
-    for (let property in obj) {
-        arr.push(obj[property]);
-    }
-    //ranking
-    arr.push("3");
-    return arr;
-}
-
-// Used to interprete JSON objects returned by requests to API's.
-// Fetches "url" and returns whatever value is associated with the "object".
-async function getThing(url, object) {
-    return fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            return eval(object);
-        })
-}
-
-
-// Start app.
-app
-    .use(express.static(path.join(__dirname, 'public')))
-    .set('views', path.join(__dirname, 'views'))
-    .set('view engine', 'ejs')
-    .get('/', (req, res) => res.render('pages/index', { layout: 'layout-map' }))
-    .listen(PORT, () => console.log(`Listening at http://localhost:${ PORT }`))

@@ -78,7 +78,7 @@ async function cityImage(city, lat, lon, id) {
     // tries very hard to get city image.
     // option 1: see if image is in database.
     postData(`/city-image`, data_send)
-        .then(data => $('#city-image').attr('src', data.src))
+        .then(data => $('#city-image').attr('src', data[0].src))
         .catch(async (err) => {
             console.error(err);
             try {
