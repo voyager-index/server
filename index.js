@@ -12,6 +12,8 @@ const bodyParser = require('body-parser');
 // Used to connect to PostgreSQL database.
 const pool = require('./config.js');
 
+const issue_auth = require('./issue-auth.js');
+
 // Use express for the web server.
 const express = require('express')
 const app = express();
@@ -567,6 +569,71 @@ app.get('/data', (req, res) => {
 
 app.get('/settings', (req, res) => {
     res.render('pages/settings');
+});
+
+
+// issue page
+
+app.get('/issues', async (req, res) => {
+    const id = req.query.id;
+
+    const query = `
+    SELECT C.name AS city, CO.name AS country FROM City C
+    INNER JOIN Country CO ON CO.id = C.country
+    WHERE C.id = ${id}
+        ;
+        `
+    let city = '';
+    let country = '';
+    //console.log(query);
+    const client = await pool.connect()
+    const result = await client.query(query);
+    var results = null;
+    if (result.rows[0]){
+        results = result.rows[0];
+        console.log(results);
+        city = results.city;
+        country = results.country;
+    }
+    else {
+        //It should probably just show the data that it can get, or say that it can't find data.
+    }
+    client.release();
+    res.render('pages/issues', {city: city, country: country, id: id});
+});
+
+// POST request
+app.post('/issues-submit', (req, res) => {
+    const arr = []
+    for (let p in req.body){
+        arr.push({'name':p, 'value':req.body[p]});
+    }
+    console.log(arr);
+    const issue_title = arr[0].value;
+    const issue_body = arr[1].value;
+
+    const host = 'https://api.github.com';
+    const path = '/repos/cs467-map/database/issues';
+    const url = host + path;
+
+    const post_data = JSON.stringify({
+        'title' : issue_title,
+        'body': issue_body,
+    });
+
+    fetch(url, {
+        port: '443',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(post_data),
+            'Authorization': issue_auth,
+            'User-Agent': 'issuebot3000'
+        },
+        body: post_data,
+    })
+    .then(response => response.json())
+    .then (res.render("pages/issues-submit", {issue_title: issue_title, issue_body: issue_body}));
 });
 
 
