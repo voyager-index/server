@@ -12,6 +12,7 @@ const bodyParser = require('body-parser');
 // Used to connect to PostgreSQL database.
 const pool = require('./config.js');
 
+// Used for sending git issues form /issues
 const issue_auth = require('./issue-auth.js');
 
 // Use express for the web server.

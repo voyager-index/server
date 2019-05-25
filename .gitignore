@@ -2,4 +2,3 @@ node_modules
 *.bundle.js
 *.css.map
 *.sass-cache
-*-auth.js
