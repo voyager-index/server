@@ -27,7 +27,9 @@ function grid_init() {
             const city = $(this)[0].children[1].getAttribute('data-name');
             const lat = $(this)[0].children[2].getAttribute('data-lon');
             const lon = $(this)[0].children[3].getAttribute('data-lat');
+            const id = $(this)[0].children[5].getAttribute('data-id');
             const data_send = {
+                'id': id,
                 'name': city,
                 'lat': lat,
                 'lon': lon,
@@ -35,7 +37,8 @@ function grid_init() {
 
             postData(`/city`, data_send)
                 .then(data => {
-                    cityInfo(data[0]);
+                    console.log('data:', data);
+                    cityInfo(data);
                 })
                 .catch(error => console.error(error));
         });

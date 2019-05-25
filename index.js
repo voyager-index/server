@@ -116,12 +116,10 @@ app.get('/db', async (req, res) => {
     }
 });
 
-
 // city page
 app.get('/city', async(req, res) => {
     res.render('pages/city');
 });
-
 
 // city page
 app.post('/city', async (req, res) => {
@@ -130,6 +128,7 @@ app.post('/city', async (req, res) => {
     const name = req.body.name;
     const lon = req.body.lon;
     const lat = req.body.lat;
+    const id = req.body.id;
 
     // Does this: ${variable_name} follow the usual convention for not allowing SQL injections?
     // Also, Intl_aiports has not been added to the DB (database/data/data.sql) yet, if anyone is looking for a quick fix to do.
@@ -138,7 +137,7 @@ app.post('/city', async (req, res) => {
     // TODO: uncomment lat/lon checks. Currently, checks result in no matches for some odd reason.
     const query = `
         ${common}
-        WHERE C.name = '${name}'
+        WHERE C.id = '${id}'
         --AND TRUNC(C.lon, 2) = TRUNC(${lon}, 2)
         --AND TRUNC(C.lat, 2) = TRUNC(${lat}, 2)
     ;`;
@@ -146,7 +145,8 @@ app.post('/city', async (req, res) => {
 
     try {
         const results = await swimming_pool(query);
-        res.send(results);
+        //console.log('results:', results);
+        res.send(results[0]);
     }
     catch(err) {
         console.error(err);
@@ -194,7 +194,7 @@ app.post('/city-image', async (req, res) => {
 
     try {
         const results = await swimming_pool(query);
-        res.send(results);
+        res.send(results[0]);
     }
     catch(err) {
         console.error(err);
