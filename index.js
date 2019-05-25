@@ -632,7 +632,7 @@ app.post('/issues-submit', (req, res) => {
         body: post_data,
     })
     .then(response => response.json())
-    .then (res.render("pages/issues-submit", {issue_title: issue_title, issue_body: issue_body}));
+    .then(res.render("pages/issues-submit", {issue_title: issue_title, issue_body: issue_body}));
 });
 
 
