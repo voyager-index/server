@@ -27,21 +27,31 @@
 </form>
 
 <script>
-    $('#form').submit((event) => {
-        const title_length = $('#issue-title')[0].value.length;
-        const body_length = $('#issue-body')[0].value.length;
-        // console.log(title_length);
-        // console.log(body_length);
+    // https://stackoverflow.com/questions/1684196/ctrlenter-jquery-in-textarea
+    $(document).ready(() => {
+        $('body').keypress((event) => {
+            if ((event.keyCode == 10 || event.keyCode == 13) && event.ctrlKey) {
+                $('#form').submit();
+            }
+        });
 
-        if (title_length == 0) {
-            event.preventDefault();
-            alert('Title can not be empty.');
-        }
+        $('#form').submit((event) => {
+            const title_length = $('#issue-title')[0].value.length;
+            const body_length = $('#issue-body')[0].value.length;
+            // console.log(title_length);
+            // console.log(body_length);
 
-        else if (body_length == 0) {
-            event.preventDefault();
-            alert('Bug fix or suggestion can not be empty.');
-        }
+            if (title_length == 0) {
+                event.preventDefault();
+                alert('Title can not be empty.');
+            }
+
+            else if (body_length == 0) {
+                event.preventDefault();
+                alert('Bug fix or suggestion can not be empty.');
+            }
+        });
+
     });
 </script>
 

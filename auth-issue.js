@@ -1,2 +1,2 @@
-const auth = process.env.issue_auth
+const auth = process.env.auth_issue;
 module.exports = auth;
