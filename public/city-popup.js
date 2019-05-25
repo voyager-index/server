@@ -88,17 +88,16 @@ async function cityImage(city, lat, lon, id) {
                 const city_image = city_req.image;
                 $('#city-image').attr('src', city_image);
             } catch(err) {
-                console.error(err);
+                //console.error(err);
                 try {
                     // option 3: use google places api to get image.
                     const city_req = await getCityFallback(city);
-                    console.log('city_req:', city_req);
-                    cityImage.src = city_req;
                     $('#city-image').attr('src', city_req);
                 } catch(err) {
                     // no image found.
-                    console.error(err);
-                    console.error('Could not find image for city ' + id);
+                    $('#city-image').attr('src', '/city.png');
+                    //console.error(err);
+                    //console.error('Could not find image for city ' + id);
                 }
             }
         });

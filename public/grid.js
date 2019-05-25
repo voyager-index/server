@@ -38,25 +38,27 @@ $(document).ready(async () => {
         };
 
         postData(`/city-image`, data_send)
-            .then(data => cityImage.src = data.src)
+            .then(data => {
+                cityImage.src = data[0].src;
+            })
             .catch(async (err) => {
-                console.error(err);
+                //console.error(err);
                 try {
                     const city_req = await getCity(city);
                     const city_name = city_req.name;
                     const city_image = city_req.image;
                     cityImage.src = city_image;
                 } catch(err) {
-                    console.error(err);
+                    //console.error(err);
                     try {
                         const city_req = await getCityFallback(city);
-                        console.log('city_req:', city_req);
                         cityImage.src = city_req;
                     } catch(err) {
-                        console.error(err);
-                        console.error('Could not find image for city ' + id);
+                        cityImage.src = '/city.png';
+                        //console.error(err);
+                        //console.error('Could not find image for city ' + id);
                     }
                 }
             });
     }
-});
+}
