@@ -13,7 +13,7 @@ const bodyParser = require('body-parser');
 const pool = require('./config.js');
 
 // Used for sending git issues form /issues
-const issue_auth = require('./issue-auth.js');
+const auth_issue = require('./auth-issue.js');
 
 // Use express for the web server.
 const express = require('express')
@@ -620,22 +620,20 @@ app.post('/issues-submit', (req, res) => {
         'body': issue_body,
     });
 
-    console.log('issue_auth:', issue_auth);
-
     fetch(url, {
         port: '443',
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Content-Length': Buffer.byteLength(post_data),
-            'Authorization': issue_auth,
+            'Authorization': auth_issue,
             'User-Agent': 'issuebot3000'
         },
         body: post_data,
     })
     .then(response => response.json())
-    .catch(error => console.error(error))
-    .then(response => console.log('Success:', JSON.stringify(response)))
+    .catch(error => console.error('Error:', error))
+    .then(response => console.log('Success:', response))
     .then(res.render("pages/issues-submit", {issue_title: issue_title, issue_body: issue_body}));
 });
 
