@@ -28,6 +28,33 @@ app.use(expressLayouts);
 
 const DEBUG = false;
 
+// common string used in all city queries.
+const common = `
+    SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat, c.id,
+    p.total AS population, i.speed AS mbps,
+    cl.NearCoast AS beach, a.Exists AS airport,
+    e.elevation AS elevation, ap.Index as pollution,
+    t.Jan AS tempJan, t.Feb AS tempFeb, t.Mar AS tempMar ,t.April AS tempApr ,t.May AS tempMay ,t.June AS tempJun ,t.July AS tempJul ,t.Aug AS tempAug ,t.Sept AS tempSep ,t.Oct AS tempOct ,t.Nov AS tempNov ,t.Dec AS tempDec,
+    pr.Jan AS precipJan, pr.Feb AS precipFeb, pr.Mar AS precipMar ,pr.April AS precipApr ,pr.May AS precipMay ,pr.June AS precipJun ,pr.July AS precipJul ,pr.Aug AS precipAug ,pr.Sept AS precipSep ,pr.Oct AS precipOct ,pr.Nov AS precipNov ,pr.Dec AS precipDec,
+    uv.Jan AS uvJan, uv.Feb AS uvFeb, uv.Mar AS uvMar ,uv.April AS uvApr ,uv.May AS uvMay ,uv.June AS uvJun ,uv.July AS uvJul ,uv.Aug AS uvAug ,uv.Sept AS uvSep ,uv.Oct AS uvOct ,uv.Nov AS uvNov ,uv.Dec AS uvDec,
+    ppp.ppp AS purchasingpower,
+    pi.percent AS povertyIndex
+
+    FROM City c
+    INNER JOIN Country co ON co.id = c.country
+    INNER JOIN Internet_Speed i ON i.Country = co.id
+    INNER JOIN Population p ON p.CityId = c.id
+    INNER JOIN Coastlines cl ON  cl.CityId = c.id
+    INNER JOIN Airports a ON a.CityId = c.id
+    INNER JOIN Elevation e ON e.CityId = c.id
+    INNER JOIN Air_pollution ap ON ap.CityId = c.id
+    INNER JOIN Temp t ON t.CityId = c.id
+    INNER JOIN Precipitation pr ON pr.CityId = c.id
+    INNER JOIN UV_Index uv ON uv.CityId = c.id
+    INNER JOIN Puchasing_Power_Parity ppp ON ppp.Country = co.id
+    INNER JOIN Poverty_Index pi ON pi.Country = co.id
+`;
+
 // ---------- //
 // Pages
 // ---------- //
@@ -37,27 +64,10 @@ app.get('/db', async (req, res) => {
     try {
         const client = await pool.connect()
 
-        const query = `SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat,
-            p.total AS population, i.speed AS mbps,
-            cl.NearCoast AS beach, a.Exists AS airport,
-            e.elevation AS elevation, ap.Index as pollution,
-            t.Jan AS tempJan, t.Feb AS tempFeb, t.Mar AS tempMar ,t.April AS tempApr ,t.May AS tempMay ,t.June AS tempJun ,t.July AS tempJul ,t.Aug AS tempAug ,t.Sept AS tempSep ,t.Oct AS tempOct ,t.Nov AS tempNov ,t.Dec AS tempDec,
-            pr.Jan AS precipJan, pr.Feb AS precipFeb, pr.Mar AS precipMar ,pr.April AS precipApr ,pr.May AS precipMay ,pr.June AS precipJun ,pr.July AS precipJul ,pr.Aug AS precipAug ,pr.Sept AS precipSep ,pr.Oct AS precipOct ,pr.Nov AS precipNov ,pr.Dec AS precipDec,
-            uv.Jan AS uvJan, uv.Feb AS uvFeb, uv.Mar AS uvMar ,uv.April AS uvApr ,uv.May AS uvMay ,uv.June AS uvJun ,uv.July AS uvJul ,uv.Aug AS uvAug ,uv.Sept AS uvSep ,uv.Oct AS uvOct ,uv.Nov AS uvNov ,uv.Dec AS uvDec
-
-            FROM City c
-            INNER JOIN Country co ON co.id = c.country
-            INNER JOIN Internet_Speed i ON i.Country = co.id
-            INNER JOIN Population p ON p.CityId = c.id
-            INNER JOIN Coastlines cl ON  cl.CityId = c.id
-            INNER JOIN Airports a ON a.CityId = c.id
-            INNER JOIN Elevation e ON e.CityId = c.id
-            INNER JOIN Air_pollution ap ON ap.CityId = c.id
-            INNER JOIN Temp t ON t.CityId = c.id
-            INNER JOIN Precipitation pr ON pr.CityId = c.id
-            INNER JOIN UV_Index uv ON uv.CityId = c.id
-
-            ORDER BY p.total DESC;`
+        const query = `
+            ${common}
+            ORDER BY p.total DESC
+        ;`
 
         const result = await client.query(query);
         const results = { 'results': (result) ? result.rows : null};
@@ -104,35 +114,17 @@ app.post('/city', async (req, res) => {
 
     // Does this: ${variable_name} follow the usual convention for not allowing SQL injections?
     // Also, Intl_aiports has not been added to the DB (database/data/data.sql) yet, if anyone is looking for a quick fix to do.
-            // INNER JOIN Intl_Airports ia ON ia.CityId = c.id
+    // INNER JOIN Intl_Airports ia ON ia.CityId = c.id
 
+    // TODO: uncomment lat/lon checks. Currently, checks result in no matches for some odd reason.
     const query = `
-		SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat, c.id,
-        p.total AS population, i.speed AS mbps,
-        cl.NearCoast AS beach, a.Exists AS airport,
-        e.elevation AS elevation, ap.Index as pollution,
-        t.Jan AS tempJan, t.Feb AS tempFeb, t.Mar AS tempMar ,t.April AS tempApr ,t.May AS tempMay ,t.June AS tempJun ,t.July AS tempJul ,t.Aug AS tempAug ,t.Sept AS tempSep ,t.Oct AS tempOct ,t.Nov AS tempNov ,t.Dec AS tempDec,
-        pr.Jan AS precipJan, pr.Feb AS precipFeb, pr.Mar AS precipMar ,pr.April AS precipApr ,pr.May AS precipMay ,pr.June AS precipJun ,pr.July AS precipJul ,pr.Aug AS precipAug ,pr.Sept AS precipSep ,pr.Oct AS precipOct ,pr.Nov AS precipNov ,pr.Dec AS precipDec,
-        uv.Jan AS uvJan, uv.Feb AS uvFeb, uv.Mar AS uvMar ,uv.April AS uvApr ,uv.May AS uvMay ,uv.June AS uvJun ,uv.July AS uvJul ,uv.Aug AS uvAug ,uv.
-        Sept AS uvSep ,uv.Oct AS uvOct ,uv.Nov AS uvNov ,uv.Dec AS uvDec
-        FROM City c
-        INNER JOIN Country co ON co.id = c.country
-        INNER JOIN Internet_Speed i ON i.Country = co.id
-        INNER JOIN Population p ON p.CityId = c.id
-        INNER JOIN Coastlines cl ON  cl.CityId = c.id
-        INNER JOIN Airports a ON a.CityId = c.id
-        INNER JOIN Elevation e ON e.CityId = c.id
-        INNER JOIN Air_pollution ap ON ap.CityId = c.id
-        INNER JOIN Temp t ON t.CityId = c.id
-        INNER JOIN Precipitation pr ON pr.CityId = c.id
-        INNER JOIN UV_Index uv ON uv.CityId = c.id
-
+        ${common}
         WHERE C.name = '${name}'
         --AND TRUNC(C.lon, 2) = TRUNC(${lon}, 2)
         --AND TRUNC(C.lat, 2) = TRUNC(${lat}, 2)
-        ;
-        `
+    ;`;
     //console.log(query);
+
     try {
         const client = await pool.connect()
         const result = await client.query(query);
@@ -150,6 +142,7 @@ app.post('/city', async (req, res) => {
         console.log(error);
     }
 });
+
 
 // Basic post request that receives bounding box, returns city points
 // returns array with the form: [ [City, lon, lat, rank] ],
@@ -172,27 +165,8 @@ app.post('/bounding', async (req, res) => {
     lon_wrap = -1 * (bottom_left_lon + 180) % 360;
     lon_wrap_neg = 1 * (bottom_left_lon + 180) % 360;
 
-    var query = `SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat, c.id,
-        p.total AS population, i.speed AS mbps,
-        cl.NearCoast AS beach, a.Exists AS airport,
-        e.elevation AS elevation, ap.Index as pollution,
-        t.Jan AS tempJan, t.Feb AS tempFeb, t.Mar AS tempMar ,t.April AS tempApr ,t.May AS tempMay ,t.June AS tempJun ,t.July AS tempJul ,t.Aug AS tempAug ,t.Sept AS tempSep ,t.Oct AS tempOct ,t.Nov AS tempNov ,t.Dec AS tempDec,
-        pr.Jan AS precipJan, pr.Feb AS precipFeb, pr.Mar AS precipMar ,pr.April AS precipApr ,pr.May AS precipMay ,pr.June AS precipJun ,pr.July AS precipJul ,pr.Aug AS precipAug ,pr.Sept AS precipSep ,pr.Oct AS precipOct ,pr.Nov AS precipNov ,pr.Dec AS precipDec,
-        uv.Jan AS uvJan, uv.Feb AS uvFeb, uv.Mar AS uvMar ,uv.April AS uvApr ,uv.May AS uvMay ,uv.June AS uvJun ,uv.July AS uvJul ,uv.Aug AS uvAug ,uv.Sept AS uvSep ,uv.Oct AS uvOct ,uv.Nov AS uvNov ,uv.Dec AS uvDec,
-        ppp.ppp AS purchasingpower 
-
-        FROM City c
-        INNER JOIN Country co ON co.id = c.country
-        INNER JOIN Internet_Speed i ON i.Country = co.id
-        INNER JOIN Population p ON p.CityId = c.id
-        INNER JOIN Coastlines cl ON  cl.CityId = c.id
-        INNER JOIN Airports a ON a.CityId = c.id
-        INNER JOIN Elevation e ON e.CityId = c.id
-        INNER JOIN Air_pollution ap ON ap.CityId = c.id
-        INNER JOIN Temp t ON t.CityId = c.id
-        INNER JOIN Precipitation pr ON pr.CityId = c.id
-        INNER JOIN UV_Index uv ON uv.CityId = c.id
-        INNER JOIN Puchasing_Power_Parity ppp ON ppp.Country = co.id
+    var query = `
+        ${common}
 
         WHERE
         (C.lon >= ${bottom_left_lon} OR
@@ -202,8 +176,7 @@ app.post('/bounding', async (req, res) => {
         (C.lon <= ${lon_wrap_neg} OR
         C.lon <= ${top_right_lon}) AND
         C.lat <= ${top_right_lat}
-        `;
-
+    `;
 
    for (var i = 0; i < filters.length; i++){
         if(filters[i] == "internet"){
@@ -233,6 +206,7 @@ app.post('/bounding', async (req, res) => {
    }
 
     query += " ORDER BY P.total DESC LIMIT 100;";
+    //console.log(query);
 
     let cities = [];
     try {
@@ -249,26 +223,11 @@ app.post('/bounding', async (req, res) => {
 });
 
 app.get('/grid', async (req, res) => {
-     var query = `SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat, c.id,
-        p.total AS population, i.speed AS mbps,
-        cl.NearCoast AS beach, a.Exists AS airport,
-        e.elevation AS elevation, ap.Index as pollution,
-        t.Jan AS tempJan, t.Feb AS tempFeb, t.Mar AS tempMar ,t.April AS tempApr ,t.May AS tempMay ,t.June AS tempJun ,t.July AS tempJul ,t.Aug AS tempAug ,t.Sept AS tempSep ,t.Oct AS tempOct ,t.Nov AS tempNov ,t.Dec AS tempDec,
-        pr.Jan AS precipJan, pr.Feb AS precipFeb, pr.Mar AS precipMar ,pr.April AS precipApr ,pr.May AS precipMay ,pr.June AS precipJun ,pr.July AS precipJul ,pr.Aug AS precipAug ,pr.Sept AS precipSep ,pr.Oct AS precipOct ,pr.Nov AS precipNov ,pr.Dec AS precipDec,
-        uv.Jan AS uvJan, uv.Feb AS uvFeb, uv.Mar AS uvMar ,uv.April AS uvApr ,uv.May AS uvMay ,uv.June AS uvJun ,uv.July AS uvJul ,uv.Aug AS uvAug ,uv.Sept AS uvSep ,uv.Oct AS uvOct ,uv.Nov AS uvNov ,uv.Dec AS uvDec
-
-        FROM City c
-        INNER JOIN Country co ON co.id = c.country
-        INNER JOIN Internet_Speed i ON i.Country = co.id
-        INNER JOIN Population p ON p.CityId = c.id
-        INNER JOIN Coastlines cl ON  cl.CityId = c.id
-        INNER JOIN Airports a ON a.CityId = c.id
-        INNER JOIN Elevation e ON e.CityId = c.id
-        INNER JOIN Air_pollution ap ON ap.CityId = c.id
-        INNER JOIN Temp t ON t.CityId = c.id
-        INNER JOIN Precipitation pr ON pr.CityId = c.id
-        INNER JOIN UV_Index uv ON uv.CityId = c.id
-        ORDER BY P.total DESC LIMIT 100;`
+    var query = `
+        ${common}
+        ORDER BY P.total DESC LIMIT 100
+    ;`;
+    //console.log(query);
 
     let cities = [];
     try {
@@ -299,7 +258,7 @@ function rankCities(cities, filters){
             selectedMonth = group[j];
         }
     }
-    
+
     var rankedCities = [];
     var i;
     for (i = 0 ; i < cities.length; i++){
@@ -367,7 +326,7 @@ RANKING DONE BELOW
         weight = .2;
         if(filters.includes('uv')){
             weight = 1;
-        } 
+        }
         rank += uvRank * weight;
 
         //Precip ranking
@@ -383,7 +342,7 @@ RANKING DONE BELOW
                weight = 1;
         }
         rank += precipRank * weight;
-            
+
         // Temp ranking
         if (filters.includes('cold') ){
             // 0 f to 45 f == -17.7 C to 7.2
@@ -470,14 +429,33 @@ RANKING DONE BELOW
         if(filters.includes('purchase')){
             weight = 1;
         }
-        rank += pppRank* weight;
+        rank += pppRank * weight;
+
+        // Socioeconomic filter
+        var povertyindex = cities[i].povertyindex;
+        var povertyindexRank = 0;
+        //console.log("Socioeconomic filter:", povertyindex);
+        if (filters.includes('high-poverty-index')){
+            povertyindexRank = povertyindex - 2;
+        }
+        else if (filters.includes('medium-poverty-index')){
+            povertyindexRank = 2 - povertyindex;
+        }
+        else if (filters.includes('low-poverty-index')){
+            povertyindexRank = 4 - povertyindex;
+        }
+        //console.log('old rank:', rank);
+        rank += povertyindexRank;
+        //console.log('new rank:', rank, '\n');
+        //console.log("Socioeconomic filter:", povertyindexRank);
 
         // Adjust to onle 1 decimal place
         var roundedRank = Math.round(rank * 10)/10;
         //name, lon, lat, rank, id
-            rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), roundedRank, cities[i]["id"]]);
+        rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), roundedRank, cities[i]["id"]]);
     }
 
+    /*
     // Adjust to relative rank
     // Rank range: 0 - 10
     var maxRank = -100, minRank = 100000, thisRank;
@@ -504,6 +482,10 @@ RANKING DONE BELOW
         for (var l = 0; l < rankedCities.length; l++){
             rankedCities[l][3] = (rankedCities[l][3]).toFixed(1);
         }
+    }
+    */
+    for (var l = 0; l < rankedCities.length; l++){
+        rankedCities[l][3] = (rankedCities[l][3]).toFixed(1);
     }
 
     var returnVal = {'cities': rankedCities};
@@ -542,20 +524,20 @@ app.post('/city-image', async (req, res) => {
 
 
 function getAvgUV(city){
-    const uvTotal = (city['uvjan']) + (city['uvfeb']) + (city['uvmar']) + (city['uvapr']) + (city['uvmay']) + (city['uvjun']) + 
+    const uvTotal = (city['uvjan']) + (city['uvfeb']) + (city['uvmar']) + (city['uvapr']) + (city['uvmay']) + (city['uvjun']) +
                     (city['uvjul']) + (city['uvaug']) + (city['uvsep']) + (city['uvoct']) + (city['uvnov']) + (city['uvdec']);
     return Math.round(uvTotal/12);
 }
 
 function getAvgPrecip(city){
    //console.log(city['precipdec']);
-    const precipTotal = city['precipjan'] + city['precipfeb'] + city['precipmar'] + city['precipapr'] + city['precipmay'] + city['precipjun'] + 
+    const precipTotal = city['precipjan'] + city['precipfeb'] + city['precipmar'] + city['precipapr'] + city['precipmay'] + city['precipjun'] +
                         city['precipjul'] + city['precipaug'] + city['precipsep'] + city['precipoct'] + city['precipnov'] + city['precipdec'];
     return Math.round(precipTotal/12);
 }
 
 function getAvgTemp(city){
-    const tempTotal = city['tempjan'] + city['tempfeb'] + city['tempmar'] + city['tempapr'] + city['tempmay'] + city['tempjun'] + 
+    const tempTotal = city['tempjan'] + city['tempfeb'] + city['tempmar'] + city['tempapr'] + city['tempmay'] + city['tempjun'] +
                       city['tempjul'] + city['tempaug'] + city['tempsep'] + city['tempoct'] + city['tempnov'] + city['tempdec'];
     return Math.round(tempTotal/12);
 }

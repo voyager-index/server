@@ -9,9 +9,10 @@ $("#filter > .btn").click(() => {
 });
 
 // mimics radio button for filters
-// trying out rest parameter syntax
+// with rest parameter syntax
 function button_group(...args) {
     args.forEach((arg) => {
+        $('.' + arg).off('click');
         $('.' + arg).click((e) => {
             // remove active class from other buttons
             args.forEach((a) => {
@@ -19,6 +20,8 @@ function button_group(...args) {
                     $('.' + a).removeClass('active');
                 }
             });
+
+            changeMarkers();
         });
     });
 }
@@ -31,6 +34,9 @@ button_group('cold', 'temperate', 'warm', 'hot');
 
 // Months
 button_group('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec');
+
+// Socioeconomic filter
+button_group('high-poverty-index', 'medium-poverty-index', 'low-poverty-index');
 
 // Gets list of filters from Voyager module (/public/main.js).
 // Gets bouding box from Voyager module (/public/main.js).
