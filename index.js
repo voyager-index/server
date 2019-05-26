@@ -87,7 +87,7 @@ app.get('/db', async (req, res) => {
                 if (key.substring(0,4) == 'temp') {
                     temp += obj[key];
                 }
-                else if (key.substring(0, 4) == 'precip') {
+                else if (key.substring(0, 6) == 'precip') {
                     precip += obj[key];
                 }
                 else if (key.substring(0, 2) == 'uv') {
@@ -105,11 +105,11 @@ app.get('/db', async (req, res) => {
             results[i].uv = Math.round(uv);
         }
 
+        res.render('pages/db', {results:results});
     }
 
     try {
-        const results = await swimming_pool(query);
-        res.render('pages/db', {results:results});
+        const results = await swimming_pool(query, action);
     } catch (err) {
         console.error(err);
         res.send('Error:', err);
