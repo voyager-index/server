@@ -105,11 +105,11 @@ app.get('/db', async (req, res) => {
             results[i].uv = Math.round(uv);
         }
 
-        res.render('pages/db', {results:results});
     }
 
     try {
         const results = await swimming_pool(query);
+        res.render('pages/db', {results:results});
     } catch (err) {
         console.error(err);
         res.send('Error:', err);
