@@ -37,7 +37,7 @@ const common = `
     p.total AS population, i.speed AS mbps,
     cl.NearCoast AS beach, a.Exists AS airport,
     e.elevation AS elevation, ap.Index as pollution,
-    pt.palms as palms,
+    pt.palms as palms, h.totalrate as totalhomicides, h.femalerate as femalehomicides,
 
     -- temperature
     t.Jan AS tempJan, t.Feb AS tempFeb, t.Mar AS tempMar, t.April AS tempApr, t.May AS tempMay, t.June AS tempJun, t.July AS tempJul, t.Aug AS tempAug, t.Sept AS tempSep, t.Oct AS tempOct, t.Nov AS tempNov, t.Dec AS tempDec,
@@ -66,6 +66,7 @@ const common = `
     INNER JOIN Temp t ON t.CityId = c.id
     INNER JOIN UV_Index uv ON uv.CityId = c.id
     INNER JOIN Palm_Trees pt ON pt.CityId = c.id
+    INNER JOIN Homicide h ON co.id = h.country
 `;
 
 // ---------- //
@@ -618,6 +619,37 @@ RANKING DONE BELOW
         }
         else {
             weightedrank += 4 - povertyindex;
+            weightedCount++;
+        }
+
+        // Homicides and female homicides by country
+        // Max is 83, avg is 7.5, America is 4.9, 0s means no data
+        var totalHoms = Number(cities[i]["totalhomicides"]) || 0;
+        var femaleHoms = Number(cities[i]["femalehomicides"]) || 0;
+        var safe, safeforwomen;
+        if(totalHoms > 8 || totalHoms == 0){
+            safe = 0;
+        } else {
+            safe = 10 - totalHoms;
+        }
+
+        if(femaleHoms > 8 || femaleHoms == 0){
+            safeforwomen = 0;
+        } else {
+            safeforwomen = 10 - femaleHoms;
+        }
+
+        if (filters.includes('safe')){
+            filterrank += safe;
+        } else {
+            weightedrank += safe;
+            weightedCount++;
+        }
+
+        if (filters.includes('safeforwomen')){
+            filterrank += safeforwomen;
+        } else {
+            weightedrank += safeforwomen;
             weightedCount++;
         }
 
