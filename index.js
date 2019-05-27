@@ -396,6 +396,13 @@ app
 // Helper functions
 // -------------------- //
 
+/*
+This function ranks the cities that are passed to it. If there are no filters selected,
+then it uses our values.
+If there is one filter, then it is ranked soley on that filter.
+If there are more than one, then the score is a combination of the values of the filter rankings,
+plus the rest of the factors, using our values, weighted down to be less impactful.
+*/
 function rankCities(cities, filters){
     //True False values don't matter, because they are filtered out.
     var selectedMonth;
@@ -412,14 +419,15 @@ function rankCities(cities, filters){
     var rankedCities = [];
     var i;
     for (i = 0 ; i < cities.length; i++){
-        var rank = 0; // Starting rank for each city
-        var weight; // Weight given to each section depending on whether or not it was selected as filter
+        var filterrank = 0; // Starting rank for each city, for filter button selections
+        var weightedrank = 0; // This ranking is for information we have that the user did not select to filter by
+        var weight = .2; // Weight given to each section depending on whether or not it was selected as filter
+        var weightedCount = 0; //Count of items that may be given a weighted score.
         const pop = Number(cities[i]["population"]);
 
         // Rank based on filter buttons. These names are in the class list for each button on index.ejs
 
         //Internet Speed
-        weight = .2;
         var mbps = cities[i]["mbps"];
         var internetRank = 0;
         if (mbps != null){
@@ -430,18 +438,21 @@ function rankCities(cities, filters){
             }
         }
         if(filters.includes("internet")){  // MBPS is greater than 1
-            weight = 1;
+            filterrank += internetRank;
+        } else {
+            weightedrank += internetRank;
+            weightedCount++;
         }
-        rank += internetRank*weight;
 
         // Pollution
-        weight = .2;
         var pollution = Number(cities[i]["pollution"]) || 0;
         var pollutionRank = (100 - pollution)/10;
         if(filters.includes("pollution")){ // Index is null or less than 100
-            weight = 1;
+            filterrank += pollutionRank;
+        } else {
+            weightedrank += pollutionRank;
+            weightedCount++;
         }
-        rank += pollutionRank*weight;
 
         // Weather
         var avgUV;     // Integer, index of 0 - 16, * 16       For higher accuracy, so its 0 through 256
@@ -474,11 +485,12 @@ RANKING DONE BELOW
         } else {
             uvRank += 10 - Math.round(avgUV/16); //uv index of 10 gives 0 to ranking, uv index of 0 gives 10 to ranking
         }
-        weight = .2;
         if(filters.includes('uv')){
-            weight = 1;
+            filterrank += uvRank;
+        } else {
+            weightedrank += uvRank;
+            weightedCount++;
         }
-        rank += uvRank * weight;
 
         //Precip ranking
         if (avgPrecip <= 200){
@@ -488,11 +500,12 @@ RANKING DONE BELOW
         } else { // At a certain point it doesnt matter, you're just in the rain.
             precipRank -= 5;
         }
-        weight = .2;
         if (filters.includes('precipitation')){ // in MM, from 0 to ~800
-               weight = 1;
+            filterrank += precipRank;
+        } else {
+            weightedrank += precipRank;
+            weightedCount++;
         }
-        rank += precipRank * weight;
 
         // Temp ranking
         if (filters.includes('cold') ){
@@ -543,11 +556,12 @@ RANKING DONE BELOW
                 tempRank -= 5;
             }
         }
-        weight = .2;
         if (filters.includes('cold') || filters.includes('temperate') || filters.includes('warm') || filters.includes('hot')){
-            weight = 1;
+            filterrank += tempRank;
+        } else {
+            weightedrank += tempRank;
+            weightedCount++;
         }
-        rank += tempRank * weight;
 
         // Population
         var popRank = 0;
@@ -567,75 +581,57 @@ RANKING DONE BELOW
                 popRank += 10;
             }
         }
-        weight = .2;
         if (filters.includes('rural') || filters.includes('town') || filters.includes('city') || filters.includes('metro')){
-            weight = 1;
+           filterrank += popRank;
+        } else {
+            weightedrank += popRank;
+            weightedCount++;
         }
-        rank += popRank * weight;
 
         // Purchasing power
         var purchasePower = cities[i]["purchasingpower"];
         var pppRank = Math.round((1 - purchasePower)*10);
-        weight = .2;
         if(filters.includes('purchase')){
-            weight = 1;
+            filterrank += pppRank;
+        } else {
+            weightedrank += pppRank;
+            weightedCount++;
         }
-        rank += pppRank * weight;
 
         // Socioeconomic filter
         var povertyindex = cities[i].povertyindex;
-        var povertyindexRank = 0;
         //console.log("Socioeconomic filter:", povertyindex);
         if (filters.includes('high-poverty-index')){
-            povertyindexRank = povertyindex - 2;
+            filterrank += povertyindex - 2;
         }
         else if (filters.includes('medium-poverty-index')){
-            povertyindexRank = 2 - povertyindex;
+            filterrank += 2 - povertyindex;
         }
         else if (filters.includes('low-poverty-index')){
-            povertyindexRank = 4 - povertyindex;
+            filterrank += 4 - povertyindex;
         }
-        //console.log('old rank:', rank);
-        rank += povertyindexRank;
-        //console.log('new rank:', rank, '\n');
-        //console.log("Socioeconomic filter:", povertyindexRank);
+        else {
+            weightedrank += 4 - povertyindex;
+            weightedCount++;
+        }
+
+        var rank;
+        if(filters.length == 0){
+            rank = weightedrank/weightedCount;
+        }
+        else if(filters.length == 1){
+            rank = filterrank;
+        }
+        else {
+            rank = (filterrank + (weightedrank * weight) ) / (filters.length + (weightedCount * weight));
+        }
 
         // Adjust to onle 1 decimal place
         var roundedRank = Math.round(rank * 10)/10;
+
         //name, lon, lat, rank, id
         rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), roundedRank, cities[i]["id"]]);
     }
-
-    /*
-    // Adjust to relative rank
-    // Rank range: 0 - 10
-    var maxRank = -100, minRank = 100000, thisRank;
-    for (var k = 0; k < rankedCities.length; k++){
-        thisRank = rankedCities[k][3];
-        if (thisRank > maxRank){
-            maxRank = thisRank;
-        }
-        if (thisRank < minRank){
-            minRank = thisRank;
-        }
-    }
-    if (minRank < 0){
-        const addToRank = Math.abs(minRank);
-        for (var l = 0; l < rankedCities.length; l++){
-            rankedCities[l][3] += addToRank;
-        }
-        maxRank += Math.abs(minRank);
-    }
-    if (maxRank > 10){
-        for (var l = 0; l < rankedCities.length; l++){
-            rankedCities[l][3] = ((rankedCities[l][3] * 10) / maxRank).toFixed(1); // toFixed converts to string, so to stat consistent we do it whether or not maxRank is > 10
-        }
-    } else {
-        for (var l = 0; l < rankedCities.length; l++){
-            rankedCities[l][3] = (rankedCities[l][3]).toFixed(1);
-        }
-    }
-    */
 
     for (var l = 0; l < rankedCities.length; l++){
         rankedCities[l][3] = (rankedCities[l][3]).toFixed(1);
