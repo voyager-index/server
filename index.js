@@ -300,7 +300,7 @@ app.get('/grid', async (req, res) => {
     const action = (results) => {
         const filters = [];
         var cityRank = rankCities(results, filters);
-        res.render('pages/grid', cityRank);
+        res.render('pages/grid', { cityRank: cityRank, layout : 'layout-map' });
     }
 
     let cities = [];
