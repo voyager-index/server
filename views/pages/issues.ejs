@@ -1,0 +1,68 @@
+<!--<form action="https://api.github.com/repos/cs361-group24/database/issues" method="post" name="issues">-->
+<!--<form action="https://webdev.liambeckman.com/getpost" method="post" name="issues">-->
+
+<p>This form submits issues to <a href="https://github.com/cs467-map/database/issues">this issue collector</a>.</p>
+<br />
+
+<form id="form" action="/issues-submit" method="post" name="issues">
+    <fieldset>
+        <legend>Submit issue</legend>
+        <p><label for="issue-title">Title:</label></p>
+        <% if (city.length > 0) { %>
+        <textarea rows="2" cols="100" id="issue-title" name="issue-title" spellcheck="false" id="issue-title"><%= city %>, <%= country %> (id: <%= id %>)</textarea>
+        <br />
+        <p><label for="issue-body">Bug fix or suggestion:</label></p>
+        <textarea rows="9" cols="100" id="issue-body" name="issue-body" placeholder="Image shows <%= city %>, Oregon. A pox on your household!"></textarea>
+        <% } else { %>
+        <textarea rows="2" cols="100" id="issue-title" name="issue-title" spellcheck="false" id="issue-title" placeholder="Portland, Maine: Wrong Image."></textarea>
+        <br />
+        <p><label for="issue-body">Bug fix or suggestion:</label></p>
+        <textarea rows="9" cols="100" id="issue-body" name="issue-body" placeholder="Image shows Portland, Oregon. A pox on your household!"></textarea>
+        <% } %>
+
+        <br />
+        <br />
+        <input type="submit" value="Submit">
+    </fieldset>
+</form>
+
+<script>
+    // https://stackoverflow.com/questions/1684196/ctrlenter-jquery-in-textarea
+    $(document).ready(() => {
+        $('body').keypress((event) => {
+            if ((event.keyCode == 10 || event.keyCode == 13) && event.ctrlKey) {
+                $('#form').submit();
+            }
+        });
+
+        $('#form').submit((event) => {
+            const title_length = $('#issue-title')[0].value.length;
+            const body_length = $('#issue-body')[0].value.length;
+            // console.log(title_length);
+            // console.log(body_length);
+
+            if (title_length == 0) {
+                event.preventDefault();
+                alert('Title can not be empty.');
+            }
+
+            else if (body_length == 0) {
+                event.preventDefault();
+                alert('Bug fix or suggestion can not be empty.');
+            }
+        });
+
+    });
+</script>
+
+<script src='https://www.google.com/recaptcha/api.js?render=6LegZqUUAAAAAP2yz18ZD3Wh_1ZXU71-OM_3ad8b'></script>
+
+<script>
+    grecaptcha.ready(function() {
+        grecaptcha.execute('6LegZqUUAAAAAP2yz18ZD3Wh_1ZXU71-OM_3ad8b', {action: 'action_name'})
+            .then(function(token) {
+                // Verify the token on the server.
+            });
+    });
+</script>
+
