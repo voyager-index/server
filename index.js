@@ -37,6 +37,7 @@ const common = `
     p.total AS population, i.speed AS mbps,
     cl.NearCoast AS beach, a.Exists AS airport,
     e.elevation AS elevation, ap.Index as pollution,
+    pt.palms as palms,
 
     -- temperature
     t.Jan AS tempJan, t.Feb AS tempFeb, t.Mar AS tempMar, t.April AS tempApr, t.May AS tempMay, t.June AS tempJun, t.July AS tempJul, t.Aug AS tempAug, t.Sept AS tempSep, t.Oct AS tempOct, t.Nov AS tempNov, t.Dec AS tempDec,
@@ -64,6 +65,7 @@ const common = `
     INNER JOIN Puchasing_Power_Parity ppp ON ppp.Country = co.id
     INNER JOIN Temp t ON t.CityId = c.id
     INNER JOIN UV_Index uv ON uv.CityId = c.id
+    INNER JOIN Palm_Trees pt ON pt.CityId = c.id
 `;
 
 // ---------- //
@@ -263,6 +265,9 @@ app.post('/bounding', async (req, res) => {
         if(filters[i] == "airports"){
             query += ' AND (a.Exists = true)'
         }
+        if(filters[i] == "palms"){
+            query += ' AND (pt.palms = true)'
+        }
    }
 
     query += " ORDER BY P.total DESC LIMIT 100;";
@@ -405,6 +410,7 @@ plus the rest of the factors, using our values, weighted down to be less impactf
 */
 function rankCities(cities, filters){
     //True False values don't matter, because they are filtered out.
+    console.log(filters)
     var selectedMonth;
     // Month included?
     const group = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
@@ -616,10 +622,10 @@ RANKING DONE BELOW
         }
 
         var rank;
-        if(filters.length == 0){
+        if(filters.length == 0 || (filters.length == 1 && (filters[0] == "palms" || filters[0] == "beaches"))){
             rank = weightedrank/weightedCount;
         }
-        else if(filters.length == 1){
+        else if(filters.length == 1 && filters[0] != "palms" && filters[0] != "beaches"){
             rank = filterrank;
         }
         else {
