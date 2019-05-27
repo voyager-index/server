@@ -495,8 +495,9 @@ RANKING DONE BELOW
         for (var l = 0; l < rankedCities.length; l++){
             rankedCities[l][3] += addToRank;
         }
+        maxRank += Math.abs(minRank);
     }
-    if (maxRank > 10 || maxRank - minRank > 10 ){
+    if (maxRank > 10){
         for (var l = 0; l < rankedCities.length; l++){
             rankedCities[l][3] = ((rankedCities[l][3] * 10) / maxRank).toFixed(1); // toFixed converts to string, so to stat consistent we do it whether or not maxRank is > 10
         }
