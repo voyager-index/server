@@ -275,4 +275,4 @@ Internet: <https://www.cable.co.uk/broadband/speed/worldwide-speed-league/>, [da
 
 Purchasing Power Parity: <https://data.worldbank.org/indicator/PA.NUS.PPPC.RF?end=2017&start=2017&view=map>
 
-Severe poverty index: <https://databank.worldbank.org/data/source/poverty-and-equity>
+Severe poverty index: <http://hdr.undp.org/en/composite/MPI>
