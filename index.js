@@ -654,10 +654,10 @@ RANKING DONE BELOW
         }
 
         var rank;
-        if(filters.length == 0 || (filters.length == 1 && (filters[0] == "palms" || filters[0] == "beaches"))){
+        if(filters.length == 0 || (filters.length == 1 && (filters[0] == "palms" || filters[0] == "beaches" || filters[0] == "airports"))){
             rank = weightedrank/weightedCount;
         }
-        else if(filters.length == 1 && filters[0] != "palms" && filters[0] != "beaches"){
+        else if(filters.length == 1 && filters[0] != "palms" && filters[0] != "beaches" && filters[0] != "airports"){
             rank = filterrank;
         }
         else {
