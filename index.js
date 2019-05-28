@@ -185,6 +185,35 @@ app.post('/city-search', async (req, res) => {
 });
 
 // city page
+app.post('/grid-search', async (req, res) => {
+    // get data from POST body.
+    const filters = req.body.filters;
+    console.log('index:', filters);
+
+    const query = `
+        ${common}
+        --ORDER BY P.total DESC
+        --LIMIT 4
+    ;`;
+
+    const action = (results) => {
+        var cityRank = rankCities(results, filters);
+        cityRank.cities.sort((a, b) => parseFloat(b[3]) - parseFloat(a[3]));
+        cityRank.cities = cityRank.cities.slice(0, 4);
+        console.log(cityRank);
+        res.send(cityRank);
+    }
+
+    try {
+        const results = await swimming_pool(query, action);
+    }
+    catch(err) {
+        console.error(err);
+        res.send('Error:', err);
+    }
+});
+
+// city page
 app.post('/city-image', async (req, res) => {
 
     // get data from POST body.
@@ -293,7 +322,7 @@ app.post('/bounding', async (req, res) => {
 app.get('/grid', async (req, res) => {
     var query = `
         ${common}
-        ORDER BY P.total DESC LIMIT 50
+        ORDER BY P.total DESC LIMIT 4
     ;`;
     //console.log(query);
 

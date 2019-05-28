@@ -2,9 +2,6 @@
 
 $(document).ready(async () => {
     grid_init();
-    $('#city-popup').css('margin-right', '50%');
-    $('#city-popup').css('margin-left', '-5%');
-    $('#city-popup').css('width', '70%');
 });
 
 function grid_init() {

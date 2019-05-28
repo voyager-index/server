@@ -1,6 +1,3 @@
-<input id="city-search" type="text" name="search" placeholder="Search..." />
-<button id="clear">x</button>
-
 <div class="container-fluid">
     <button id="toggle" class="btn btn-success btn-sm">Toggle Filters</button>
     <% include ../partials/city-popup.ejs %>
@@ -55,11 +52,14 @@
 
 
         <div id="content" class="col-lg-10">
+            <input id="city-search" type="text" name="search" placeholder="Search..." />
+            <button id="clear">x</button>
+
             <div class="grid-container" style="display: grid;
             grid-template-columns: 200px 200px 200px 200px;
             grid-gap: 20px;">
 
-                <% cities.forEach(function(c) { %>
+                <% cityRank.cities.forEach(function(c) { %>
                 <div class="grid-item">
                     <img class='city-image' src=''></img>
                     <h3 class='city-name' data-name='<%= c[0] %>'><%= c[0] %></h3>
@@ -84,6 +84,7 @@
 <script src="grid.js"></script>
 <script src="main.bundle.js"></script>
 <script src="city-popup.js"></script>
+<script src="filter.js"></script>
 
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=<%= process.env.apikey %>&libraries=places"></script>
 
