@@ -82,7 +82,6 @@ var displayFeatureInfo = function(pixel) {
     const lat = features[0].get('lat');
     const lon = features[0].get('lon');
     const id = features[0].get('id');
-    console.log('features:', features);
 
     // Make request for city info
     var http = new XMLHttpRequest();
@@ -181,6 +180,13 @@ function buildFeatures(cities) {
     var rank = cities[i][3];
     var id = cities[i][4];
 
+    var image = '';
+    if (cities[i][5]) {
+        image = cities[i][5];
+        //console.log('cities arr:', cities[i]);
+        //console.log('image:', image);
+    }
+
     //I have added 3 different marker png images to the folder for use
     // Credit to https://mapicons.mapsmarker.com. Creative commons license. (I edited the marker to erase icon)
     var src;
@@ -194,16 +200,32 @@ function buildFeatures(cities) {
        src = "redMarker.png";
     }
 
-    cityMarkers[i] = new Feature({
-      geometry: new Point(
-        proj.fromLonLat([lon, lat])
-      ),
-      name: name,
-      lon: lon,
-      lat: lat,
-      rank: rank,
-      id: id,
-    });
+      if (cities[i][5]) {
+          cityMarkers[i] = new Feature({
+              geometry: new Point(
+                  proj.fromLonLat([lon, lat])
+              ),
+              name: name,
+              lon: lon,
+              lat: lat,
+              rank: rank,
+              id: id,
+              image: image,
+          });
+          //console.log(cityMarkers[i]);
+      }
+      else {
+          cityMarkers[i] = new Feature({
+              geometry: new Point(
+                  proj.fromLonLat([lon, lat])
+              ),
+              name: name,
+              lon: lon,
+              lat: lat,
+              rank: rank,
+              id: id,
+          });
+      }
 
     // Adds a style to the marker
     var iconStyle = new Style({

@@ -1,12 +1,16 @@
-$("#toggle").click(() => {
+$('#toggle').click(() => {
     /* to toggle the sidebar, just switch the CSS classes */
-    $("#filter-col").toggleClass("hidden");
-    $("#content").toggleClass("col-lg-12 col-lg-10");
+    $('#filter-col').toggleClass('hidden');
+    $('#content').toggleClass('col-lg-12 col-lg-10');
 });
 
-$("#filter > .btn").click(() => {
+$('#filter > .btn').click(() => {
     changeMarkers();
+    changeGrid();
 });
+
+const content_height = $('#content').css('height');
+$('#filter-col').css('height', content_height);
 
 // mimics radio button for filters
 // with rest parameter syntax
@@ -20,8 +24,6 @@ function button_group(...args) {
                     $('.' + a).removeClass('active');
                 }
             });
-
-            changeMarkers();
         });
     });
 }
@@ -38,15 +40,11 @@ button_group('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct
 // Socioeconomic filter
 button_group('high-poverty-index', 'medium-poverty-index', 'low-poverty-index');
 
-// Gets list of filters from Voyager module (/public/main.js).
-// Gets bouding box from Voyager module (/public/main.js).
-// Sends both to /bounding as POST request.
 
-// /index.js receives request, queries database, ranks cities,
-// and returns city array (as data.cities).
-
-// Calls Voayger.buildFeatures() with city array.
 function changeMarkers() {
+    // Gets list of filters from Voyager module (/public/main.js).
+    // Gets bouding box from Voyager module (/public/main.js).
+    // Sends both to /bounding as POST request.
     const filters = Voyager.getFilters();
     //console.log('filters:', filters);
 
@@ -55,9 +53,62 @@ function changeMarkers() {
         'filters': filters,
     };
 
+    // /index.js receives request, queries database, ranks cities,
+    // and returns city array (as data.cities).
+    // Calls Voayger.buildFeatures() with city array.
     postData(`/bounding`, data_send)
         .then(data => Voyager.buildFeatures(data.cities))
         .catch(error => console.error(error));
+}
+
+
+function changeGrid() {
+    const filters = Voyager.getFilters();
+    console.log('filters:', filters);
+
+    const data_send = {
+        'filters': filters,
+    };
+
+    // /index.js receives request, queries database, ranks cities,
+    // and returns city array (as data.cities).
+    // Calls Voayger.buildFeatures() with city array.
+    postData(`/grid-search`, data_send)
+        .then(data => build_grid(data.cities))
+        .catch(error => console.error(error));
+}
+
+function build_grid(arr) {
+    $('.grid-container').empty();
+    arr.forEach((city) => {
+        const item = $('<div>', {class: 'grid-item'});
+
+        const img = $('<img>', {class: 'city-image'});
+
+        const name = $('<h3>', {class: 'city-name', text: city[0]});
+        name.attr('data-name', city[0]);
+
+        $('.grid-container').append(item);
+        item.append(img);
+        item.append(name);
+
+        const arr = [
+            'lon', 'lat', 'rank', 'id'
+        ];
+        let i = 1;
+
+        arr.forEach((element) => {
+            const div = $('<div>');
+            div.attr(`data-${element}`, city[i]);
+            item.append(div);
+            i += 1;
+        });
+
+        const hover_text = $('<p>', {class: 'hover-text'});
+        item.append(hover_text);
+
+        grid_init();
+    });
 }
 
 $(function(){

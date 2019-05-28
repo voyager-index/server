@@ -289,7 +289,15 @@ table {
 
     p {
         margin-top: 10%;
+        bottom: 0;
     }
+
+
+    text-align: center;
+    border: 1px solid black;
+    border-radius: 3px;
+    height: 200px;
+    position: relative;
 }
 
 #map-hide {
@@ -302,14 +310,6 @@ table {
     a {
         padding-right: 1%;
     }
-}
-
-
-.grid-item {
-    text-align: center;
-    border: 1px solid black;
-    border-radius: 3px;
-    height: 200px;
 }
 
 textarea {
