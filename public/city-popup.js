@@ -25,7 +25,8 @@ $(document).ready(() => {
         const id = state[3];
 
         if (state[5]) {
-            $('#city-image').attr('src', state[5]);
+            const image = state[5];
+            $('#city-image').attr('src', image);
         }
 
         else {
@@ -72,8 +73,6 @@ async function cityImage(city, lat, lon, id) {
         console.log('id:', id);
     }
 
-    saveState(city, lat, lon, id);
-
     const data_send = {
         'name': city,
         'lat': lat,
@@ -87,20 +86,21 @@ async function cityImage(city, lat, lon, id) {
 
 // Calls cityImage() now
 async function cityInfo(features) {
-    const name = features.city;
+    const city = features.city;
     const lat = features.lat;
     const lon = features.lon;
     const id = features.id;
 
-    /*
     if (features.image) {
-        console.log('features.image:', features.image);
-        $('#city-image').attr('src', features.image);
+        const image = features.image;
+        saveState(city, lat, lon, id, image);
+        console.log('features.image:', image);
+        $('#city-image').attr('src', image);
     }
     else {
-        cityImage(name, lat, lon, id);
+        saveState(city, lat, lon, id);
+        cityImage(city, lat, lon, id);
     }
-    */
 
     // These properties must be present in both the the DB response, and the city-popup div in index.ejs
     const properties = ['city', 'country', 'population', 'mbps', 'lon', 'lat', 'elevation', 'pollution', 'airport', 'beach'];

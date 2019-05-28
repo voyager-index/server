@@ -10,7 +10,7 @@ $(document).ready(() => {
 
     //setup before functions
     let typingTimer;                //timer identifier
-    const doneTypingInterval = 300;  //time in ms
+    const doneTypingInterval = 200;  //time in ms
 
     //on keyup, start the countdown
     $('#city-search').keyup(function(){
