@@ -30,6 +30,8 @@ const expressLayouts = require('express-ejs-layouts');
 app.use(expressLayouts);
 
 const DEBUG = false;
+
+// number of elements on the grid page
 const grid_number = 16;
 
 // common database string used in all city queries.
