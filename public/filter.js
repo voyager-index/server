@@ -1,13 +1,16 @@
-$("#toggle").click(() => {
+$('#toggle').click(() => {
     /* to toggle the sidebar, just switch the CSS classes */
-    $("#filter-col").toggleClass("hidden");
-    $("#content").toggleClass("col-lg-12 col-lg-10");
+    $('#filter-col').toggleClass('hidden');
+    $('#content').toggleClass('col-lg-12 col-lg-10');
 });
 
-$("#filter > .btn").click(() => {
-    //changeMarkers();
+$('#filter > .btn').click(() => {
+    changeMarkers();
     changeGrid();
 });
+
+const content_height = $('#content').css('height');
+$('#filter-col').css('height', content_height);
 
 // mimics radio button for filters
 // with rest parameter syntax
@@ -21,9 +24,6 @@ function button_group(...args) {
                     $('.' + a).removeClass('active');
                 }
             });
-
-            //changeMarkers();
-            changeGrid();
         });
     });
 }

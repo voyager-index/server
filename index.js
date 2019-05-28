@@ -30,6 +30,7 @@ const expressLayouts = require('express-ejs-layouts');
 app.use(expressLayouts);
 
 const DEBUG = false;
+const grid_number = 16;
 
 // common database string used in all city queries.
 const common = `
@@ -50,7 +51,10 @@ const common = `
 
     -- socioeconomic
     ppp.ppp AS purchasingpower,
-    pi.percent AS povertyIndex
+    pi.percent AS povertyIndex,
+
+    --- city image
+    ci.src AS image
 
     FROM City c
     INNER JOIN Air_pollution ap ON ap.CityId = c.id
@@ -58,15 +62,16 @@ const common = `
     INNER JOIN Coastlines cl ON  cl.CityId = c.id
     INNER JOIN Country co ON co.id = c.country
     INNER JOIN Elevation e ON e.CityId = c.id
+    INNER JOIN Homicide h ON co.id = h.country
     INNER JOIN Internet_Speed i ON i.Country = co.id
+    INNER JOIN Palm_Trees pt ON pt.CityId = c.id
     INNER JOIN Population p ON p.CityId = c.id
     INNER JOIN Poverty_Index pi ON pi.Country = co.id
     INNER JOIN Precipitation pr ON pr.CityId = c.id
     INNER JOIN Puchasing_Power_Parity ppp ON ppp.Country = co.id
     INNER JOIN Temp t ON t.CityId = c.id
     INNER JOIN UV_Index uv ON uv.CityId = c.id
-    INNER JOIN Palm_Trees pt ON pt.CityId = c.id
-    INNER JOIN Homicide h ON co.id = h.country
+    LEFT JOIN City_Image ci ON ci.CityId = c.id
 `;
 
 // ---------- //
@@ -166,7 +171,7 @@ app.post('/city-search', async (req, res) => {
         ${common}
         WHERE C.name ILIKE '%${search_string}%'
         ORDER BY P.total DESC
-        LIMIT 10
+        LIMIT ${grid_number}
     ;`;
 
     const action = (results) => {
@@ -188,19 +193,16 @@ app.post('/city-search', async (req, res) => {
 app.post('/grid-search', async (req, res) => {
     // get data from POST body.
     const filters = req.body.filters;
-    console.log('index:', filters);
 
     const query = `
         ${common}
-        --ORDER BY P.total DESC
-        --LIMIT 4
+        ORDER BY P.total DESC
     ;`;
 
     const action = (results) => {
         var cityRank = rankCities(results, filters);
         cityRank.cities.sort((a, b) => parseFloat(b[3]) - parseFloat(a[3]));
-        cityRank.cities = cityRank.cities.slice(0, 4);
-        console.log(cityRank);
+        cityRank.cities = cityRank.cities.slice(0, grid_number);
         res.send(cityRank);
     }
 
@@ -322,7 +324,8 @@ app.post('/bounding', async (req, res) => {
 app.get('/grid', async (req, res) => {
     var query = `
         ${common}
-        ORDER BY P.total DESC LIMIT 4
+        ORDER BY P.total DESC
+        LIMIT ${grid_number}
     ;`;
     //console.log(query);
 
@@ -440,7 +443,6 @@ plus the rest of the factors, using our values, weighted down to be less impactf
 */
 function rankCities(cities, filters){
     //True False values don't matter, because they are filtered out.
-    console.log(filters)
     var selectedMonth;
     // Month included?
     const group = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
@@ -697,10 +699,17 @@ RANKING DONE BELOW
         var roundedRank = Math.round(rank * 10)/10;
 
         //name, lon, lat, rank, id
-        rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), roundedRank, cities[i]["id"]]);
+        if (cities[i]['image']) {
+            rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), roundedRank, cities[i]["id"], cities[i]["image"]]);
+        }
+        else {
+            rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), roundedRank, cities[i]["id"]]);
+        }
+
     }
 
     for (var l = 0; l < rankedCities.length; l++){
+        //console.log('ranked:', rankedCities[l]);
         rankedCities[l][3] = (rankedCities[l][3]).toFixed(1);
     }
 

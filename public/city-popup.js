@@ -24,9 +24,15 @@ $(document).ready(() => {
         const lon = state[2];
         const id = state[3];
 
-        $('#image').empty();
-        $('#image').append("<img id='city-image' class='w-85' src='loading-davebees.gif'/>");
-        cityImage(city, lat, lon, id);
+        if (state[5]) {
+            $('#city-image').attr('src', state[5]);
+        }
+
+        else {
+            $('#image').empty();
+            $('#image').append("<img id='city-image' class='w-85' src=''/>");
+            cityImage(city, lat, lon, id);
+        }
     });
 
     // show map of the city
@@ -51,7 +57,7 @@ function close_popup() {
 
     // loading animation
     // source: https://old.reddit.com/r/loadingicon/comments/6h421f/winders_oc/
-    $('#image').append("<img id='city-image' class='w-85' src='loading-davebees.gif'/>");
+    $('#image').append("<img id='city-image' class='w-85' src=''/>");
 
     $(window).off('click');
 }
@@ -75,42 +81,8 @@ async function cityImage(city, lat, lon, id) {
         'id': id,
     };
 
-    // tries very hard to get city image.
-    // option 1: see if image is in database.
-    postData(`/city-image`, data_send)
-        .then(data => $('#city-image').attr('src', data.src))
-        .catch(async (err) => {
-            console.error(err);
-            try {
-                // option 2: use teleport api to get image.
-                const city_req = await getCity(city);
-                const city_name = city_req.name;
-                const city_image = city_req.image;
-                $('#city-image').attr('src', city_image);
-            } catch(err) {
-                console.error(err);
-                try {
-                    // option 3: use google places api to get image.
-                    const city_req = await getCityFallback(city);
-                    $('#city-image').attr('src', city_req);
-                } catch(err) {
-                    // no image found.
-                    console.error(err);
-                    console.error('Could not find image for city ' + id);
-                }
-            }
-        });
-
-    $(window).on('click', (e) => {
-        e = e || window.event;
-        const element = document.getElementById('city-popup');
-
-        // https://stackoverflow.com/questions/34621987/check-if-clicked-element-is-descendant-of-parent-otherwise-remove-parent-elemen
-        if (e.target !== element &&
-            ! element.contains(e.target)) {
-            close_popup();
-        }
-    });
+    const element = $('#city-image');
+    getImage(data_send, element);
 }
 
 // Calls cityImage() now
@@ -119,7 +91,16 @@ async function cityInfo(features) {
     const lat = features.lat;
     const lon = features.lon;
     const id = features.id;
-    cityImage(name, lat, lon, id);
+
+    /*
+    if (features.image) {
+        console.log('features.image:', features.image);
+        $('#city-image').attr('src', features.image);
+    }
+    else {
+        cityImage(name, lat, lon, id);
+    }
+    */
 
     // These properties must be present in both the the DB response, and the city-popup div in index.ejs
     const properties = ['city', 'country', 'population', 'mbps', 'lon', 'lat', 'elevation', 'pollution', 'airport', 'beach'];
@@ -150,6 +131,17 @@ async function cityInfo(features) {
         $('#popup-' + uvProperties[i]).text(val);
     }
 
+    $(window).on('click', (e) => {
+        e = e || window.event;
+        const element = document.getElementById('city-popup');
+        console.log('click!');
+
+        // https://stackoverflow.com/questions/34621987/check-if-clicked-element-is-descendant-of-parent-otherwise-remove-parent-elemen
+        if (e.target !== element &&
+            ! element.contains(e.target)) {
+            close_popup();
+        }
+    });
 }
 
 function getState() {
