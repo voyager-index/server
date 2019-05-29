@@ -167,19 +167,29 @@ app.post('/city', async (req, res) => {
 // city page
 app.post('/city-search', async (req, res) => {
     // get data from POST body.
-    const search_string = req.body.search_string;
+    const city = req.body.city;
+    let ranked = false;
+
+    if (req.body.ranked) {
+        ranked = req.body.ranked;
+    }
 
     const query = `
         ${common}
-        WHERE C.name ILIKE '%${search_string}%'
+        WHERE C.name ILIKE '%${city}%'
         ORDER BY P.total DESC
         LIMIT ${grid_number}
     ;`;
 
     const action = (results) => {
         const filters = [];
-        var cityRank = rankCities(results, filters);
-        res.send(cityRank);
+        if (ranked == true) {
+            var cityRank = rankCities(results, filters);
+            res.send(cityRank);
+        }
+        else {
+            res.send(results);
+        }
     }
 
     try {

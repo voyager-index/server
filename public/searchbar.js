@@ -1,7 +1,4 @@
 $(document).ready(() => {
-    // $('#city-search').on('input', function(){
-    //     search_for(this.value);
-    // });
 
     $('#clear').click(() => {
         $('#city-search')[0].value = '';
@@ -32,11 +29,15 @@ $(document).ready(() => {
 
 function search_for(value){
     const data = {
-        'search_string': value,
+        'city': value,
+        'ranked': true,
     }
 
     postData('/city-search', data)
-    .then(response => build_grid(response.cities));
+        .then(response => {
+            console.log('response:', response);
+            build_grid(response.cities);
+        });
 }
 
 function build_grid(arr) {
