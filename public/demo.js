@@ -308,6 +308,8 @@ function doTerminal(terminal, socket) {
 
                 terminal.scrollTop = terminal.scrollHeight;
             }
+
+            setCaret(terminal);
         }
     }
 }
