@@ -3,7 +3,8 @@ var BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlug
 
 module.exports = {
     entry: {
-        main: './public/main.js'
+        main: './public/main.js',
+        demo: './public/demo.js'
     },
     output: {
         path: __dirname,

@@ -318,4 +318,25 @@ textarea {
   padding: 2%;
 }
 
+#terminal {
+  overflow: auto;
+  width: 100%;
+  height: 25em;
+  resize: both;
+  background-color: black;
+  color: white;
+  padding: 2%;
+  border: 1px dashed grey;
+}
+
+.terminals {
+  color: snow;
+  margin-bottom: 0;
+  height: 100%;
+}
+
+pre#info {
+  margin-bottom: 0;
+}
+
 /*# sourceMappingURL=main.css.map */

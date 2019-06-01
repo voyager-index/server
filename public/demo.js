@@ -1,4 +1,5 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
+import Autolinker from 'autolinker';
 
 var MYLIBRARY = MYLIBRARY || (function(){
     var _args = {}; // private
@@ -13,6 +14,8 @@ var MYLIBRARY = MYLIBRARY || (function(){
         }
     };
 }());
+
+export {MYLIBRARY};
 
 function dup() {
     let terminals = document.getElementsByClassName("terminals");
@@ -79,16 +82,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // Create WebSocket connection.
-    let socket = new WebSocket('wss://liambeckman.com:8181');
-    //let socket = new WebSocket('ws://localhost:8181');
+    //let socket = new WebSocket('wss://liambeckman.com:8181');
+    let socket = new WebSocket('ws://localhost:8181');
 
     console.log(terminals[0]);
     doTerminal(terminals[0], socket);
 
     const interval = setInterval(function ping() {
         if (socket.isAlive === false) {
-            socket = new WebSocket('wss://liambeckman.com:8181');
-            //socket = new WebSocket('ws://localhost:8181');
+            //socket = new WebSocket('wss://liambeckman.com:8181');
+            socket = new WebSocket('ws://localhost:8181');
             doTerminal(terminals[0], socket);
         }
 
@@ -100,6 +103,18 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
+// https://stackoverflow.com/questions/6249095/how-to-set-caretcursor-position-in-contenteditable-element-div
+function setCaret(el) {
+    var range = document.createRange();
+    var sel = window.getSelection();
+    console.log('el:', el.childNodes);
+    console.log('el:', el.childNodes.length);
+    range.setStart(el.lastChild, el.lastChild.length);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    el.focus();
+}
 
 
 function doTerminal(terminal, socket) {
@@ -123,7 +138,7 @@ function doTerminal(terminal, socket) {
         let userPrompt = MYLIBRARY.helloWorld();
 
         if (terminal.innerHTML == "") {
-            terminal.innerHTML += "> " + userPrompt;
+            terminal.innerHTML = "> " + userPrompt;
         }
 
         socket.isAlive = true;
@@ -152,17 +167,23 @@ function doTerminal(terminal, socket) {
                 console.log("SUCCESS");
                 message = message.replace(/\r/g,"");
                 terminal.innerHTML = terminal.innerHTML.replace(/.*$/ ,message);
-
             }
 
             else {
-                terminal.innerHTML += message
+                message = Autolinker.link(message);
+                terminal.innerHTML += message + '> ';
+                setCaret(terminal);
             }
+
 
             messages = message.split("\n");
             terminal.scrollTop = terminal.scrollHeight;
             zigzagPort(message);
         }
+
+        terminal.addEventListener("click",function(e){
+            console.log("click");
+        });
 
         // https://stackoverflow.com/questions/22092762/how-to-detect-ctrlc-and-ctrlv-key-pressing-using-regular-expression/22092839
         terminal.addEventListener("keydown",function(e){
@@ -176,7 +197,7 @@ function doTerminal(terminal, socket) {
                 terminal.innerHTML = lines[lines.length - 1];
                 event.preventDefault();
                 e.preventDefault();
-                terminal.focus();
+                setCaret(terminal);
             }
             else if ( key == 67 && ctrl ) {
                 console.log("Ctrl + C Pressed !");
@@ -193,7 +214,8 @@ function doTerminal(terminal, socket) {
             else if ( key == 85 && ctrl ) {
                 console.log("Ctrl + U Pressed !");
                 e.preventDefault();
-                terminal.innerHTML = terminal.innerHTML.replace(/.*$/ ,"> ");
+                terminal.innerHTML = terminal.innerHTML.replace(/.*$/ ,"&gt ");
+                setCaret(terminal);
             }
 
         },false);
@@ -244,6 +266,7 @@ function doTerminal(terminal, socket) {
 
             else if (key == 13)
             {
+                let comm = '';
                 event.preventDefault();
                 terminal.innerHTML += "\n";
                 up = 0;
