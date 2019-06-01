@@ -82,16 +82,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // Create WebSocket connection.
-    //let socket = new WebSocket('wss://liambeckman.com:8181');
-    let socket = new WebSocket('ws://localhost:8181');
+    let socket = new WebSocket('wss://liambeckman.com:8181');
+    //let socket = new WebSocket('ws://localhost:8181');
 
     console.log(terminals[0]);
     doTerminal(terminals[0], socket);
 
     const interval = setInterval(function ping() {
         if (socket.isAlive === false) {
-            //socket = new WebSocket('wss://liambeckman.com:8181');
-            socket = new WebSocket('ws://localhost:8181');
+            socket = new WebSocket('wss://liambeckman.com:8181');
+            //socket = new WebSocket('ws://localhost:8181');
             doTerminal(terminals[0], socket);
         }
 
