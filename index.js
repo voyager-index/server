@@ -405,12 +405,23 @@ app.post('/issues-submit', (req, res) => {
     for (let p in req.body){
         arr.push({'name':p, 'value':req.body[p]});
     }
-    const issue_title = arr[0].value;
-    const issue_body = arr[1].value;
+    const issue_type = arr[0].value;
+    const issue_title = arr[1].value;
+    const issue_body = arr[2].value;
 
     const host = 'https://api.github.com';
-    const path = '/repos/cs467-map/database/issues';
+    let path = '';
+    if (issue_type == 'database') {
+        path = '/repos/cs467-map/database/issues';
+    }
+    if (issue_type == 'server') {
+        path = '/repos/cs467-map/server/issues';
+    }
     const url = host + path;
+    console.log(issue_type);
+    console.log(host);
+    console.log(path);
+    console.log(url);
 
     const post_data = JSON.stringify({
         'title' : issue_title,
@@ -431,7 +442,7 @@ app.post('/issues-submit', (req, res) => {
     .then(response => response.json())
     .catch(err => console.error('Error:', err))
     .then(response => console.log('Success:', response))
-    .then(res.render("pages/issues-submit", {issue_title: issue_title, issue_body: issue_body}));
+    .then(res.render("pages/issues-submit", {issue_title: issue_title, issue_body: issue_body, issue_type: issue_type}));
 });
 
 // Start app.

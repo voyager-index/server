@@ -1,12 +1,13 @@
 <!--<form action="https://api.github.com/repos/cs361-group24/database/issues" method="post" name="issues">-->
 <!--<form action="https://webdev.liambeckman.com/getpost" method="post" name="issues">-->
 
-<p>This form submits issues to <a href="https://github.com/cs467-map/database/issues">this issue collector</a>.</p>
-<br />
-
 <form id="form" action="/issues-submit" method="post" name="issues">
     <fieldset>
         <legend>Submit issue</legend>
+
+        <p><input type="radio" name="type" value="database" checked="checked"><a href="https://github.com/cs467-map/database/issues">Database issue</a>: wrong city or country information (if in doubt, pick this one).</p>
+        <p><input type="radio" name="type" value="server"><a href="https://github.com/cs467-map/server/issues">Design issue</a>: map, UI/UX, or design problem.</p>
+
         <p><label for="issue-title">Title:</label></p>
         <% if (city.length > 0) { %>
         <textarea rows="2" cols="100" id="issue-title" name="issue-title" spellcheck="false" id="issue-title"><%= city %>, <%= country %> (id: <%= id %>)</textarea>
