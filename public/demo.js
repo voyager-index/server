@@ -166,15 +166,14 @@ function doTerminal(terminal, socket) {
             if (message.includes('\r')) {
                 console.log("SUCCESS");
                 message = message.replace(/\r/g,"");
-                terminal.innerHTML = terminal.innerHTML.replace(/.*$/ ,message);
+                terminal.innerHTML = terminal.innerHTML.replace(/.*$/, message);
             }
 
             else {
                 message = Autolinker.link(message);
-                terminal.innerHTML += message + '> ';
+                terminal.innerHTML += message;
                 setCaret(terminal);
             }
-
 
             messages = message.split("\n");
             terminal.scrollTop = terminal.scrollHeight;
