@@ -21,7 +21,10 @@ async function getImage(data_send, element) {
                 } catch(err) {
                     // no image found.
                     //console.error(err);
-                    $(element).attr('src', 'city-default.jpg');
+                    let src = $(element).attr('src');
+                    if (src == null) {
+                        $(element).attr('src', 'city-default.jpg');
+                    }
                     console.error('Could not find image for city ' + data_send.id);
                 }
             }
