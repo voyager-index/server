@@ -94,7 +94,6 @@ async function cityInfo(features) {
     if (features.image) {
         const image = features.image;
         saveState(city, lat, lon, id, image);
-        console.log('features.image:', image);
         $('#city-image').attr('src', image);
     }
     else {

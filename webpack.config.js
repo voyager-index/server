@@ -15,6 +15,7 @@ module.exports = {
     },
     target: 'web',
     watch: false,
+    devtool: "eval-source-map",
     devServer: {
         port: 5000
     },

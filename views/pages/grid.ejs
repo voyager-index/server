@@ -14,12 +14,12 @@
                 <% cityRank.cities.forEach(function(c) { %>
                 <div class="grid-item">
                     <img class='city-image' src=''></img>
-                    <h3 class='city-name' data-name='<%= c[0] %>'><%= c[0] %></h3>
-                    <div data-lon='<%= c[1] %>'></div>
-                    <div data-lat='<%= c[2] %>'></div>
-                    <div data-rank='<%= c[3] %>'></div>
-                    <div data-id='<%= c[4] %>'></div>
-                    <div data-image='<%= c[5] %>'></div>
+                    <h3 class='city-name' data-name='<%= c.city %>'><%= c.city %></h3>
+                    <div data-lon='<%= c.lon %>'></div>
+                    <div data-lat='<%= c.lat %>'></div>
+                    <div data-rank='<%= c.rank %>'></div>
+                    <div data-id='<%= c.id %>'></div>
+                    <div data-image='<%= c.image %>'></div>
                     <p class'hover-text'></p>
                 </div>
                 <% }); %>

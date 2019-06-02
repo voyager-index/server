@@ -168,10 +168,10 @@ app.post('/city', async (req, res) => {
 app.post('/city-search', async (req, res) => {
     // get data from POST body.
     const city = req.body.city;
-    let ranked = false;
+    let rank = false;
 
-    if (req.body.ranked) {
-        ranked = req.body.ranked;
+    if (req.body.rank) {
+        rank = req.body.rank;
     }
 
     const query = `
@@ -183,7 +183,7 @@ app.post('/city-search', async (req, res) => {
 
     const action = (results) => {
         const filters = [];
-        if (ranked == true) {
+        if (rank == true) {
             var cityRank = rankCities(results, filters);
             res.send(cityRank);
         }
@@ -202,6 +202,61 @@ app.post('/city-search', async (req, res) => {
 });
 
 // city page
+app.all('/city-search', async (req, res) => {
+    let rank = false;
+    let city = '';
+
+    if (req.method === 'GET') {
+        // get data from URL
+        if (req.query.city) {
+            city = req.query.city;
+        }
+
+        if (req.query.rank) {
+            rank = req.query.rank;
+        }
+    }
+
+    else if (req.method === 'POST') {
+        // get data from POST body.
+        if (req.body.city) {
+            city = req.body.city;
+        }
+
+        if (req.body.rank) {
+            rank = req.body.rank;
+        }
+    }
+
+    const query = `
+        ${common}
+        WHERE C.name ILIKE '%${city}%'
+        ORDER BY P.total DESC
+        LIMIT ${grid_number}
+    ;`;
+
+    const action = (results) => {
+        const filters = [];
+        if (rank == true || rank == 'true') {
+            var cityRank = rankCities(results, filters);
+            res.send(cityRank);
+        }
+        else {
+            res.send(results);
+        }
+    }
+
+    try {
+        const results = await swimming_pool(query, action);
+    }
+    catch(err) {
+        console.error(err);
+        res.send('Error:', err);
+    }
+});
+
+
+// city page
 app.post('/grid-search', async (req, res) => {
     // get data from POST body.
     const filters = req.body.filters;
@@ -213,7 +268,7 @@ app.post('/grid-search', async (req, res) => {
 
     const action = (results) => {
         var cityRank = rankCities(results, filters);
-        cityRank.cities.sort((a, b) => parseFloat(b[3]) - parseFloat(a[3]));
+        cityRank.cities.sort((a, b) => parseFloat(b.rank) - parseFloat(a.rank));
         cityRank.cities = cityRank.cities.slice(0, grid_number);
         res.send(cityRank);
     }
@@ -477,8 +532,8 @@ function rankCities(cities, filters){
         }
     }
 
-    var rankedCities = [];
     var i;
+    var rankedCities = [];
     for (i = 0 ; i < cities.length; i++){
         var filterrank = 0; // Starting rank for each city, for filter button selections
         var weightedrank = 0; // This ranking is for information we have that the user did not select to filter by
@@ -723,17 +778,25 @@ RANKING DONE BELOW
 
         //name, lon, lat, rank, id
         if (cities[i]['image']) {
-            rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), roundedRank, cities[i]["id"], cities[i]["image"]]);
+            rankedCities.push({
+                "city": cities[i]["city"],
+                "lon": Number(cities[i]["lon"]),
+                "lat": Number(cities[i]["lat"]),
+                "rank": Number(roundedRank.toFixed(1)),
+                "id": cities[i]["id"],
+                "image": cities[i]["image"]
+            });
         }
         else {
-            rankedCities.push([cities[i]["city"], Number(cities[i]["lon"]), Number(cities[i]["lat"]), roundedRank, cities[i]["id"]]);
+            rankedCities.push({
+                "city": cities[i]["city"],
+                "lon": Number(cities[i]["lon"]),
+                "lat": Number(cities[i]["lat"]),
+                "rank": Number(roundedRank.toFixed(1)),
+                "id": cities[i]["id"]
+            });
         }
 
-    }
-
-    for (var l = 0; l < rankedCities.length; l++){
-        //console.log('ranked:', rankedCities[l]);
-        rankedCities[l][3] = (rankedCities[l][3]).toFixed(1);
     }
 
     var returnVal = {'cities': rankedCities};

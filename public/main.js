@@ -174,15 +174,16 @@ function getFilters(){
 function buildFeatures(cities) {
   clearMarkers();
   for (var i = 0; i < cities.length; i++){
-    var name = cities[i][0];
-    var lon = cities[i][1];
-    var lat = cities[i][2];
-    var rank = cities[i][3];
-    var id = cities[i][4];
+    //console.log('cities:', cities[i]);
+    var name = cities[i].city;
+    var lon = cities[i].lon;
+    var lat = cities[i].lat;
+    var rank = cities[i].rank;
+    var id = cities[i].id;
 
     var image = '';
-    if (cities[i][5]) {
-        image = cities[i][5];
+    if (cities[i].image) {
+        image = cities[i].image;
         //console.log('cities arr:', cities[i]);
         //console.log('image:', image);
     }
@@ -200,7 +201,7 @@ function buildFeatures(cities) {
        src = "redMarker.png";
     }
 
-      if (cities[i][5]) {
+      if (cities[i].image) {
           cityMarkers[i] = new Feature({
               geometry: new Point(
                   proj.fromLonLat([lon, lat])
@@ -237,7 +238,7 @@ function buildFeatures(cities) {
         src: src,
       }),
       text: new Text({
-        text: rank,
+        text: String(rank),
         offsetY: -20, //Positive = shift down
         offsetX: 4, //Positive = shift right
         scale: 1.4,

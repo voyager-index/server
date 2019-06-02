@@ -24,14 +24,13 @@ function grid_init() {
         // click listner (brings up the standard city popup).
         gridItems[i].addEventListener("click", function(e) {
             const image = $(this)[0].children[0].src;
-            $('#city-image').attr('src', image);
-
-            $('#city-popup').removeClass('hidden'); // Moved here for separation of concerns
-
             const city = $(this)[0].children[1].getAttribute('data-name');
             const lat = $(this)[0].children[2].getAttribute('data-lon');
             const lon = $(this)[0].children[3].getAttribute('data-lat');
             const id = $(this)[0].children[5].getAttribute('data-id');
+
+            $('#city-image').attr('src', image);
+            $('#city-popup').removeClass('hidden'); // Moved here for separation of concerns
 
             const data_send = {
                 'id': id,
@@ -42,6 +41,8 @@ function grid_init() {
 
             postData(`/city`, data_send)
                 .then(data => {
+                    // city-popup.js
+                    data.image = image;
                     cityInfo(data);
                 })
                 .catch(error => console.error(error));
