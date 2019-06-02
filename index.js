@@ -164,44 +164,7 @@ app.post('/city', async (req, res) => {
     }
 });
 
-// city page
-app.post('/city-search', async (req, res) => {
-    // get data from POST body.
-    const city = req.body.city;
-    let rank = false;
-
-    if (req.body.rank) {
-        rank = req.body.rank;
-    }
-
-    const query = `
-        ${common}
-        WHERE C.name ILIKE '%${city}%'
-        ORDER BY P.total DESC
-        LIMIT ${grid_number}
-    ;`;
-
-    const action = (results) => {
-        const filters = [];
-        if (rank == true) {
-            var cityRank = rankCities(results, filters);
-            res.send(cityRank);
-        }
-        else {
-            res.send(results);
-        }
-    }
-
-    try {
-        const results = await swimming_pool(query, action);
-    }
-    catch(err) {
-        console.error(err);
-        res.send('Error:', err);
-    }
-});
-
-// city page
+// city search
 app.all('/city-search', async (req, res) => {
     let rank = false;
     let city = '';
@@ -239,6 +202,7 @@ app.all('/city-search', async (req, res) => {
         const filters = [];
         if (rank == true || rank == 'true') {
             var cityRank = rankCities(results, filters);
+            cityRank.cities.sort((a, b) => parseFloat(b.rank) - parseFloat(a.rank));
             res.send(cityRank);
         }
         else {
