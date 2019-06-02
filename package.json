@@ -22,6 +22,7 @@
     "express": "^4.15.2",
     "express-ejs-layouts": "^2.5.0",
     "https": "^1.0.0",
+    "jquery": "^3.4.1",
     "node-fetch": "^2.3.0",
     "node-pandoc": "^0.3.0",
     "nodemon": "^1.18.11",

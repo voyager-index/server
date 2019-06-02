@@ -1,15 +1,24 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
+// url linker
 import Autolinker from 'autolinker';
+// used mainly for the nice syntax
+import $ from 'jquery';
+import jQuery from 'jquery';
 
-var MYLIBRARY = MYLIBRARY || (function(){
+const production_url = 'wss://liambeckman.com:8181';
+const development_url = 'ws://localhost:8181';
+const DEV = false;
+
+// namespace
+var MYLIBRARY = MYLIBRARY || (function() {
     var _args = {}; // private
 
     return {
-        init : function(Args) {
+        init : (Args) => {
             _args = Args;
             // some other initialising
         },
-        helloWorld : function() {
+        helloWorld : () => {
             return _args[0];
         }
     };
@@ -17,12 +26,64 @@ var MYLIBRARY = MYLIBRARY || (function(){
 
 export {MYLIBRARY};
 
-function dup() {
-    let terminals = document.getElementsByClassName("terminals");
-    let terminalContainer = document.getElementById("terminal");
-    let buttonContainer = document.getElementById("button-container");
+$(document).ready(() => {
+    let terminals = $(".terminals");
 
-    let clone = document.createElement("textarea");
+    let duplicateTerminal = $("#duplicate-terminal");
+    if (duplicateTerminal) {
+        duplicateTerminal.onclick = () => {
+            if (terminals.length < 2) {
+                dup();
+            }
+        }
+    }
+
+    let examples = $(".demo-examples");
+    for (let i = 0; i < examples.length; i++) {
+        let example = examples[i].innerHTML;
+        examples[i].onclick = () => {
+            terminals[0].innerHTML = terminals[0].innerHTML.replace(/.*$/ ,"> " + example);
+            terminals[0].focus();
+        }
+    }
+
+    let socket = getSocket();
+    doTerminal(terminals[0], socket);
+
+    const interval = setInterval(function ping() {
+        if (socket.isAlive === false) {
+            socket = getSocket();
+            doTerminal(terminals[0], socket);
+        }
+
+        else {
+            socket.isAlive = false;
+            socket.send("ping");
+        }
+    }, 3000);
+});
+
+function getSocket() {
+    // Create WebSocket connection.
+    if (DEV) {
+        // development
+        let socket = new WebSocket(development_url);
+        return socket;
+    }
+    else {
+        // production
+        let socket = new WebSocket(production_url);
+        return socket;
+    }
+}
+
+// adds an additional terminal below the first.
+function dup() {
+    let terminals = $(".terminals");
+    let terminalContainer = $(".terminal");
+    let buttonContainer = $("#button-container");
+
+    let clone = $('<textarea>');
     clone.className = "terminals";
     terminalContainer.appendChild(clone);
 
@@ -31,20 +92,21 @@ function dup() {
 
     doTerminal(clone, socket);
 
-    let removeTerminal = document.createElement("span");
+    let removeTerminal = $('span');
     removeTerminal.id = "remove-terminal";
     removeTerminal.innerHTML = "-";
     buttonContainer.appendChild(removeTerminal);
 
-    removeTerminal.onclick = function() {
+    removeTerminal.onclick = () => {
         clone.remove();
         removeTerminal.remove();
         socket.close();
     }
 }
 
+// used for the zigzag tcp chat program
 function zigzagPort(message) {
-    let terminals = document.getElementsByClassName("terminals");
+    let terminals = $(".terminals");
     let original = terminals[0];
     let clone = terminals[1];
 
@@ -58,57 +120,11 @@ function zigzagPort(message) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-
-    let terminals = document.getElementsByClassName("terminals");
-
-    let duplicateTerminal = document.getElementById("duplicate-terminal");
-    if (duplicateTerminal) {
-        duplicateTerminal.onclick = function() {
-            if (terminals.length < 2) {
-                dup();
-            }
-        }
-    }
-
-    let examples = document.getElementsByClassName("demo-examples");
-    for (let i = 0; i < examples.length; i++) {
-        let example = examples[i].innerHTML;
-        examples[i].onclick = function() {
-            terminals[0].innerHTML = terminals[0].innerHTML.replace(/.*$/ ,"> " + example);
-            terminals[0].focus();
-        }
-    }
-
-
-    // Create WebSocket connection.
-    let socket = new WebSocket('wss://liambeckman.com:8181');
-    //let socket = new WebSocket('ws://localhost:8181');
-
-    console.log(terminals[0]);
-    doTerminal(terminals[0], socket);
-
-    const interval = setInterval(function ping() {
-        if (socket.isAlive === false) {
-            socket = new WebSocket('wss://liambeckman.com:8181');
-            //socket = new WebSocket('ws://localhost:8181');
-            doTerminal(terminals[0], socket);
-        }
-
-        else {
-            socket.isAlive = false;
-            socket.send("ping");
-        }
-    }, 3000);
-});
-
-
+// moves cursor to bottom of terminal after command
 // https://stackoverflow.com/questions/6249095/how-to-set-caretcursor-position-in-contenteditable-element-div
 function setCaret(el) {
     var range = document.createRange();
     var sel = window.getSelection();
-    console.log('el:', el.childNodes);
-    console.log('el:', el.childNodes.length);
     range.setStart(el.lastChild, el.lastChild.length);
     range.collapse(true);
     sel.removeAllRanges();
@@ -116,7 +132,7 @@ function setCaret(el) {
     el.focus();
 }
 
-
+// main terminal function
 function doTerminal(terminal, socket) {
     function heartbeat() {
         socket.isAlive = true;
@@ -125,12 +141,12 @@ function doTerminal(terminal, socket) {
     terminal.spellcheck = false;
     console.log("Connecting to server...");
 
-    let info = document.getElementById("info");
+    let info = $("#info")[0];
     info.innerHTML = "Status: Connecting...";
     info.style.backgroundColor = "#ff357a";
 
     // Connection opened
-    socket.onopen = function (event) {
+    socket.onopen = (event) => {
         console.log("Sending initial message to server.");
         info.innerHTML = "Status: Connected. Press ENTER to blast off!";
         info.style.backgroundColor = "#49ccd4";
@@ -152,7 +168,7 @@ function doTerminal(terminal, socket) {
         let ctrl = false;
 
         // Listen for messages
-        socket.onmessage = function(event) {
+        socket.onmessage = (event) => {
             message = event.data.toString();
             console.log("MESSAGE:", message);
 
@@ -164,7 +180,6 @@ function doTerminal(terminal, socket) {
             message.split('\n');
 
             if (message.includes('\r')) {
-                console.log("SUCCESS");
                 message = message.replace(/\r/g,"");
                 terminal.innerHTML = terminal.innerHTML.replace(/.*$/, message);
             }
@@ -180,12 +195,8 @@ function doTerminal(terminal, socket) {
             zigzagPort(message);
         }
 
-        terminal.addEventListener("click",function(e){
-            console.log("click");
-        });
-
         // https://stackoverflow.com/questions/22092762/how-to-detect-ctrlc-and-ctrlv-key-pressing-using-regular-expression/22092839
-        terminal.addEventListener("keydown",function(e){
+        terminal.addEventListener("keydown", (e) => {
             e = e || window.event;
             var key = e.which || e.keyCode; // keyCode detection
             var ctrl = e.ctrlKey ? e.ctrlKey : ((key === 17) ? true : false); // ctrl detection
@@ -219,14 +230,11 @@ function doTerminal(terminal, socket) {
 
         },false);
 
-        terminal.onkeydown = function (event) {
+        terminal.onkeydown = (event) => {
             let key = event.keyCode;
             let lines = terminal.textContent.split("\n");
 
-            console.log("key:", key);
-
             if (key == 8) {
-                console.log(lines[lines.length - 1].length);
                 if (lines[lines.length - 1].length <= 1) {
                     event.preventDefault();
                 }
@@ -247,7 +255,6 @@ function doTerminal(terminal, socket) {
                     up += 1;
                     terminal.innerHTML = terminal.innerHTML.replace(/.*$/ ,"> " + commands[commands.length - up + down]);
                 }
-                console.log("commands:", commands);
             }
 
             else if (key == 40) {
@@ -298,7 +305,7 @@ function doTerminal(terminal, socket) {
                     commNum += 1;
 
                     if (comm == "zigzag-server") {
-                        let terminals = document.getElementsByClassName("terminals");
+                        let terminals = $(".terminals");
                         if (terminals.length < 2) {
                             dup();
                         }
