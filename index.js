@@ -570,6 +570,7 @@ RANKING DONE BELOW
         } else {
             uvRank += 10 - Math.round(avgUV/16); //uv index of 10 gives 0 to ranking, uv index of 0 gives 10 to ranking
         }
+        uvRank += 1; //No areas have true 0 uv exposure, so this is just to round up.
         if(filters.includes('uv')){
             filterrank += uvRank;
         } else {
@@ -687,13 +688,29 @@ RANKING DONE BELOW
         var povertyindex = cities[i].povertyindex;
         //console.log("Socioeconomic filter:", povertyindex);
         if (filters.includes('high-poverty-index')){
-            filterrank += povertyindex - 2;
+            filterrank += povertyindex/10; //100% severe povery will give a 10, and no poverty gives a 0
         }
         else if (filters.includes('medium-poverty-index')){
-            filterrank += 2 - povertyindex;
+            if(povertyindex == 0){
+                filterrank += 3;
+            }
+            else if(povertyindex < 15){
+                filterrank += 8;
+            }
+            else{
+                filterrank += 0;
+            }
         }
         else if (filters.includes('low-poverty-index')){
-            filterrank += 4 - povertyindex;
+            if(povertyindex == 0){
+                filterrank += 10;
+            }
+            else if(povertyindex < 5){
+                filterrank += 5;
+            }
+            else{
+                filterrank += 0;
+            }
         }
         else {
             weightedrank += 4 - povertyindex;
