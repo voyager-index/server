@@ -112,8 +112,8 @@ Coastline data was entered into the database using the .sql file created by the 
 ```sql
 ALTER TABLE coastline ALTER COLUMN geom TYPE geometry(MULTILINESTRING,
 4326) USING ST\_SetSRID(geom,4326)
- SELECT
-DISTINCT(cg.id), COALESCE(ST\_DWithin(cl.geom:geography,
+ 
+SELECT DISTINCT(cg.id), COALESCE(ST\_DWithin(cl.geom::geography,
 cg.geom::geography, 64000), false) INTO TABLE beaches FROM coastline cl
 RIGHT JOIN citygeom cg ON ST\_DWithin(cl.geom::geography,
 cg.geom::geography, 64000); 
@@ -226,6 +226,19 @@ Airport data was found from the website [Our Airports](http://ourairports.com/da
 
 This data was etnered into the database similar to the Air Pollution data, using the PostGIS geometric points and comparing distance between, this time using only a 50 mile range.
 
+# International Airports
+
+This list was scraped from Wikipedia using python...
+
+From the list of aiport names and lat, lon values, we selected all cities within 20 miles of an international airport with the postgis command:
+
+```
+SELECT DISTINCT(c.id), COALESCE(ST_DWithin(ST_MakePoint(c.lon, c.lat)::geography, ST_MakePoint(i.lon, i.lat)::geography, 32186), false) as exists INTO TABLE intlairports FROM city c LEFT JOIN original_intl_airports_table ON COALESCE(ST_DWithin(ST_MakePoint(c.lon, c.lat)::geography, ST_MakePoint(i.lon, i.lat)::geography, 32186), false);
+
+```
+
+Using the \\copy command this information was saved in a csv file.
+
 # Internet Speeds
 
 Raw internet speed data was retrieved from a [spreadsheet file](https://s3-eu-west-1.amazonaws.com/assets.cable.co.uk/broadband-speedtest/worldwide-broadband-speed-league-2018.xlsx) provided by a private [broadband company](https://www.cable.co.uk/broadband/speed/worldwide-speed-league/) (Cable). The source of data is from [M-lab](https://www.measurementlab.net/), a coalition of reasearch institutes involved with internet statitics:
@@ -270,6 +283,8 @@ UV index: <https://neo.sci.gsfc.nasa.gov/view.php?datasetId=AURA_UVI_CLIM_M>
 Air Pollution: <https://www.who.int/airpollution/data/cities/en/>, Ambient air pollution dataset
 
 Airports: <http://ourairports.com/data/>, Airport dataset
+
+International airports: <https://en.wikipedia.org/wiki/List_of_international_airports_by_country>
 
 Internet: <https://www.cable.co.uk/broadband/speed/worldwide-speed-league/>, [data file](https://s3-eu-west-1.amazonaws.com/assets.cable.co.uk/broadband-speedtest/worldwide-broadband-speed-league-2018.xlsx)
 
