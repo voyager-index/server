@@ -55,7 +55,7 @@ function makeMap(lon, lat, zoom, target) {
       view: new View({
         center: proj.fromLonLat([lon,lat]),
         zoom: zoom,
-        minZoom: 1,
+        minZoom: 3,
         projection: "EPSG:3857"
         //units: 'degrees'
       })
