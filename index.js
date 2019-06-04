@@ -38,7 +38,7 @@ const grid_number = 16;
 const common = `
     SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat, c.id,
     p.total AS population, i.speed AS mbps,
-    cl.NearCoast AS beach, a.Exists AS airport,
+    cl.NearCoast AS beach, a.Exists AS airport, ia.Exists AS intlairport,
     e.elevation AS elevation, ap.Index as pollution,
     pt.palms as palms, h.totalrate as totalhomicides, h.femalerate as femalehomicides,
 
@@ -73,6 +73,7 @@ const common = `
     INNER JOIN Puchasing_Power_Parity ppp ON ppp.Country = co.id
     INNER JOIN Temp t ON t.CityId = c.id
     INNER JOIN UV_Index uv ON uv.CityId = c.id
+    INNER JOIN Intl_Airports ia ON ia.CityId = c.id
     LEFT JOIN City_Image ci ON ci.CityId = c.id
 `;
 
@@ -331,6 +332,10 @@ app.post('/bounding', async (req, res) => {
         if(filters[i] == "palms"){
             query += ' AND (pt.palms = true)'
         }
+        if(filters[i] == "intlairports"){
+            query += ' AND (ia.Exists = true)'
+        }
+        
    }
 
     query += " ORDER BY P.total DESC LIMIT 100;";
@@ -727,7 +732,7 @@ RANKING DONE BELOW
         }
 
         var rank;
-        if(filters.length == 0 || (filters.length == 1 && (filters[0] == "palms" || filters[0] == "beaches" || filters[0] == "airports"))){
+        if(filters.length == 0 || (filters.length == 1 && (filters[0] == "palms" || filters[0] == "beaches" || filters[0] == "airports" || filters[0] == "intlairports"))){
             rank = weightedrank/weightedCount;
         }
         else if(filters.length == 1 && filters[0] != "palms" && filters[0] != "beaches" && filters[0] != "airports"){
