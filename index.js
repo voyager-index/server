@@ -38,7 +38,7 @@ const grid_number = 16;
 const common = `
     SELECT c.name AS city, co.name AS country, TRUNC(c.lon, 2) AS lon, TRUNC(c.lat,2) AS lat, c.id,
     p.total AS population, i.speed AS mbps,
-    cl.NearCoast AS beach, a.Exists AS airport,
+    cl.NearCoast AS beach, a.Exists AS airport, ia.Exists AS intlairport,
     e.elevation AS elevation, ap.Index as pollution,
     pt.palms as palms, h.totalrate as totalhomicides, h.femalerate as femalehomicides,
 
@@ -73,6 +73,7 @@ const common = `
     INNER JOIN Puchasing_Power_Parity ppp ON ppp.Country = co.id
     INNER JOIN Temp t ON t.CityId = c.id
     INNER JOIN UV_Index uv ON uv.CityId = c.id
+    INNER JOIN Intl_Airports ia ON ia.CityId = c.id
     LEFT JOIN City_Image ci ON ci.CityId = c.id
 `;
 
@@ -331,6 +332,10 @@ app.post('/bounding', async (req, res) => {
         if(filters[i] == "palms"){
             query += ' AND (pt.palms = true)'
         }
+        if(filters[i] == "intlairports"){
+            query += ' AND (ia.Exists = true)'
+        }
+        
    }
 
     query += " ORDER BY P.total DESC LIMIT 100;";
@@ -565,6 +570,7 @@ RANKING DONE BELOW
         } else {
             uvRank += 10 - Math.round(avgUV/16); //uv index of 10 gives 0 to ranking, uv index of 0 gives 10 to ranking
         }
+        uvRank += 1; //No areas have true 0 uv exposure, so this is just to round up.
         if(filters.includes('uv')){
             filterrank += uvRank;
         } else {
@@ -682,13 +688,29 @@ RANKING DONE BELOW
         var povertyindex = cities[i].povertyindex;
         //console.log("Socioeconomic filter:", povertyindex);
         if (filters.includes('high-poverty-index')){
-            filterrank += povertyindex - 2;
+            filterrank += povertyindex/10; //100% severe povery will give a 10, and no poverty gives a 0
         }
         else if (filters.includes('medium-poverty-index')){
-            filterrank += 2 - povertyindex;
+            if(povertyindex == 0){
+                filterrank += 3;
+            }
+            else if(povertyindex < 15){
+                filterrank += 8;
+            }
+            else{
+                filterrank += 0;
+            }
         }
         else if (filters.includes('low-poverty-index')){
-            filterrank += 4 - povertyindex;
+            if(povertyindex == 0){
+                filterrank += 10;
+            }
+            else if(povertyindex < 5){
+                filterrank += 5;
+            }
+            else{
+                filterrank += 0;
+            }
         }
         else {
             weightedrank += 4 - povertyindex;
@@ -727,7 +749,7 @@ RANKING DONE BELOW
         }
 
         var rank;
-        if(filters.length == 0 || (filters.length == 1 && (filters[0] == "palms" || filters[0] == "beaches" || filters[0] == "airports"))){
+        if(filters.length == 0 || (filters.length == 1 && (filters[0] == "palms" || filters[0] == "beaches" || filters[0] == "airports" || filters[0] == "intlairports"))){
             rank = weightedrank/weightedCount;
         }
         else if(filters.length == 1 && filters[0] != "palms" && filters[0] != "beaches" && filters[0] != "airports"){

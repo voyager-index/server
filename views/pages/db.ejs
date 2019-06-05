@@ -3,7 +3,7 @@
 <h6>Note that climate data has been shrunk to yearly averages. The complete database stores them monthly.</h6>
 <h6>Ids have been left out. To view the full data, sources, and more, check out the Data Article in the nav bar at the top (<a href="/data">data article</a>).</h6>
 <a href="https://liambeckman.com/pkgs/voyager-index-data/voyager-index-data.csv">Download as CSV file.</a> (<a href="https://liambeckman.com/pkgs/voyager-index-data/sha256sums.txt">checksums</a>, <a href="https://liambeckman.com/pkgs/voyager-index-data/sha256sums.txt.asc">gpg</a>, key id = AC1CC079)
-<table id="data">
+<table id="data" style="position:absolute;left:10px;">
         <thead>
     <tr>
         <th>Longitude</th>
@@ -12,12 +12,18 @@
         <th>Country</th>
         <th>Elevation</th>
         <th>Near Beach</th>
+        <th>Palms</th>
         <th>Has Airport</th>
+        <th>Intl. Airport</td>
         <th>Air Pollution Index</th>
         <th>Population</th>
         <th>Avg Temp C</th>
         <th>Avg UV Index</th>
         <th>Avg Precipitation (mm)</th>
+        <th>Purchasing Power Parity</th>
+        <th>Extreme Poverty %</th>
+        <th>Homicide Rate /100k</th>
+        <th>Female Homicide Rate /100k</th>
     </tr>
         </thead>
     <% results.forEach(function(r) { %>
@@ -28,12 +34,19 @@
             <td><%= r.country %></td>
             <td><%= r.elevation %></td>
             <td><%= r.beach %></td>
+            <td><%= r.palms %></td>
             <td><%= r.airport %></td>
+            <td><%= r.intlairport %></td>
             <td><%= r.pollution %></td>
             <td><%= r.population %></td>
             <td><%= r.temp %></td>
             <td><%= r.uv %></td>
             <td><%= r.precip %></td>
+            <td><%= r.purchasingpower %></td>
+            <td><%= r.povertyindex %></td>
+            <td><%= r.totalhomicides %></td>
+            <td><%= r.femalehomicides %></td>
+            
         </tr>
         <% }); %>
 </table>
