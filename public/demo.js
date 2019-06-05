@@ -186,8 +186,6 @@ function doTerminal(terminal, socket) {
                     return;
                 }
 
-                message.split('\n');
-
                 if (message.includes('\r')) {
                     message = message.replace(/\r/g,"");
                     terminal.innerHTML = terminal.innerHTML.replace(/.*$/, message);
@@ -195,7 +193,8 @@ function doTerminal(terminal, socket) {
 
                 else {
                     message = ansi_up.ansi_to_html(message);
-                    //console.log('message:', message);
+                    console.log('message:', message);
+                    console.log('typeof message:', typeof message);
                     message = Autolinker.link(message);
                     terminal.innerHTML += message;
                     setCaret(terminal);
