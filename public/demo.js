@@ -4,6 +4,8 @@ import Autolinker from 'autolinker';
 // used mainly for the nice syntax
 import $ from 'jquery';
 import jQuery from 'jquery';
+const AU = require('ansi_up');
+const ansi_up = new AU.default;
 
 const production_url = 'wss://liambeckman.com:8181';
 const development_url = 'ws://localhost:8181';
@@ -169,26 +171,38 @@ function doTerminal(terminal, socket) {
 
         // Listen for messages
         socket.onmessage = (event) => {
-            message = event.data.toString();
-            console.log("MESSAGE:", message);
+            message = event.data;
 
-            if (message == "pong") {
-                heartbeat();
-                return;
-            }
+            var myblob = new Blob([message], {
+                type: 'text/plain'
+            });
 
-            message.split('\n');
+            var reader = new FileReader();
+            reader.addEventListener("loadend", function() {
+                message = reader.result;
 
-            if (message.includes('\r')) {
-                message = message.replace(/\r/g,"");
-                terminal.innerHTML = terminal.innerHTML.replace(/.*$/, message);
-            }
+                if (message == "pong") {
+                    heartbeat();
+                    return;
+                }
 
-            else {
-                message = Autolinker.link(message);
-                terminal.innerHTML += message;
-                setCaret(terminal);
-            }
+                message.split('\n');
+
+                if (message.includes('\r')) {
+                    message = message.replace(/\r/g,"");
+                    terminal.innerHTML = terminal.innerHTML.replace(/.*$/, message);
+                }
+
+                else {
+                    message = ansi_up.ansi_to_html(message);
+                    //console.log('message:', message);
+                    message = Autolinker.link(message);
+                    terminal.innerHTML += message;
+                    setCaret(terminal);
+                }
+            });
+
+            reader.readAsText(myblob);
 
             messages = message.split("\n");
             terminal.scrollTop = terminal.scrollHeight;
@@ -278,14 +292,9 @@ function doTerminal(terminal, socket) {
                 up = 0;
                 down = 0;
                 comm = lines[lines.length-1];
-                console.log("you entered:", comm);
-
-                if (messages.length > 0) {
-                    comm = comm.substring(messages[messages.length - 1].length - 1);
-                }
-
-                comm = comm.substring(1);
+                comm = comm.replace(/\> /g, "");
                 comm = comm.replace(/^[ ]*/g, "");
+                console.log("you entered:", comm);
 
                 if (comm == "clear") {
                     event.preventDefault();
