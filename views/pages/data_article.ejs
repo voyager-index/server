@@ -50,8 +50,8 @@
 <p>Coastline data was entered into the database using the .sql file created by the shp2pgsql command line executable. I then altered the table to make sure that the SRIDs were the same for both geometries. The ST_DWithin() PostGIS function actually needs the vector data as geographies to caculate distances in meters, so they were convereted using two colons like: table.geom::geography</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb10-1" title="1"><span class="kw">ALTER</span> <span class="kw">TABLE</span> coastline <span class="kw">ALTER</span> <span class="kw">COLUMN</span> geom <span class="kw">TYPE</span> geometry(MULTILINESTRING,</a>
 <a class="sourceLine" id="cb10-2" title="2"><span class="dv">4326</span>) <span class="kw">USING</span> ST\_SetSRID(geom,<span class="dv">4326</span>)</a>
-<a class="sourceLine" id="cb10-3" title="3"> <span class="kw">SELECT</span></a>
-<a class="sourceLine" id="cb10-4" title="4"><span class="kw">DISTINCT</span>(cg.<span class="kw">id</span>), <span class="fu">COALESCE</span>(ST\_DWithin(cl.geom<span class="ch">:geography</span>,</a>
+<a class="sourceLine" id="cb10-3" title="3"> </a>
+<a class="sourceLine" id="cb10-4" title="4"><span class="kw">SELECT</span> <span class="kw">DISTINCT</span>(cg.<span class="kw">id</span>), <span class="fu">COALESCE</span>(ST\_DWithin(cl.geom:<span class="ch">:geography</span>,</a>
 <a class="sourceLine" id="cb10-5" title="5">cg.geom:<span class="ch">:geography</span>, <span class="dv">64000</span>), <span class="kw">false</span>) <span class="kw">INTO</span> <span class="kw">TABLE</span> beaches <span class="kw">FROM</span> coastline cl</a>
 <a class="sourceLine" id="cb10-6" title="6"><span class="kw">RIGHT</span> <span class="kw">JOIN</span> citygeom cg <span class="kw">ON</span> ST\_DWithin(cl.geom:<span class="ch">:geography</span>,</a>
 <a class="sourceLine" id="cb10-7" title="7">cg.geom:<span class="ch">:geography</span>, <span class="dv">64000</span>); </a></code></pre></div>
@@ -129,16 +129,22 @@ psql -U postgres -f uv.sql</code></pre>
 <h1 id="airports">Airports</h1>
 <p>Airport data was found from the website <a href="http://ourairports.com/data/">Our Airports</a>.</p>
 <p>This data was etnered into the database similar to the Air Pollution data, using the PostGIS geometric points and comparing distance between, this time using only a 50 mile range.</p>
+<h1 id="international-airports">International Airports</h1>
+<p>This list was scraped from Wikipedia using python…</p>
+<p>From the list of aiport names and lat, lon values, we selected all cities within 20 miles of an international airport with the postgis command:</p>
+<pre><code>SELECT DISTINCT(c.id), COALESCE(ST_DWithin(ST_MakePoint(c.lon, c.lat)::geography, ST_MakePoint(i.lon, i.lat)::geography, 32186), false) as exists INTO TABLE intlairports FROM city c LEFT JOIN original_intl_airports_table ON COALESCE(ST_DWithin(ST_MakePoint(c.lon, c.lat)::geography, ST_MakePoint(i.lon, i.lat)::geography, 32186), false);
+</code></pre>
+<p>Using the \copy command this information was saved in a csv file.</p>
 <h1 id="internet-speeds">Internet Speeds</h1>
 <p>Raw internet speed data was retrieved from a <a href="https://s3-eu-west-1.amazonaws.com/assets.cable.co.uk/broadband-speedtest/worldwide-broadband-speed-league-2018.xlsx">spreadsheet file</a> provided by a private <a href="https://www.cable.co.uk/broadband/speed/worldwide-speed-league/">broadband company</a> (Cable). The source of data is from <a href="https://www.measurementlab.net/">M-lab</a>, a coalition of reasearch institutes involved with internet statitics:</p>
 <blockquote>
 <p>The data was collected for the second year in a row across the 12 months up to 29 May this year by M-Lab, a partnership between New America’s Open Technology Institute, Google Open Source Research, Princeton University’s PlanetLab and other supporting partners, and compiled by Cable</p>
 </blockquote>
 <p>After copying the raw values from the above spreadsheet value into a CSV file (internet_speed.csv), the data was inserted into the database with the following command:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb17-1" title="1"><span class="co">-- Internet Speed</span></a>
-<a class="sourceLine" id="cb17-2" title="2">\<span class="kw">copy</span> Internet_Speed(Country, Speed) <span class="kw">FROM</span> <span class="st">&#39;data/internet_speed.csv&#39;</span> DELIMITER <span class="st">&#39;,&#39;</span> CSV <span class="kw">HEADER</span>;</a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb18-1" title="1"><span class="co">-- Internet Speed</span></a>
+<a class="sourceLine" id="cb18-2" title="2">\<span class="kw">copy</span> Internet_Speed(Country, Speed) <span class="kw">FROM</span> <span class="st">&#39;data/internet_speed.csv&#39;</span> DELIMITER <span class="st">&#39;,&#39;</span> CSV <span class="kw">HEADER</span>;</a></code></pre></div>
 <p>This data was only found at the country level. It was merged with our countries, on the country name. There ended up being some countries that were not in one database or the other, such as Somaliland, or Aruba. Some of these, we just left as NULL values. There were other countries that we had data for, but the names weren’t listed exactly the same, such as “United States” and “United States of America.” For these, there ended up only being a handful, and they were easy to identify. This was done using</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb18-1" title="1"><span class="kw">SELECT</span> country.name <span class="kw">FROM</span> country <span class="kw">WHERE</span> country.name <span class="kw">NOT</span> <span class="kw">IN</span> (<span class="kw">SELECT</span> country <span class="kw">FROM</span> internet_speed);</a></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode sql"><code class="sourceCode sql"><a class="sourceLine" id="cb19-1" title="1"><span class="kw">SELECT</span> country.name <span class="kw">FROM</span> country <span class="kw">WHERE</span> country.name <span class="kw">NOT</span> <span class="kw">IN</span> (<span class="kw">SELECT</span> country <span class="kw">FROM</span> internet_speed);</a></code></pre></div>
 <p>Crafting a statement like this for both databases (ie, finding the countries in the country table that were not in the internet table, and finding the countries that were in the internet table that were not in the country table) gave us two lists we could compare by hand, and just copy the extra missing information into our final table.</p>
 <h1 id="references">References</h1>
 <p>Cities: <a href="https://www.naturalearthdata.com/downloads/10m-cultural-vectors/" class="uri">https://www.naturalearthdata.com/downloads/10m-cultural-vectors/</a>, Populated Places dataset</p>
@@ -151,6 +157,7 @@ psql -U postgres -f uv.sql</code></pre>
 <p>UV index: <a href="https://neo.sci.gsfc.nasa.gov/view.php?datasetId=AURA_UVI_CLIM_M" class="uri">https://neo.sci.gsfc.nasa.gov/view.php?datasetId=AURA_UVI_CLIM_M</a></p>
 <p>Air Pollution: <a href="https://www.who.int/airpollution/data/cities/en/" class="uri">https://www.who.int/airpollution/data/cities/en/</a>, Ambient air pollution dataset</p>
 <p>Airports: <a href="http://ourairports.com/data/" class="uri">http://ourairports.com/data/</a>, Airport dataset</p>
+<p>International airports: <a href="https://en.wikipedia.org/wiki/List_of_international_airports_by_country" class="uri">https://en.wikipedia.org/wiki/List_of_international_airports_by_country</a></p>
 <p>Internet: <a href="https://www.cable.co.uk/broadband/speed/worldwide-speed-league/" class="uri">https://www.cable.co.uk/broadband/speed/worldwide-speed-league/</a>, <a href="https://s3-eu-west-1.amazonaws.com/assets.cable.co.uk/broadband-speedtest/worldwide-broadband-speed-league-2018.xlsx">data file</a></p>
 <p>Purchasing Power Parity: <a href="https://data.worldbank.org/indicator/PA.NUS.PPPC.RF?end=2017&amp;start=2017&amp;view=map" class="uri">https://data.worldbank.org/indicator/PA.NUS.PPPC.RF?end=2017&amp;start=2017&amp;view=map</a></p>
 <p>Severe poverty index: <a href="http://hdr.undp.org/en/composite/MPI" class="uri">http://hdr.undp.org/en/composite/MPI</a></p>
