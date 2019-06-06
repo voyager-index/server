@@ -14,7 +14,7 @@ body {
   background-color: black; }
 
 p, h1, h2, h3, h4, h5, h6, .text, pre, dd, dt, li, ul, ol, label {
-  color: snow; 
+  color: snow;
 }
 
 
@@ -47,6 +47,11 @@ pre{
 
 .btn {
     color: snow;
+}
+
+.active {
+    background-color: black;
+    outline: 1px solid gray;
 }
 
 /***************************************************/

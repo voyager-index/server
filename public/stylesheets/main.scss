@@ -372,3 +372,25 @@ div.demo-examples-container {
     float: right;
 }
 
+.fade-out {
+    opacity: 0;
+}
+
+.circle {
+    padding: 1em;
+    background-color: #282a36;
+    border-radius: 50%;
+    position: fixed;
+    right: 5%;
+    height: 4em;
+    width: 4em;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1em;
+    bottom: 5%;
+    border: 1px solid;
+    z-index: 1;
+    animation-name: fadein;
+    animation-duration: 500ms;
+    transition: opacity 300ms;
+}

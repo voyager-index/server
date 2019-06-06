@@ -86,6 +86,7 @@ app.get('/db', async (req, res) => {
     const query = `
         ${common}
         ORDER BY p.total DESC
+        --LIMIT 1000
     ;`;
 
     const action = (results) => {
@@ -198,6 +199,8 @@ app.all('/city-search', async (req, res) => {
         ORDER BY P.total DESC
         LIMIT ${grid_number}
     ;`;
+
+    console.log(query);
 
     const action = (results) => {
         const filters = [];
@@ -335,7 +338,7 @@ app.post('/bounding', async (req, res) => {
         if(filters[i] == "intlairports"){
             query += ' AND (ia.Exists = true)'
         }
-        
+
    }
 
     query += " ORDER BY P.total DESC LIMIT 100;";
