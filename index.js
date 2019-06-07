@@ -168,43 +168,46 @@ app.post('/city', async (req, res) => {
 
 // city search
 app.all('/city-search', async (req, res) => {
-    let rank = false;
-    let city = '';
+    console.log('req.query:', req.query);
+    console.log('req.body:', req.body);
+
+    let search = {
+        city: '',
+        rank: null,
+        id: null
+    }
 
     if (req.method === 'GET') {
         // get data from URL
-        if (req.query.city) {
-            city = req.query.city;
-        }
-
-        if (req.query.rank) {
-            rank = req.query.rank;
-        }
+        search = req.query;
     }
 
     else if (req.method === 'POST') {
         // get data from POST body.
-        if (req.body.city) {
-            city = req.body.city;
-        }
-
-        if (req.body.rank) {
-            rank = req.body.rank;
-        }
+        search = req.body;
     }
 
-    const query = `
-        ${common}
-        WHERE C.name ILIKE '%${city}%'
-        ORDER BY P.total DESC
-        LIMIT ${grid_number}
-    ;`;
+    let query = ``;
+    if (search.id != null) {
+       query = `
+            ${common}
+            WHERE C.id = ${search.id}
+        ;`;
+    }
+    else {
+       query = `
+            ${common}
+            WHERE C.name ILIKE '%${search.city}%'
+            ORDER BY P.total DESC
+            LIMIT ${grid_number}
+        ;`;
+    }
 
-    console.log(query);
+   //console.log(query);
 
     const action = (results) => {
         const filters = [];
-        if (rank == true || rank == 'true') {
+        if (search.rank == true || search.rank == 'true') {
             var cityRank = rankCities(results, filters);
             cityRank.cities.sort((a, b) => parseFloat(b.rank) - parseFloat(a.rank));
             res.send(cityRank);
