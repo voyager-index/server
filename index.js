@@ -129,11 +129,6 @@ app.get('/db', async (req, res) => {
 });
 
 // city page
-app.get('/city', async(req, res) => {
-    res.render('pages/city');
-});
-
-// city page
 app.post('/city', async (req, res) => {
 
     // get data from POST body.
