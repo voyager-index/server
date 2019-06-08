@@ -2,6 +2,8 @@ $('#toggle').click(() => {
     /* to toggle the sidebar, just switch the CSS classes */
     $('#filter-col').toggleClass('hidden');
     $('#content').toggleClass('col-lg-12 col-lg-10');
+    const map = Voyager.getMap();
+    map.updateSize();
 });
 
 $('#filter > .btn').click(() => {
@@ -24,6 +26,8 @@ function button_group(...args) {
                     $('.' + a).removeClass('active');
                 }
             });
+
+            changeMarkers();
         });
     });
 }

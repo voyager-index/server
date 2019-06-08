@@ -283,8 +283,13 @@ function setPoints(newPoints) {
     _points = newPoints;
 }
 
+function getMap() {
+    return map;
+}
+
 export {buildFeatures};
 export {getPoints};
 export {makeBBoxRequest};
 export {makeMap};
 export {getFilters};
+export {getMap};
