@@ -501,6 +501,22 @@ function rankCities(cities, filters){
             selectedMonth = group[j];
         }
     }
+    let includeNonRank = false;
+    let nonRankCount = 0;
+    if(filters.includes("palms") || filters.includes("beaches") || filters.includes("airports") || filters.includes("intlairports") ){
+        includeNonRank = true;
+        for (var x = 0; x < filters.length; x++){
+            if(filters[x] == "palms" || filters[x] == "beaches" || filters[x] == "airports" || filters[x] == "intlairports"){
+                nonRankCount += 1;
+            }
+        }
+    }
+
+    // Population
+    let includePop = false;
+    if(filters.includes('rural') || filters.includes('town') || filters.includes('city') || filters.includes('metro')){
+       includePop = true;
+    }
 
     var i;
     var rankedCities = [];
@@ -532,6 +548,9 @@ function rankCities(cities, filters){
 
         // Pollution
         var pollution = Number(cities[i]["pollution"]) || 0;
+        if (pollution > 100){
+            pollution = 100;
+        }
         var pollutionRank = (100 - pollution)/10;
         if(filters.includes("pollution")){ // Index is null or less than 100
             filterrank += pollutionRank;
@@ -544,7 +563,7 @@ function rankCities(cities, filters){
         var avgUV;     // Integer, index of 0 - 16, * 16       For higher accuracy, so its 0 through 256
         var avgPrecip; // Integer, mm
         var avgTemp; // Integer, degrees C * 10
-        var uvRank = 0, precipRank = 0, tempRank = 0;
+        var uvRank, precipRank, tempRank;
 
         // Get weather without month
         if (includeMonth == false){
@@ -566,12 +585,12 @@ RANKING DONE BELOW
         */
 
         // UV Ranking
-        if(avgUV > 10 * 16){ //high uv
-            uvRank -= (Math.round(avgUV/16) - 10); // each index pt above 10 subtracts 1 from the rank
+        if(avgUV > 160){ // Over UV idx of 10
+            uvRank = 2.56 - avgUV/100;
         } else {
-            uvRank += 10 - Math.round(avgUV/16); //uv index of 10 gives 0 to ranking, uv index of 0 gives 10 to ranking
+            uvRank = Math.min(12.56 - avgUV/16, 10); //uv index of 10 gives 2.6 to ranking, uv index of 0 gives 10 to ranking
         }
-        uvRank += 1; //No areas have true 0 uv exposure, so this is just to round up.
+        uvRank = Math.round(uvRank); //No areas have true 0 uv exposure, so this is just to round up.
         if(filters.includes('uv')){
             filterrank += uvRank;
         } else {
@@ -580,12 +599,12 @@ RANKING DONE BELOW
         }
 
         //Precip ranking
-        if (avgPrecip <= 200){
-            precipRank = (200 - avgPrecip)/20; // 0 adds 10 to rank, 200 adds 0
+        if (avgPrecip <= 150){
+            precipRank = (200 - avgPrecip)/20; // 0 adds 10 to rank, 150 adds 2.5
         } else if (rank < 300) {
-            precipRank -= 2;
+            precipRank = 2;
         } else { // At a certain point it doesnt matter, you're just in the rain.
-            precipRank -= 5;
+            precipRank = 1;
         }
         if (filters.includes('precipitation')){ // in MM, from 0 to ~800
             filterrank += precipRank;
@@ -598,91 +617,68 @@ RANKING DONE BELOW
         if (filters.includes('cold') ){
             // 0 f to 45 f == -17.7 C to 7.2
             if (avgTemp >= -177 && avgTemp <= 72){
-                tempRank += 10;
+                tempRank = 10;
             } else if (avgTemp < -177) {
-                tempRank -= 2;
+                tempRank = Math.max((20 + (avgTemp + 177))/2, 0);
             } else {
-                tempRank -= 5;
+                tempRank = Math.max((20 - (avgTemp - 72))/2, 0);
             }
         } else if ( filters.includes('temperate')){
             // 45 f to 72 f ==  7.2 C to 22.2 C
             if (avgTemp >= 72 && avgTemp <= 222){
-                tempRank += 10;
-            } else if ( (avgTemp < 72 && avgTemp > 50) || (avgTemp > 222 && avgTemp < 266 ) ) {  // 41 - 45 f, or 72f - 80f
-                tempRank -= 2;
+                tempRank = 10;
+            } else if ( avgTemp < 72 && avgTemp > 0 ) {
+                tempRank = Math.max((20 - (72- avgTemp))/2, 0);
+            } else if ( avgTemp > 222){
+                tempRank = Math.max((20- (avgTemp - 222))/2, 0);
             } else {
-                tempRank -= 5;
+                tempRank = 0;
             }
 
         } else if (filters.includes('warm')){
             // 75 f to 90 f == 23.8 C to 32.2
             if (avgTemp >= 238 && avgTemp <= 322){
-                tempRank += 10;
-            } else if ( (avgTemp < 238 && avgTemp > 222) || (avgTemp > 322 && avgTemp < 362 ) ) { //warmer than 72, or colder than 97
-                tempRank -= 2;
+                tempRank = 10;
+            } else if ( avgTemp < 238 && avgTemp > 0 ) {
+                tempRank = Math.max((20 - (238 - avgTemp))/2, 0);
+            } else if ( avgTemp > 322){
+                tempRank = Math.max((20- (avgTemp - 322))/2, 0);
             } else {
-                tempRank -= 5;
+                tempRank = 0;
             }
         } else if (filters.includes('hot')){
             // 85 f to 101 f == 29.4 C to 38.3
             if (avgTemp >= 294 && avgTemp <= 383){
-                tempRank += 10;
+                tempRank = 10;
             }
-            else if ( (avgTemp < 294 && avgTemp > 250) || (avgTemp > 383 && avgTemp < 433 ) ) { // warmer than 77f, or colder than 110f
-                tempRank -= 2;
+            else if ( avgTemp < 294 && avgTemp > 0 ) {
+                tempRank = Math.max((20 - (294 - avgTemp))/2, 0);
+            } else if ( avgTemp > 383){
+                tempRank = Math.max((20- (avgTemp - 383))/2, 0);
             } else {
-                tempRank -= 5;
+                tempRank = 0;
             }
-        } else { // No filter
-            // 65 f to 90 f == 18.3 C to 32.2
-            if (avgTemp >= 183 && avgTemp <= 322){
-                tempRank += 10;
-            } else if ( (avgTemp < 183 && avgTemp > 127) || (avgTemp > 322 && avgTemp < 362 ) ) { //warmer than 55f, or colder than 97
-                tempRank -= 2;
-            } else {
-                tempRank -= 5;
-            }
-        }
+        } 
         if (filters.includes('cold') || filters.includes('temperate') || filters.includes('warm') || filters.includes('hot')){
             filterrank += tempRank;
-        } else {
-            weightedrank += tempRank;
-            weightedCount++;
-        }
-
-        // Population
-        var popRank = 0;
-        if(filters.includes('rural')){
-                    // < 20k
-                    popRank += (20 - pop/1000 )/ 2; // 0 people adds 10pts, 20k adds 0 pts
-        } else if(filters.includes('town')){
-                    // < 100k
-                    popRank += 10;
-        } else if(filters.includes('city')){
-                    // < 500k
-                    popRank += 10;
-        } else if(filters.includes('metro')){
-            popRank += pop/1000000;
-        } else { // No filter
-            if (pop > 35000 && pop < 1500000){ // I just made up what to do here, feel free to make more complex. 2 pts gained if between 35k and 1.5mil
-                popRank += 10;
-            }
-        }
-        if (filters.includes('rural') || filters.includes('town') || filters.includes('city') || filters.includes('metro')){
-           filterrank += popRank;
-        } else {
-            weightedrank += popRank;
-            weightedCount++;
         }
 
         // Purchasing power
+        // data values between 1.29 and .14
+        
         var purchasePower = cities[i]["purchasingpower"];
-        var pppRank = Math.round((1 - purchasePower)*10);
+        var pppRank;
         if(filters.includes('purchase')){
+            if (purchasePower >= 1){
+                pppRank = 5 - (purchasePower -1)*10;
+            }
+            else {
+                pppRank = 5 + ((1 - purchasePower)*10)/2;
+                if(pppRank > 10){
+                    pppRank = 10;
+                } 
+            }
             filterrank += pppRank;
-        } else {
-            weightedrank += pppRank;
-            weightedCount++;
         }
 
         // Socioeconomic filter
@@ -750,11 +746,34 @@ RANKING DONE BELOW
         }
 
         var rank;
-        if(filters.length == 0 || (filters.length == 1 && (filters[0] == "palms" || filters[0] == "beaches" || filters[0] == "airports" || filters[0] == "intlairports"))){
+
+        if(filters.length == 0){
             rank = weightedrank/weightedCount;
         }
-        else if(filters.length == 1 && filters[0] != "palms" && filters[0] != "beaches" && filters[0] != "airports"){
+        else if  (filters.length == 1 && (includeMonth || includePop || includeNonRank) ){
+            rank = weightedrank/weightedCount;
+        }
+        else if (filters.length == 1){
             rank = filterrank;
+        }
+        else if(filters.length == 2){
+            if( !(includeMonth || includePop || includeNonRank) ) {
+                rank = (filterrank + (weightedrank * weight) ) / (filters.length + (weightedCount * weight));
+            }
+            else if ((includeMonth && !(includePop || includeNonRank)) || (includePop && !(includeMonth || includeNonRank)) || (includeNonRank && !(includePop || includeMonth))){
+                if(nonRankCount == 2){
+                    rank = weightedrank/weightedCount;
+                }
+                else{
+                    rank = filterrank;
+                }
+            }
+            else{
+                rank = weightedrank/weightedCount;
+            }
+        }
+        else if (filters.length == 3 && includeMonth && includePop && includeNonRank){
+            rank = weightedrank/weightedCount;
         }
         else {
             rank = (filterrank + (weightedrank * weight) ) / (filters.length + (weightedCount * weight));
