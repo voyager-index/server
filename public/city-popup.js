@@ -102,10 +102,15 @@ async function cityInfo(features) {
     }
 
     // These properties must be present in both the the DB response, and the city-popup div in index.ejs
-    const properties = ['city', 'country', 'population', 'mbps', 'lon', 'lat', 'elevation', 'pollution', 'airport', 'beach'];
+    const properties = ['city', 'country', 'population', 'lon', 'lat', 'elevation', 'airport', 'intlairport', 'beach', 'palms', 'totalhomicides', 'femalehomicides'];
     for (let i = 0; i < properties.length; i++) {
         const val = features[properties[i]];
         $('#popup-' + properties[i]).text(val);
+    }
+    const fixedproperties = [ 'mbps', 'pollution', 'purchasingpower', 'povertyindex'];
+    for (let i = 0; i < fixedproperties.length; i++) {
+        const val = Number(features[fixedproperties[i]]).toFixed(2);
+        $('#popup-' + fixedproperties[i]).text(val);
     }
 
     $('#popup-issues').attr('href', '/issues/?id=' + id);
