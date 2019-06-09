@@ -247,7 +247,7 @@ app.post('/grid-search', async (req, res) => {
             ORDER BY P.total DESC
         ;`;
     }
-    console.log(query);
+    //console.log(query);
 
     const action = (results) => {
         var cityRank = rankCities(results, filters);
@@ -337,32 +337,29 @@ app.post('/bounding', async (req, res) => {
         lat_lon = wrap;
     }
 
+    const cityRank = rankCities(cities, filters);
+
+    if (filters.includes('rank')) {
+        cityRank.cities.sort((a, b) => parseFloat(b.rank) - parseFloat(a.rank));
+    }
+
     let num = 0;
-    let results = [];
-    for (let i = 0; i < cities.length; i++) {
+    let results = new Object;
+    results.cities = []
+    for (let i = 0; i < cityRank.cities.length; i++) {
         if (eval(lat_lon)) {
-            results.push(cities[i]);
+            results.cities.push(cityRank.cities[i]);
             num += 1;
         }
         if (num >= 100) {
             break;
         }
     }
-
-    const action = (results) => {
-        var cityRank = rankCities(results, filters);
-
-        if (filters.includes('rank')) {
-            cityRank.cities.sort((a, b) => parseFloat(b.rank) - parseFloat(a.rank));
-            cityRank.cities = cityRank.cities.slice(1,100);
-        }
-
-        res.send(cityRank);
-    }
+    console.log(results.cities);
+    console.log(results.cities.length);
 
     try {
-        const cityRank = rankCities(results, filters);
-        res.send(cityRank);
+        res.send(results);
     } catch (err) {
         console.error(err);
         res.send('Error:', err);
