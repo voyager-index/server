@@ -359,6 +359,7 @@ app.post('/bounding', async (req, res) => {
     }
 
     let conditions = [];
+    conditions.push(lat_lon);
 
     if(filters.includes("internet")){
         conditions.push(internet);
