@@ -344,11 +344,14 @@ app.post('/bounding', async (req, res) => {
     const action = (results) => {
         var cityRank = rankCities(results, filters);
         res.send(cityRank);
-        console.log(cityRank);
+        //console.log(cityRank);
     }
 
     try {
+        const t0 = process.hrtime();
         const results = await swimming_pool(query, action);
+        const t1 = process.hrtime(t0);
+        console.info('Execution time (hr): %ds %dms', t1[0], t1[1] / 1000000)
     } catch (err) {
         console.error(err);
         res.send('Error:', err);
@@ -531,6 +534,7 @@ async function swimming_pool(query = '', action) {
         const result = await client.query(query);
         const results = result ? result.rows : null;
         client.release();
+        console.log(results);
 
         // return results
         if (arguments.length == 1) {
