@@ -227,14 +227,26 @@ app.post('/grid-search', async (req, res) => {
     // get data from POST body.
     const filters = req.body.filters;
 
-    const query = `
-        ${common}
-        ORDER BY P.total DESC
-    ;`;
+    let query = ``;
+    if (filters.includes('rank')) {
+        query = `
+            ${common}
+        ;`;
+    }
+    else {
+        query = `
+            ${common}
+            ORDER BY P.total DESC
+        ;`;
+    }
+    console.log(query);
 
     const action = (results) => {
         var cityRank = rankCities(results, filters);
-        cityRank.cities.sort((a, b) => parseFloat(b.rank) - parseFloat(a.rank));
+        if (filters.includes('rank')) {
+            cityRank.cities.sort((a, b) => parseFloat(b.rank) - parseFloat(a.rank));
+            console.log(filters);
+        }
         cityRank.cities = cityRank.cities.slice(0, grid_number);
         res.send(cityRank);
     }
@@ -283,16 +295,22 @@ app.post('/bounding', async (req, res) => {
     const bottom_left_lat = bounding_box[1];
     const top_right_lon = bounding_box[2];
     const top_right_lat = bounding_box[3];
+    console.log('left lon:', bottom_left_lon);
+    console.log('right lon:', top_right_lon, '\n');
 
-    let lon_wrap = Number.MAX_SAFE_INTEGER;
-    let lon_wrap_neg = Number.MAX_SAFE_INTEGER;
+    let query = ``;
 
-    // edge case: left side of map crosses 180 degress longitude.
-    // edge case: left side of map crosses 0 degress longitude.
-    lon_wrap = -1 * (bottom_left_lon + 180) % 360;
-    lon_wrap_neg = 1 * (bottom_left_lon + 180) % 360;
+    if (bottom_left_lon > top_right_lon) {
 
-    var query = `
+        let lon_wrap = Number.MAX_SAFE_INTEGER;
+        let lon_wrap_neg = Number.MAX_SAFE_INTEGER;
+
+        // edge case: left side of map crosses 180 degress longitude.
+        // edge case: left side of map crosses 0 degress longitude.
+        lon_wrap = -1 * (bottom_left_lon + 180) % 360;
+        lon_wrap_neg = 1 * (bottom_left_lon + 180) % 360;
+
+        query = `
         ${common}
 
         WHERE
@@ -304,6 +322,22 @@ app.post('/bounding', async (req, res) => {
         C.lon <= ${top_right_lon}) AND
         C.lat <= ${top_right_lat}
     `;
+    }
+
+    else {
+
+
+        query = `
+        ${common}
+
+        WHERE
+        C.lon >= ${bottom_left_lon} AND
+        C.lat >= ${bottom_left_lat} AND
+
+        C.lon <= ${top_right_lon} AND
+        C.lat <= ${top_right_lat}
+    `;
+    }
 
    for (var i = 0; i < filters.length; i++){
         if(filters[i] == "internet"){
@@ -328,22 +362,32 @@ app.post('/bounding', async (req, res) => {
             query += ' AND (p.total > 500000)';
         }
         if(filters[i] == "airports"){
-            query += ' AND (a.Exists = true)'
+            query += ' AND (a.Exists = true)';
         }
         if(filters[i] == "palms"){
-            query += ' AND (pt.palms = true)'
+            query += ' AND (pt.palms = true)';
         }
         if(filters[i] == "intlairports"){
-            query += ' AND (ia.Exists = true)'
+            query += ' AND (ia.Exists = true)';
         }
 
    }
 
-    query += " ORDER BY P.total DESC LIMIT 100;";
+    if (! filters.includes('rank')) {
+        query += " ORDER BY P.total DESC LIMIT 100;";
+    }
+
     //console.log(query);
+
 
     const action = (results) => {
         var cityRank = rankCities(results, filters);
+        //res.send(cityRank);
+
+        if (filters.includes('rank')) {
+            cityRank.cities.sort((a, b) => parseFloat(b.rank) - parseFloat(a.rank));
+            cityRank.cities = cityRank.cities.slice(1,100);
+        }
         res.send(cityRank);
     }
 
@@ -490,6 +534,7 @@ If there are more than one, then the score is a combination of the values of the
 plus the rest of the factors, using our values, weighted down to be less impactful.
 */
 function rankCities(cities, filters){
+
     //True False values don't matter, because they are filtered out.
     var selectedMonth;
     // Month included?
@@ -510,6 +555,11 @@ function rankCities(cities, filters){
                 nonRankCount += 1;
             }
         }
+    }
+
+    let includeSortBy = false;
+    if(filters.includes("population") || filters.includes("rank")) {
+        includeSortBy = true;
     }
 
     // Population
@@ -658,14 +708,14 @@ RANKING DONE BELOW
             } else {
                 tempRank = 0;
             }
-        } 
+        }
         if (filters.includes('cold') || filters.includes('temperate') || filters.includes('warm') || filters.includes('hot')){
             filterrank += tempRank;
         }
 
         // Purchasing power
         // data values between 1.29 and .14
-        
+
         var purchasePower = cities[i]["purchasingpower"];
         var pppRank;
         if(filters.includes('purchase')){
@@ -676,7 +726,7 @@ RANKING DONE BELOW
                 pppRank = 5 + ((1 - purchasePower)*10)/2;
                 if(pppRank > 10){
                     pppRank = 10;
-                } 
+                }
             }
             filterrank += pppRank;
         }
@@ -750,7 +800,7 @@ RANKING DONE BELOW
         if(filters.length == 0){
             rank = weightedrank/weightedCount;
         }
-        else if  (filters.length == 1 && (includeMonth || includePop || includeNonRank) ){
+        else if  (filters.length == 1 && (includeMonth || includePop || includeNonRank || includeSortBy) ){
             rank = weightedrank/weightedCount;
         }
         else if (filters.length == 1){
