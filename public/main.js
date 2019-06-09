@@ -64,7 +64,7 @@ function makeMap(lon, lat, zoom, target) {
     return map;
 }
 
-var map = makeMap(0, 0, 3, 'map');
+var map = makeMap(0, 25, 3, 'map');
 
 map.on('click', function(evt) {
     var pixel = evt.pixel;
