@@ -325,8 +325,6 @@ app.post('/bounding', async (req, res) => {
     }
 
     else {
-
-
         query = `
         ${common}
 
