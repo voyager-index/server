@@ -12,7 +12,7 @@
     "dev": "webpack --config webpack.config.js --mode development",
     "watch": "webpack --config webpack.config.js --mode development --watch",
     "analyze": "webpack --config webpack.config.js --mode production --profile --json > stats.json",
-    "build": "./getDb.sh; webpack --config webpack.config.js --mode production"
+    "build": "webpack --config webpack.config.js --mode production"
   },
   "dependencies": {
     "ansi_up": "^4.0.3",

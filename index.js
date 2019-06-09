@@ -392,7 +392,7 @@ app.post('/bounding', async (req, res) => {
         conditions.push(intlairports);
     }
 
-    console.log(conditions);
+    //console.log(conditions);
 
     let num = 0;
     let results = []
