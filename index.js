@@ -327,7 +327,7 @@ app.post('/bounding', async (req, res) => {
     };
 
     const pollution = (city) => {
-        return city.pollution == null || city.polution < 100;
+        return city.pollution == null || city.pollution < 100;
     }
 
     const beaches = (city) => {
@@ -415,8 +415,9 @@ app.post('/bounding', async (req, res) => {
             break;
         }
     }
-    console.log(results);
-    console.log(results.length);
+    //console.log(results);
+    //console.log(results.length);
+    //console.log(conditions);
 
     const cityRank = rankCities(results, filters);
 
