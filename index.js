@@ -312,54 +312,119 @@ app.post('/bounding', async (req, res) => {
     lon_wrap = -1 * (bottom_left_lon + 180) % 360;
     lon_wrap_neg = 1 * (bottom_left_lon + 180) % 360;
 
-    const std = `
-        cities[i].lon >= bottom_left_lon
-        && cities[i].lat >= bottom_left_lat
-        && cities[i].lon <= top_right_lon
-        && cities[i].lat <= top_right_lat
-    `
+    const lat_lon = (city) => {
+        return (city.lon >= bottom_left_lon
+        || city.lon >= lon_wrap)
+        && city.lat >= bottom_left_lat
+        && (city.lon <= top_right_lon
+        || city.lon <= lon_wrap_neg)
+        && city.lat <= top_right_lat;
+    };
 
-    const wrap = `
-        (cities[i].lon >= bottom_left_lon
-            || cities[i].lon >= lon_wrap)
-        && cities[i].lat >= bottom_left_lat
-        && (cities[i].lon <= top_right_lon
-            || cities[i].lon <= lon_wrap_neg)
-        && cities[i].lat <= top_right_lat
-    `
 
-    let lat_lon = ``;
-    if (bottom_left_lon > top_right_lon) {
-        lat_lon = wrap
-    }
-    else {
-        //lat_lon = std;
-        lat_lon = wrap;
+    const internet = (city) => {
+        return city.mbps > 1;
+    };
+
+    const pollution = (city) => {
+        return city.pollution == null || city.polution < 100;
     }
 
-    const cityRank = rankCities(cities, filters);
-
-    if (filters.includes('rank')) {
-        cityRank.cities.sort((a, b) => parseFloat(b.rank) - parseFloat(a.rank));
+    const beaches = (city) => {
+        return city.beach == true;
     }
+
+    const rural = (city) => {
+        return city.population < 20000;
+    }
+
+    const town = (city) => {
+        return city.population < 100000 && city.population > 20000;
+    }
+
+    const metro = (city) => {
+        return city.population > 500000;
+    }
+
+    const airports = (city) => {
+        return city.airport == true;
+    }
+
+    const intlairports = (city) => {
+        return city.intlairport == true;
+    }
+
+    const palms = (city) => {
+        return city.palms == true;
+    }
+
+    let conditions = [];
+
+    if(filters.includes("internet")){
+        conditions.push(internet);
+    }
+    if(filters.includes("pollution")){
+        conditions.push(pollution);
+    }
+    if(filters.includes("beaches")){
+        conditions.push(beaches);
+    }
+    if(filters.includes("rural")){
+        conditions.push(rural);
+    }
+    if(filters.includes("town")){
+        conditions.push(town);
+    }
+    if(filters.includes("city")){
+        conditions.push(city);
+    }
+    if(filters.includes("metro")){
+        conditions.push(metro);
+    }
+    if(filters.includes("airports")){
+        conditions.push(airports);
+    }
+    if(filters.includes("palms")){
+        conditions.push(palms);
+    }
+    if(filters.includes("intlairports")){
+        conditions.push(intlairports);
+    }
+
+    console.log(conditions);
 
     let num = 0;
-    let results = new Object;
-    results.cities = []
-    for (let i = 0; i < cityRank.cities.length; i++) {
-        if (eval(lat_lon)) {
-            results.cities.push(cityRank.cities[i]);
+    let results = []
+    for (let i = 0; i < cities.length; i++) {
+        let fits = true;
+        //console.log(cities[i])
+        for (let n = 0; n < conditions.length; n++) {
+            //console.log(conditions[n](cities[i]));
+            if (! conditions[n](cities[i])) {
+                fits = false;
+                break;
+            }
+        }
+
+        if (fits == true) {
+            results.push(cities[i]);
             num += 1;
         }
         if (num >= 100) {
             break;
         }
     }
-    console.log(results.cities);
-    console.log(results.cities.length);
+    console.log(results);
+    console.log(results.length);
+
+    const cityRank = rankCities(results, filters);
+
+    if (filters.includes('rank')) {
+        cityRank.cities.sort((a, b) => parseFloat(b.rank) - parseFloat(a.rank));
+    }
 
     try {
-        res.send(results);
+        res.send(cityRank);
     } catch (err) {
         console.error(err);
         res.send('Error:', err);
