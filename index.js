@@ -29,10 +29,18 @@ const ejs = require('ejs');
 const expressLayouts = require('express-ejs-layouts');
 app.use(expressLayouts);
 
+const fs = require("fs");
+
 const DEBUG = false;
 
 // number of elements on the grid page
 const grid_number = 16;
+
+let cities = [];
+fs.readFile("voyager-index-data.json", function(err, buffer) {
+    //console.log(JSON.parse(buffer));
+    cities = JSON.parse(buffer);
+});
 
 // common database string used in all city queries.
 const common = `
@@ -184,13 +192,13 @@ app.all('/city-search', async (req, res) => {
 
     let query = ``;
     if (search.id != null) {
-       query = `
+        query = `
             ${common}
             WHERE C.id = ${search.id}
         ;`;
     }
     else {
-       query = `
+        query = `
             ${common}
             WHERE C.name ILIKE '%${search.city}%'
             ORDER BY P.total DESC
@@ -198,7 +206,7 @@ app.all('/city-search', async (req, res) => {
         ;`;
     }
 
-   //console.log(query);
+    //console.log(query);
 
     const action = (results) => {
         const filters = [];
@@ -295,108 +303,70 @@ app.post('/bounding', async (req, res) => {
     const bottom_left_lat = bounding_box[1];
     const top_right_lon = bounding_box[2];
     const top_right_lat = bounding_box[3];
-    console.log('left lon:', bottom_left_lon);
-    console.log('right lon:', top_right_lon, '\n');
 
-    let query = ``;
+    let lon_wrap = Number.MAX_SAFE_INTEGER;
+    let lon_wrap_neg = Number.MAX_SAFE_INTEGER;
 
+    // edge case: left side of map crosses 180 degress longitude.
+    // edge case: left side of map crosses 0 degress longitude.
+    lon_wrap = -1 * (bottom_left_lon + 180) % 360;
+    lon_wrap_neg = 1 * (bottom_left_lon + 180) % 360;
+
+    const std = `
+        cities[i].lon >= bottom_left_lon
+        && cities[i].lat >= bottom_left_lat
+        && cities[i].lon <= top_right_lon
+        && cities[i].lat <= top_right_lat
+    `
+
+    const wrap = `
+        (cities[i].lon >= bottom_left_lon
+            || cities[i].lon >= lon_wrap)
+        && cities[i].lat >= bottom_left_lat
+        && (cities[i].lon <= top_right_lon
+            || cities[i].lon <= lon_wrap_neg)
+        && cities[i].lat <= top_right_lat
+    `
+
+    let lat_lon = ``;
     if (bottom_left_lon > top_right_lon) {
-
-        let lon_wrap = Number.MAX_SAFE_INTEGER;
-        let lon_wrap_neg = Number.MAX_SAFE_INTEGER;
-
-        // edge case: left side of map crosses 180 degress longitude.
-        // edge case: left side of map crosses 0 degress longitude.
-        lon_wrap = -1 * (bottom_left_lon + 180) % 360;
-        lon_wrap_neg = 1 * (bottom_left_lon + 180) % 360;
-
-        query = `
-        ${common}
-
-        WHERE
-        (C.lon >= ${bottom_left_lon} OR
-        C.lon >= ${lon_wrap}) AND
-        C.lat >= ${bottom_left_lat} AND
-
-        (C.lon <= ${lon_wrap_neg} OR
-        C.lon <= ${top_right_lon}) AND
-        C.lat <= ${top_right_lat}
-    `;
+        lat_lon = wrap
     }
-
     else {
-        query = `
-        ${common}
-
-        WHERE
-        C.lon >= ${bottom_left_lon} AND
-        C.lat >= ${bottom_left_lat} AND
-
-        C.lon <= ${top_right_lon} AND
-        C.lat <= ${top_right_lat}
-    `;
+        //lat_lon = std;
+        lat_lon = wrap;
     }
 
-   for (var i = 0; i < filters.length; i++){
-        if(filters[i] == "internet"){
-            query += ' AND I.Speed > 1';
+    let num = 0;
+    let results = [];
+    for (let i = 0; i < cities.length; i++) {
+        if (eval(lat_lon)) {
+            results.push(cities[i]);
+            num += 1;
         }
-        if(filters[i] == "pollution"){
-            query += ' AND (ap.Index = NULL OR ap.Index < 100)';
+        if (num >= 100) {
+            break;
         }
-        if(filters[i] == "beaches"){
-            query += ' AND cl.NearCoast = true';
-        }
-        if(filters[i] == "rural"){
-            query += ' AND (p.total < 20000)';
-        }
-        if(filters[i] == "town"){
-            query += ' AND (p.total < 100000 AND p.total > 20000)';
-        }
-        if(filters[i] == "city"){
-            query += ' AND (p.total < 500000 AND p.total > 100000)';
-        }
-        if(filters[i] == "metro"){
-            query += ' AND (p.total > 500000)';
-        }
-        if(filters[i] == "airports"){
-            query += ' AND (a.Exists = true)';
-        }
-        if(filters[i] == "palms"){
-            query += ' AND (pt.palms = true)';
-        }
-        if(filters[i] == "intlairports"){
-            query += ' AND (ia.Exists = true)';
-        }
-
-   }
-
-    if (! filters.includes('rank')) {
-        query += " ORDER BY P.total DESC LIMIT 100;";
     }
-
-    //console.log(query);
-
 
     const action = (results) => {
         var cityRank = rankCities(results, filters);
-        //res.send(cityRank);
 
         if (filters.includes('rank')) {
             cityRank.cities.sort((a, b) => parseFloat(b.rank) - parseFloat(a.rank));
             cityRank.cities = cityRank.cities.slice(1,100);
         }
+
         res.send(cityRank);
     }
 
     try {
-        const results = await swimming_pool(query, action);
+        const cityRank = rankCities(results, filters);
+        res.send(cityRank);
     } catch (err) {
         console.error(err);
         res.send('Error:', err);
     }
-
-
 });
 
 
@@ -506,10 +476,10 @@ app.post('/issues-submit', (req, res) => {
         },
         body: post_data,
     })
-    .then(response => response.json())
-    .catch(err => console.error('Error:', err))
-    .then(response => console.log('Success:', response))
-    .then(res.render("pages/issues-submit", {issue_title: issue_title, issue_body: issue_body, issue_type: issue_type}));
+        .then(response => response.json())
+        .catch(err => console.error('Error:', err))
+        .then(response => console.log('Success:', response))
+        .then(res.render("pages/issues-submit", {issue_title: issue_title, issue_body: issue_body, issue_type: issue_type}));
 });
 
 // Start app.
@@ -563,7 +533,7 @@ function rankCities(cities, filters){
     // Population
     let includePop = false;
     if(filters.includes('rural') || filters.includes('town') || filters.includes('city') || filters.includes('metro')){
-       includePop = true;
+        includePop = true;
     }
 
     var i;
@@ -630,7 +600,7 @@ function rankCities(cities, filters){
 
         /*
 RANKING DONE BELOW
-        */
+*/
 
         // UV Ranking
         if(avgUV > 160){ // Over UV idx of 10
@@ -827,7 +797,7 @@ RANKING DONE BELOW
             rank = (filterrank + (weightedrank * weight) ) / (filters.length + (weightedCount * weight));
         }
 
-        // Adjust to onle 1 decimal place
+        // Adjust to only 1 decimal place
         var roundedRank = Math.round(rank * 10)/10;
 
         //name, lon, lat, rank, id
