@@ -29,10 +29,18 @@ const ejs = require('ejs');
 const expressLayouts = require('express-ejs-layouts');
 app.use(expressLayouts);
 
+const fs = require("fs");
+
 const DEBUG = false;
 
 // number of elements on the grid page
 const grid_number = 16;
+
+let cities = [];
+fs.readFile("voyager-index-data.json", function(err, buffer) {
+    //console.log(JSON.parse(buffer));
+    cities = JSON.parse(buffer);
+});
 
 // common database string used in all city queries.
 const common = `
@@ -184,13 +192,13 @@ app.all('/city-search', async (req, res) => {
 
     let query = ``;
     if (search.id != null) {
-       query = `
+        query = `
             ${common}
             WHERE C.id = ${search.id}
         ;`;
     }
     else {
-       query = `
+        query = `
             ${common}
             WHERE C.name ILIKE '%${search.city}%'
             ORDER BY P.total DESC
@@ -198,7 +206,7 @@ app.all('/city-search', async (req, res) => {
         ;`;
     }
 
-   //console.log(query);
+    //console.log(query);
 
     const action = (results) => {
         const filters = [];
@@ -227,14 +235,26 @@ app.post('/grid-search', async (req, res) => {
     // get data from POST body.
     const filters = req.body.filters;
 
-    const query = `
-        ${common}
-        ORDER BY P.total DESC
-    ;`;
+    let query = ``;
+    if (filters.includes('rank')) {
+        query = `
+            ${common}
+        ;`;
+    }
+    else {
+        query = `
+            ${common}
+            ORDER BY P.total DESC
+        ;`;
+    }
+    //console.log(query);
 
     const action = (results) => {
         var cityRank = rankCities(results, filters);
-        cityRank.cities.sort((a, b) => parseFloat(b.rank) - parseFloat(a.rank));
+        if (filters.includes('rank')) {
+            cityRank.cities.sort((a, b) => parseFloat(b.rank) - parseFloat(a.rank));
+            console.log(filters);
+        }
         cityRank.cities = cityRank.cities.slice(0, grid_number);
         res.send(cityRank);
     }
@@ -292,69 +312,125 @@ app.post('/bounding', async (req, res) => {
     lon_wrap = -1 * (bottom_left_lon + 180) % 360;
     lon_wrap_neg = 1 * (bottom_left_lon + 180) % 360;
 
-    var query = `
-        ${common}
+    const lat_lon = (city) => {
+        return (city.lon >= bottom_left_lon
+        || city.lon >= lon_wrap)
+        && city.lat >= bottom_left_lat
+        && (city.lon <= top_right_lon
+        || city.lon <= lon_wrap_neg)
+        && city.lat <= top_right_lat;
+    };
 
-        WHERE
-        (C.lon >= ${bottom_left_lon} OR
-        C.lon >= ${lon_wrap}) AND
-        C.lat >= ${bottom_left_lat} AND
 
-        (C.lon <= ${lon_wrap_neg} OR
-        C.lon <= ${top_right_lon}) AND
-        C.lat <= ${top_right_lat}
-    `;
+    const internet = (city) => {
+        return city.mbps > 1;
+    };
 
-   for (var i = 0; i < filters.length; i++){
-        if(filters[i] == "internet"){
-            query += ' AND I.Speed > 1';
-        }
-        if(filters[i] == "pollution"){
-            query += ' AND (ap.Index = NULL OR ap.Index < 100)';
-        }
-        if(filters[i] == "beaches"){
-            query += ' AND cl.NearCoast = true';
-        }
-        if(filters[i] == "rural"){
-            query += ' AND (p.total < 20000)';
-        }
-        if(filters[i] == "town"){
-            query += ' AND (p.total < 100000 AND p.total > 20000)';
-        }
-        if(filters[i] == "city"){
-            query += ' AND (p.total < 500000 AND p.total > 100000)';
-        }
-        if(filters[i] == "metro"){
-            query += ' AND (p.total > 500000)';
-        }
-        if(filters[i] == "airports"){
-            query += ' AND (a.Exists = true)'
-        }
-        if(filters[i] == "palms"){
-            query += ' AND (pt.palms = true)'
-        }
-        if(filters[i] == "intlairports"){
-            query += ' AND (ia.Exists = true)'
+    const pollution = (city) => {
+        return city.pollution == null || city.pollution < 100;
+    }
+
+    const beaches = (city) => {
+        return city.beach == true;
+    }
+
+    const rural = (city) => {
+        return city.population < 20000;
+    }
+
+    const town = (city) => {
+        return city.population < 100000 && city.population > 20000;
+    }
+
+    const metro = (city) => {
+        return city.population > 500000;
+    }
+
+    const airports = (city) => {
+        return city.airport == true;
+    }
+
+    const intlairports = (city) => {
+        return city.intlairport == true;
+    }
+
+    const palms = (city) => {
+        return city.palms == true;
+    }
+
+    let conditions = [];
+    conditions.push(lat_lon);
+
+    if(filters.includes("internet")){
+        conditions.push(internet);
+    }
+    if(filters.includes("pollution")){
+        conditions.push(pollution);
+    }
+    if(filters.includes("beaches")){
+        conditions.push(beaches);
+    }
+    if(filters.includes("rural")){
+        conditions.push(rural);
+    }
+    if(filters.includes("town")){
+        conditions.push(town);
+    }
+    if(filters.includes("city")){
+        conditions.push(city);
+    }
+    if(filters.includes("metro")){
+        conditions.push(metro);
+    }
+    if(filters.includes("airports")){
+        conditions.push(airports);
+    }
+    if(filters.includes("palms")){
+        conditions.push(palms);
+    }
+    if(filters.includes("intlairports")){
+        conditions.push(intlairports);
+    }
+
+    console.log(conditions);
+
+    let num = 0;
+    let results = []
+    for (let i = 0; i < cities.length; i++) {
+        let fits = true;
+        //console.log(cities[i])
+        for (let n = 0; n < conditions.length; n++) {
+            //console.log(conditions[n](cities[i]));
+            if (! conditions[n](cities[i])) {
+                fits = false;
+                break;
+            }
         }
 
-   }
+        if (fits == true) {
+            results.push(cities[i]);
+            num += 1;
+        }
+        if (num >= 100) {
+            break;
+        }
+    }
+    //console.log(results);
+    //console.log(results.length);
+    //console.log(conditions);
 
-    query += " ORDER BY P.total DESC LIMIT 100;";
-    //console.log(query);
+    const cityRank = rankCities(results, filters);
 
-    const action = (results) => {
-        var cityRank = rankCities(results, filters);
-        res.send(cityRank);
+    if (filters.includes('rank')) {
+        cityRank.cities.sort((a, b) => parseFloat(b.rank) - parseFloat(a.rank));
     }
 
     try {
-        const results = await swimming_pool(query, action);
+        res.send(cityRank);
     } catch (err) {
         console.error(err);
         res.send('Error:', err);
     }
-
-
 });
 
 
@@ -464,10 +540,10 @@ app.post('/issues-submit', (req, res) => {
         },
         body: post_data,
     })
-    .then(response => response.json())
-    .catch(err => console.error('Error:', err))
-    .then(response => console.log('Success:', response))
-    .then(res.render("pages/issues-submit", {issue_title: issue_title, issue_body: issue_body, issue_type: issue_type}));
+        .then(response => response.json())
+        .catch(err => console.error('Error:', err))
+        .then(response => console.log('Success:', response))
+        .then(res.render("pages/issues-submit", {issue_title: issue_title, issue_body: issue_body, issue_type: issue_type}));
 });
 
 // Start app.
@@ -490,6 +566,7 @@ If there are more than one, then the score is a combination of the values of the
 plus the rest of the factors, using our values, weighted down to be less impactful.
 */
 function rankCities(cities, filters){
+
     //True False values don't matter, because they are filtered out.
     var selectedMonth;
     // Month included?
@@ -512,10 +589,15 @@ function rankCities(cities, filters){
         }
     }
 
+    let includeSortBy = false;
+    if(filters.includes("population") || filters.includes("rank")) {
+        includeSortBy = true;
+    }
+
     // Population
     let includePop = false;
     if(filters.includes('rural') || filters.includes('town') || filters.includes('city') || filters.includes('metro')){
-       includePop = true;
+        includePop = true;
     }
 
     var i;
@@ -582,7 +664,7 @@ function rankCities(cities, filters){
 
         /*
 RANKING DONE BELOW
-        */
+*/
 
         // UV Ranking
         if(avgUV > 160){ // Over UV idx of 10
@@ -658,14 +740,14 @@ RANKING DONE BELOW
             } else {
                 tempRank = 0;
             }
-        } 
+        }
         if (filters.includes('cold') || filters.includes('temperate') || filters.includes('warm') || filters.includes('hot')){
             filterrank += tempRank;
         }
 
         // Purchasing power
         // data values between 1.29 and .14
-        
+
         var purchasePower = cities[i]["purchasingpower"];
         var pppRank;
         if(filters.includes('purchase')){
@@ -676,7 +758,7 @@ RANKING DONE BELOW
                 pppRank = 5 + ((1 - purchasePower)*10)/2;
                 if(pppRank > 10){
                     pppRank = 10;
-                } 
+                }
             }
             filterrank += pppRank;
         }
@@ -750,7 +832,7 @@ RANKING DONE BELOW
         if(filters.length == 0){
             rank = weightedrank/weightedCount;
         }
-        else if  (filters.length == 1 && (includeMonth || includePop || includeNonRank) ){
+        else if  (filters.length == 1 && (includeMonth || includePop || includeNonRank || includeSortBy) ){
             rank = weightedrank/weightedCount;
         }
         else if (filters.length == 1){
@@ -779,7 +861,7 @@ RANKING DONE BELOW
             rank = (filterrank + (weightedrank * weight) ) / (filters.length + (weightedCount * weight));
         }
 
-        // Adjust to onle 1 decimal place
+        // Adjust to only 1 decimal place
         var roundedRank = Math.round(rank * 10)/10;
 
         //name, lon, lat, rank, id

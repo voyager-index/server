@@ -51,7 +51,7 @@ html, body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 85%;
+  height: 90vh;
 }
 
 code {
@@ -62,6 +62,7 @@ code {
 
 p {
   font-size: 1.2em;
+  transition: 800ms;
 }
 
 .navbar.navbar-default.navbar-static-top {
@@ -115,10 +116,6 @@ input {
 
 .navbar-light, .navbar-default {
   background-color: #f8f8f8;
-}
-
-#map {
-  height: 80vh;
 }
 
 #city-popup {

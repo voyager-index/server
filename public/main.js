@@ -64,7 +64,7 @@ function makeMap(lon, lat, zoom, target) {
     return map;
 }
 
-var map = makeMap(0, 0, 3, 'map');
+var map = makeMap(0, 25, 3, 'map');
 
 map.on('click', function(evt) {
     var pixel = evt.pixel;
@@ -159,7 +159,10 @@ function getFilters(){
   for (var i = 0; i < buttons.length; i++){
     var classes = buttons[i].classList;
     for(var j = 0; j < classes.length; j++){
-      if (classes[j] != 'btn' && classes[j] != 'btn-default' && classes[j] != 'active' ){
+      if (classes[j] != 'btn'
+          && classes[j] != 'btn-default'
+          && classes[j] != 'nav-item'
+          && classes[j] != 'active' ){
         filters.push(classes[j]);
         continue;
       }
