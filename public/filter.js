@@ -28,6 +28,7 @@ function button_group(...args) {
             });
 
             changeMarkers();
+            changeGrid();
         });
     });
 }
@@ -44,6 +45,8 @@ button_group('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct
 // Socioeconomic filter
 button_group('high-poverty-index', 'medium-poverty-index', 'low-poverty-index');
 
+// sort type filter
+button_group('population', 'rank');
 
 function changeMarkers() {
     // Gets list of filters from Voyager module (/public/main.js).
