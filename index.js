@@ -1,10 +1,10 @@
 // Listen on port 5000, or use "export PORT=31415"
 // to start on port 31415
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 5000;
 
 const fetch = require('node-fetch');
 const https = require('https');
-const path = require('path')
+const path = require('path');
 
 // POST requests
 const bodyParser = require('body-parser');
@@ -16,12 +16,14 @@ const pool = require('./config.js');
 const auth_issue = require('./auth-issue.js');
 
 // Use express for the web server.
-const express = require('express')
+const express = require('express');
 const app = express();
 
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
+app.use(
+    bodyParser.urlencoded({
+        extended: true,
+    })
+);
 app.use(bodyParser.json());
 
 // Use ejs for templating.
@@ -29,7 +31,7 @@ const ejs = require('ejs');
 const expressLayouts = require('express-ejs-layouts');
 app.use(expressLayouts);
 
-const fs = require("fs");
+const fs = require('fs');
 
 const DEBUG = false;
 
@@ -37,7 +39,7 @@ const DEBUG = false;
 const grid_number = 16;
 
 let cities = [];
-fs.readFile("voyager-index-data.json", function(err, buffer) {
+fs.readFile('voyager-index-data.json', function(err, buffer) {
     //console.log(JSON.parse(buffer));
     cities = JSON.parse(buffer);
 });
@@ -97,20 +99,18 @@ app.get('/db', async (req, res) => {
         --LIMIT 1000
     ;`;
 
-    const action = (results) => {
-        for (var i = 0 ; i < results.length; i++) {
+    const action = results => {
+        for (var i = 0; i < results.length; i++) {
             let temp = 0;
             let uv = 0;
             let precip = 0;
-            let obj = results[i]
+            let obj = results[i];
             Object.keys(obj).forEach(key => {
-                if (key.substring(0,4) == 'temp') {
+                if (key.substring(0, 4) == 'temp') {
                     temp += obj[key];
-                }
-                else if (key.substring(0, 6) == 'precip') {
+                } else if (key.substring(0, 6) == 'precip') {
                     precip += obj[key];
-                }
-                else if (key.substring(0, 2) == 'uv') {
+                } else if (key.substring(0, 2) == 'uv') {
                     uv += obj[key];
                 }
             });
@@ -125,8 +125,8 @@ app.get('/db', async (req, res) => {
             results[i].uv = Math.round(uv);
         }
 
-        res.render('pages/db', {results:results});
-    }
+        res.render('pages/db', { results: results });
+    };
 
     try {
         const results = await swimming_pool(query, action);
@@ -138,7 +138,6 @@ app.get('/db', async (req, res) => {
 
 // city page
 app.post('/city', async (req, res) => {
-
     // get data from POST body.
     const name = req.body.name;
     const lon = req.body.lon;
@@ -162,8 +161,7 @@ app.post('/city', async (req, res) => {
         const results = await swimming_pool(query);
         //console.log('results:', results);
         res.send(results[0]);
-    }
-    catch(err) {
+    } catch (err) {
         console.error(err);
         res.send('Error:', err);
     }
@@ -177,15 +175,13 @@ app.all('/city-search', async (req, res) => {
     let search = {
         city: '',
         rank: null,
-        id: null
-    }
+        id: null,
+    };
 
     if (req.method === 'GET') {
         // get data from URL
         search = req.query;
-    }
-
-    else if (req.method === 'POST') {
+    } else if (req.method === 'POST') {
         // get data from POST body.
         search = req.body;
     }
@@ -196,8 +192,7 @@ app.all('/city-search', async (req, res) => {
             ${common}
             WHERE C.id = ${search.id}
         ;`;
-    }
-    else {
+    } else {
         query = `
             ${common}
             WHERE C.name ILIKE '%${search.city}%'
@@ -208,27 +203,26 @@ app.all('/city-search', async (req, res) => {
 
     //console.log(query);
 
-    const action = (results) => {
+    const action = results => {
         const filters = [];
         if (search.rank == true || search.rank == 'true') {
             var cityRank = rankCities(results, filters);
-            cityRank.cities.sort((a, b) => parseFloat(b.rank) - parseFloat(a.rank));
+            cityRank.cities.sort(
+                (a, b) => parseFloat(b.rank) - parseFloat(a.rank)
+            );
             res.send(cityRank);
-        }
-        else {
+        } else {
             res.send(results);
         }
-    }
+    };
 
     try {
         const results = await swimming_pool(query, action);
-    }
-    catch(err) {
+    } catch (err) {
         console.error(err);
         res.send('Error:', err);
     }
 });
-
 
 // city page
 app.post('/grid-search', async (req, res) => {
@@ -240,8 +234,7 @@ app.post('/grid-search', async (req, res) => {
         query = `
             ${common}
         ;`;
-    }
-    else {
+    } else {
         query = `
             ${common}
             ORDER BY P.total DESC
@@ -249,20 +242,21 @@ app.post('/grid-search', async (req, res) => {
     }
     //console.log(query);
 
-    const action = (results) => {
+    const action = results => {
         var cityRank = rankCities(results, filters);
         if (filters.includes('rank')) {
-            cityRank.cities.sort((a, b) => parseFloat(b.rank) - parseFloat(a.rank));
+            cityRank.cities.sort(
+                (a, b) => parseFloat(b.rank) - parseFloat(a.rank)
+            );
             console.log(filters);
         }
         cityRank.cities = cityRank.cities.slice(0, grid_number);
         res.send(cityRank);
-    }
+    };
 
     try {
         const results = await swimming_pool(query, action);
-    }
-    catch(err) {
+    } catch (err) {
         console.error(err);
         res.send('Error:', err);
     }
@@ -270,7 +264,6 @@ app.post('/grid-search', async (req, res) => {
 
 // city page
 app.post('/city-image', async (req, res) => {
-
     // get data from POST body.
     const id = req.body.id;
 
@@ -282,14 +275,11 @@ app.post('/city-image', async (req, res) => {
     try {
         const results = await swimming_pool(query);
         res.send(results[0]);
-    }
-    catch(err) {
+    } catch (err) {
         console.error(err);
         res.send('Error:', err);
     }
 });
-
-
 
 // Basic post request that receives bounding box, returns city points
 // returns array with the form: [ [City, lon, lat, rank] ],
@@ -309,99 +299,98 @@ app.post('/bounding', async (req, res) => {
 
     // edge case: left side of map crosses 180 degress longitude.
     // edge case: left side of map crosses 0 degress longitude.
-    lon_wrap = -1 * (bottom_left_lon + 180) % 360;
-    lon_wrap_neg = 1 * (bottom_left_lon + 180) % 360;
+    lon_wrap = (-1 * (bottom_left_lon + 180)) % 360;
+    lon_wrap_neg = (1 * (bottom_left_lon + 180)) % 360;
 
-    const lat_lon = (city) => {
-        return (city.lon >= bottom_left_lon
-        || city.lon >= lon_wrap)
-        && city.lat >= bottom_left_lat
-        && (city.lon <= top_right_lon
-        || city.lon <= lon_wrap_neg)
-        && city.lat <= top_right_lat;
+    const lat_lon = city => {
+        return (
+            (city.lon >= bottom_left_lon || city.lon >= lon_wrap) &&
+            city.lat >= bottom_left_lat &&
+            (city.lon <= top_right_lon || city.lon <= lon_wrap_neg) &&
+            city.lat <= top_right_lat
+        );
     };
 
-
-    const internet = (city) => {
+    const internet = city => {
         return city.mbps > 1;
     };
 
-    const pollution = (city) => {
+    const pollution = city => {
         return city.pollution == null || city.pollution < 100;
-    }
+    };
 
-    const beaches = (city) => {
+    const beaches = city => {
         return city.beach == true;
-    }
+    };
 
-    const rural = (city) => {
+    const rural = city => {
         return city.population < 20000;
-    }
+    };
 
-    const town = (city) => {
+    const town = city => {
         return city.population < 100000 && city.population > 20000;
-    }
+    };
 
-    const metro = (city) => {
+    const metro = city => {
         return city.population > 500000;
-    }
+    };
 
-    const airports = (city) => {
+    const airports = city => {
         return city.airport == true;
-    }
+    };
 
-    const intlairports = (city) => {
+    const intlairports = city => {
         return city.intlairport == true;
-    }
+    };
 
-    const palms = (city) => {
+    const palms = city => {
         return city.palms == true;
-    }
+    };
 
     let conditions = [];
     conditions.push(lat_lon);
 
-    if(filters.includes("internet")){
+    if (filters.includes('internet')) {
         conditions.push(internet);
     }
-    if(filters.includes("pollution")){
+    if (filters.includes('pollution')) {
         conditions.push(pollution);
     }
-    if(filters.includes("beaches")){
+    if (filters.includes('beaches')) {
         conditions.push(beaches);
     }
-    if(filters.includes("rural")){
+    if (filters.includes('rural')) {
         conditions.push(rural);
     }
-    if(filters.includes("town")){
+    if (filters.includes('town')) {
         conditions.push(town);
     }
-    if(filters.includes("city")){
+    if (filters.includes('city')) {
         conditions.push(city);
     }
-    if(filters.includes("metro")){
+    if (filters.includes('metro')) {
         conditions.push(metro);
     }
-    if(filters.includes("airports")){
+    if (filters.includes('airports')) {
         conditions.push(airports);
     }
-    if(filters.includes("palms")){
+    if (filters.includes('palms')) {
         conditions.push(palms);
     }
-    if(filters.includes("intlairports")){
+    if (filters.includes('intlairports')) {
         conditions.push(intlairports);
     }
 
     //console.log(conditions);
 
     let num = 0;
-    let results = []
+    let results = [];
     for (let i = 0; i < cities.length; i++) {
         let fits = true;
         //console.log(cities[i])
         for (let n = 0; n < conditions.length; n++) {
             //console.log(conditions[n](cities[i]));
-            if (! conditions[n](cities[i])) {
+            if (!conditions[n](cities[i])) {
                 fits = false;
                 break;
             }
@@ -433,7 +422,6 @@ app.post('/bounding', async (req, res) => {
     }
 });
 
-
 app.get('/grid', async (req, res) => {
     var query = `
         ${common}
@@ -442,11 +430,11 @@ app.get('/grid', async (req, res) => {
     ;`;
     //console.log(query);
 
-    const action = (results) => {
+    const action = results => {
         const filters = [];
         var cityRank = rankCities(results, filters);
-        res.render('pages/grid', { cityRank: cityRank, layout : 'layout-map' });
-    }
+        res.render('pages/grid', { cityRank: cityRank, layout: 'layout-map' });
+    };
 
     let cities = [];
     try {
@@ -469,7 +457,6 @@ app.get('/settings', (req, res) => {
     res.render('pages/settings');
 });
 
-
 // issues page
 app.get('/issues', async (req, res) => {
     if (req.query.id) {
@@ -481,30 +468,31 @@ app.get('/issues', async (req, res) => {
     ;`;
         //console.log(query);
 
-        const action = (results) => {
+        const action = results => {
             let city = results[0].city;
             let country = results[0].country;
-            res.render('pages/issues', {city: city, country: country, id: id});
+            res.render('pages/issues', {
+                city: city,
+                country: country,
+                id: id,
+            });
         };
 
         try {
             const results = await swimming_pool(query, action);
-        } catch(err) {
+        } catch (err) {
             console.error(err);
         }
+    } else {
+        res.render('pages/issues', { city: '', country: '', id: '' });
     }
-    else {
-        res.render('pages/issues', {city: '', country: '', id: ''});
-    }
-
-
 });
 
 // POST request
 app.post('/issues-submit', (req, res) => {
-    const arr = []
-    for (let p in req.body){
-        arr.push({'name':p, 'value':req.body[p]});
+    const arr = [];
+    for (let p in req.body) {
+        arr.push({ name: p, value: req.body[p] });
     }
     const issue_type = arr[0].value;
     const issue_title = arr[1].value;
@@ -525,8 +513,8 @@ app.post('/issues-submit', (req, res) => {
     console.log(url);
 
     const post_data = JSON.stringify({
-        'title' : issue_title,
-        'body': issue_body,
+        title: issue_title,
+        body: issue_body,
     });
 
     fetch(url, {
@@ -535,24 +523,29 @@ app.post('/issues-submit', (req, res) => {
         headers: {
             'Content-Type': 'application/json',
             'Content-Length': Buffer.byteLength(post_data),
-            'Authorization': auth_issue,
-            'User-Agent': 'issuebot3000'
+            Authorization: auth_issue,
+            'User-Agent': 'issuebot3000',
         },
         body: post_data,
     })
         .then(response => response.json())
         .catch(err => console.error('Error:', err))
         .then(response => console.log('Success:', response))
-        .then(res.render("pages/issues-submit", {issue_title: issue_title, issue_body: issue_body, issue_type: issue_type}));
+        .then(
+            res.render('pages/issues-submit', {
+                issue_title: issue_title,
+                issue_body: issue_body,
+                issue_type: issue_type,
+            })
+        );
 });
 
 // Start app.
-app
-    .use(express.static(path.join(__dirname, 'public')))
+app.use(express.static(path.join(__dirname, 'public')))
     .set('views', path.join(__dirname, 'views'))
     .set('view engine', 'ejs')
     .get('/', (req, res) => res.render('pages/index', { layout: 'layout-map' }))
-    .listen(PORT, () => console.log(`Listening at http://localhost:${ PORT }`))
+    .listen(PORT, () => console.log(`Listening at http://localhost:${PORT}`));
 
 // -------------------- //
 // Helper functions
@@ -565,63 +558,91 @@ If there is one filter, then it is ranked soley on that filter.
 If there are more than one, then the score is a combination of the values of the filter rankings,
 plus the rest of the factors, using our values, weighted down to be less impactful.
 */
-function rankCities(cities, filters){
-
+function rankCities(cities, filters) {
     //True False values don't matter, because they are filtered out.
     var selectedMonth;
     // Month included?
-    const group = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    const group = [
+        'jan',
+        'feb',
+        'mar',
+        'apr',
+        'may',
+        'jun',
+        'jul',
+        'aug',
+        'sep',
+        'oct',
+        'nov',
+        'dec',
+    ];
     var includeMonth = false;
-    for (var j = 0; j < 12; j++){
-        if (filters.includes(group[j])){
+    for (var j = 0; j < 12; j++) {
+        if (filters.includes(group[j])) {
             includeMonth = true;
             selectedMonth = group[j];
         }
     }
     let includeNonRank = false;
     let nonRankCount = 0;
-    if(filters.includes("palms") || filters.includes("beaches") || filters.includes("airports") || filters.includes("intlairports") ){
+    if (
+        filters.includes('palms') ||
+        filters.includes('beaches') ||
+        filters.includes('airports') ||
+        filters.includes('intlairports')
+    ) {
         includeNonRank = true;
-        for (var x = 0; x < filters.length; x++){
-            if(filters[x] == "palms" || filters[x] == "beaches" || filters[x] == "airports" || filters[x] == "intlairports"){
+        for (var x = 0; x < filters.length; x++) {
+            if (
+                filters[x] == 'palms' ||
+                filters[x] == 'beaches' ||
+                filters[x] == 'airports' ||
+                filters[x] == 'intlairports'
+            ) {
                 nonRankCount += 1;
             }
         }
     }
 
     let includeSortBy = false;
-    if(filters.includes("population") || filters.includes("rank")) {
+    if (filters.includes('population') || filters.includes('rank')) {
         includeSortBy = true;
     }
 
     // Population
     let includePop = false;
-    if(filters.includes('rural') || filters.includes('town') || filters.includes('city') || filters.includes('metro')){
+    if (
+        filters.includes('rural') ||
+        filters.includes('town') ||
+        filters.includes('city') ||
+        filters.includes('metro')
+    ) {
         includePop = true;
     }
 
     var i;
     var rankedCities = [];
-    for (i = 0 ; i < cities.length; i++){
+    for (i = 0; i < cities.length; i++) {
         var filterrank = 0; // Starting rank for each city, for filter button selections
         var weightedrank = 0; // This ranking is for information we have that the user did not select to filter by
-        var weight = .2; // Weight given to each section depending on whether or not it was selected as filter
+        var weight = 0.2; // Weight given to each section depending on whether or not it was selected as filter
         var weightedCount = 0; //Count of items that may be given a weighted score.
-        const pop = Number(cities[i]["population"]);
+        const pop = Number(cities[i]['population']);
 
         // Rank based on filter buttons. These names are in the class list for each button on index.ejs
 
         //Internet Speed
-        var mbps = cities[i]["mbps"];
+        var mbps = cities[i]['mbps'];
         var internetRank = 0;
-        if (mbps != null){
-            if (mbps > 20){
+        if (mbps != null) {
+            if (mbps > 20) {
                 internetRank += 10;
             } else {
-                internetRank += mbps/2;
+                internetRank += mbps / 2;
             }
         }
-        if(filters.includes("internet")){  // MBPS is greater than 1
+        if (filters.includes('internet')) {
+            // MBPS is greater than 1
             filterrank += internetRank;
         } else {
             weightedrank += internetRank;
@@ -629,12 +650,13 @@ function rankCities(cities, filters){
         }
 
         // Pollution
-        var pollution = Number(cities[i]["pollution"]) || 0;
-        if (pollution > 100){
+        var pollution = Number(cities[i]['pollution']) || 0;
+        if (pollution > 100) {
             pollution = 100;
         }
-        var pollutionRank = (100 - pollution)/10;
-        if(filters.includes("pollution")){ // Index is null or less than 100
+        var pollutionRank = (100 - pollution) / 10;
+        if (filters.includes('pollution')) {
+            // Index is null or less than 100
             filterrank += pollutionRank;
         } else {
             weightedrank += pollutionRank;
@@ -642,20 +664,19 @@ function rankCities(cities, filters){
         }
 
         // Weather
-        var avgUV;     // Integer, index of 0 - 16, * 16       For higher accuracy, so its 0 through 256
+        var avgUV; // Integer, index of 0 - 16, * 16       For higher accuracy, so its 0 through 256
         var avgPrecip; // Integer, mm
         var avgTemp; // Integer, degrees C * 10
         var uvRank, precipRank, tempRank;
 
         // Get weather without month
-        if (includeMonth == false){
+        if (includeMonth == false) {
             // get averages
             avgUV = getAvgThing(cities[i], 'uv');
             avgPrecip = getAvgThing(cities[i], 'precip');
             avgTemp = getAvgThing(cities[i], 'temp');
-
-
-        } else { // Get weather with month filter included
+        } else {
+            // Get weather with month filter included
             // get averages
             avgUV = getMonthUV(cities[i], selectedMonth);
             avgPrecip = getMonthPrecip(cities[i], selectedMonth);
@@ -667,13 +688,14 @@ RANKING DONE BELOW
 */
 
         // UV Ranking
-        if(avgUV > 160){ // Over UV idx of 10
-            uvRank = 2.56 - avgUV/100;
+        if (avgUV > 160) {
+            // Over UV idx of 10
+            uvRank = 2.56 - avgUV / 100;
         } else {
-            uvRank = Math.min(12.56 - avgUV/16, 10); //uv index of 10 gives 2.6 to ranking, uv index of 0 gives 10 to ranking
+            uvRank = Math.min(12.56 - avgUV / 16, 10); //uv index of 10 gives 2.6 to ranking, uv index of 0 gives 10 to ranking
         }
         uvRank = Math.round(uvRank); //No areas have true 0 uv exposure, so this is just to round up.
-        if(filters.includes('uv')){
+        if (filters.includes('uv')) {
             filterrank += uvRank;
         } else {
             weightedrank += uvRank;
@@ -681,14 +703,16 @@ RANKING DONE BELOW
         }
 
         //Precip ranking
-        if (avgPrecip <= 150){
-            precipRank = (200 - avgPrecip)/20; // 0 adds 10 to rank, 150 adds 2.5
+        if (avgPrecip <= 150) {
+            precipRank = (200 - avgPrecip) / 20; // 0 adds 10 to rank, 150 adds 2.5
         } else if (rank < 300) {
             precipRank = 2;
-        } else { // At a certain point it doesnt matter, you're just in the rain.
+        } else {
+            // At a certain point it doesnt matter, you're just in the rain.
             precipRank = 1;
         }
-        if (filters.includes('precipitation')){ // in MM, from 0 to ~800
+        if (filters.includes('precipitation')) {
+            // in MM, from 0 to ~800
             filterrank += precipRank;
         } else {
             weightedrank += precipRank;
@@ -696,67 +720,69 @@ RANKING DONE BELOW
         }
 
         // Temp ranking
-        if (filters.includes('cold') ){
+        if (filters.includes('cold')) {
             // 0 f to 45 f == -17.7 C to 7.2
-            if (avgTemp >= -177 && avgTemp <= 72){
+            if (avgTemp >= -177 && avgTemp <= 72) {
                 tempRank = 10;
             } else if (avgTemp < -177) {
-                tempRank = Math.max((20 + (avgTemp + 177))/2, 0);
+                tempRank = Math.max((20 + (avgTemp + 177)) / 2, 0);
             } else {
-                tempRank = Math.max((20 - (avgTemp - 72))/2, 0);
+                tempRank = Math.max((20 - (avgTemp - 72)) / 2, 0);
             }
-        } else if ( filters.includes('temperate')){
+        } else if (filters.includes('temperate')) {
             // 45 f to 72 f ==  7.2 C to 22.2 C
-            if (avgTemp >= 72 && avgTemp <= 222){
+            if (avgTemp >= 72 && avgTemp <= 222) {
                 tempRank = 10;
-            } else if ( avgTemp < 72 && avgTemp > 0 ) {
-                tempRank = Math.max((20 - (72- avgTemp))/2, 0);
-            } else if ( avgTemp > 222){
-                tempRank = Math.max((20- (avgTemp - 222))/2, 0);
+            } else if (avgTemp < 72 && avgTemp > 0) {
+                tempRank = Math.max((20 - (72 - avgTemp)) / 2, 0);
+            } else if (avgTemp > 222) {
+                tempRank = Math.max((20 - (avgTemp - 222)) / 2, 0);
             } else {
                 tempRank = 0;
             }
-
-        } else if (filters.includes('warm')){
+        } else if (filters.includes('warm')) {
             // 75 f to 90 f == 23.8 C to 32.2
-            if (avgTemp >= 238 && avgTemp <= 322){
+            if (avgTemp >= 238 && avgTemp <= 322) {
                 tempRank = 10;
-            } else if ( avgTemp < 238 && avgTemp > 0 ) {
-                tempRank = Math.max((20 - (238 - avgTemp))/2, 0);
-            } else if ( avgTemp > 322){
-                tempRank = Math.max((20- (avgTemp - 322))/2, 0);
+            } else if (avgTemp < 238 && avgTemp > 0) {
+                tempRank = Math.max((20 - (238 - avgTemp)) / 2, 0);
+            } else if (avgTemp > 322) {
+                tempRank = Math.max((20 - (avgTemp - 322)) / 2, 0);
             } else {
                 tempRank = 0;
             }
-        } else if (filters.includes('hot')){
+        } else if (filters.includes('hot')) {
             // 85 f to 101 f == 29.4 C to 38.3
-            if (avgTemp >= 294 && avgTemp <= 383){
+            if (avgTemp >= 294 && avgTemp <= 383) {
                 tempRank = 10;
-            }
-            else if ( avgTemp < 294 && avgTemp > 0 ) {
-                tempRank = Math.max((20 - (294 - avgTemp))/2, 0);
-            } else if ( avgTemp > 383){
-                tempRank = Math.max((20- (avgTemp - 383))/2, 0);
+            } else if (avgTemp < 294 && avgTemp > 0) {
+                tempRank = Math.max((20 - (294 - avgTemp)) / 2, 0);
+            } else if (avgTemp > 383) {
+                tempRank = Math.max((20 - (avgTemp - 383)) / 2, 0);
             } else {
                 tempRank = 0;
             }
         }
-        if (filters.includes('cold') || filters.includes('temperate') || filters.includes('warm') || filters.includes('hot')){
+        if (
+            filters.includes('cold') ||
+            filters.includes('temperate') ||
+            filters.includes('warm') ||
+            filters.includes('hot')
+        ) {
             filterrank += tempRank;
         }
 
         // Purchasing power
         // data values between 1.29 and .14
 
-        var purchasePower = cities[i]["purchasingpower"];
+        var purchasePower = cities[i]['purchasingpower'];
         var pppRank;
-        if(filters.includes('purchase')){
-            if (purchasePower >= 1){
-                pppRank = 5 - (purchasePower -1)*10;
-            }
-            else {
-                pppRank = 5 + ((1 - purchasePower)*10)/2;
-                if(pppRank > 10){
+        if (filters.includes('purchase')) {
+            if (purchasePower >= 1) {
+                pppRank = 5 - (purchasePower - 1) * 10;
+            } else {
+                pppRank = 5 + ((1 - purchasePower) * 10) / 2;
+                if (pppRank > 10) {
                     pppRank = 10;
                 }
             }
@@ -766,61 +792,54 @@ RANKING DONE BELOW
         // Socioeconomic filter
         var povertyindex = cities[i].povertyindex;
         //console.log("Socioeconomic filter:", povertyindex);
-        if (filters.includes('high-poverty-index')){
-            filterrank += povertyindex/10; //100% severe povery will give a 10, and no poverty gives a 0
-        }
-        else if (filters.includes('medium-poverty-index')){
-            if(povertyindex == 0){
+        if (filters.includes('high-poverty-index')) {
+            filterrank += povertyindex / 10; //100% severe povery will give a 10, and no poverty gives a 0
+        } else if (filters.includes('medium-poverty-index')) {
+            if (povertyindex == 0) {
                 filterrank += 3;
-            }
-            else if(povertyindex < 15){
+            } else if (povertyindex < 15) {
                 filterrank += 8;
-            }
-            else{
+            } else {
                 filterrank += 0;
             }
-        }
-        else if (filters.includes('low-poverty-index')){
-            if(povertyindex == 0){
+        } else if (filters.includes('low-poverty-index')) {
+            if (povertyindex == 0) {
                 filterrank += 10;
-            }
-            else if(povertyindex < 5){
+            } else if (povertyindex < 5) {
                 filterrank += 5;
-            }
-            else{
+            } else {
                 filterrank += 0;
             }
-        }
-        else {
+        } else {
             weightedrank += 4 - povertyindex;
             weightedCount++;
         }
 
         // Homicides and female homicides by country
         // Max is 83, avg is 7.5, America is 4.9, 0s means no data
-        var totalHoms = Number(cities[i]["totalhomicides"]) || 0;
-        var femaleHoms = Number(cities[i]["femalehomicides"]) || 0;
+        var totalHoms = Number(cities[i]['totalhomicides']) || 0;
+        var femaleHoms = Number(cities[i]['femalehomicides']) || 0;
         var safe, safeforwomen;
-        if(totalHoms > 8 || totalHoms == 0){
+        if (totalHoms > 8 || totalHoms == 0) {
             safe = 0;
         } else {
             safe = 10 - totalHoms;
         }
 
-        if(femaleHoms > 8 || femaleHoms == 0){
+        if (femaleHoms > 8 || femaleHoms == 0) {
             safeforwomen = 0;
         } else {
             safeforwomen = 10 - femaleHoms;
         }
 
-        if (filters.includes('safe')){
+        if (filters.includes('safe')) {
             filterrank += safe;
         } else {
             weightedrank += safe;
             weightedCount++;
         }
 
-        if (filters.includes('safeforwomen')){
+        if (filters.includes('safeforwomen')) {
             filterrank += safeforwomen;
         } else {
             weightedrank += safeforwomen;
@@ -829,65 +848,71 @@ RANKING DONE BELOW
 
         var rank;
 
-        if(filters.length == 0){
-            rank = weightedrank/weightedCount;
-        }
-        else if  (filters.length == 1 && (includeMonth || includePop || includeNonRank || includeSortBy) ){
-            rank = weightedrank/weightedCount;
-        }
-        else if (filters.length == 1){
+        if (filters.length == 0) {
+            rank = weightedrank / weightedCount;
+        } else if (
+            filters.length == 1 &&
+            (includeMonth || includePop || includeNonRank || includeSortBy)
+        ) {
+            rank = weightedrank / weightedCount;
+        } else if (filters.length == 1) {
             rank = filterrank;
-        }
-        else if(filters.length == 2){
-            if( !(includeMonth || includePop || includeNonRank) ) {
-                rank = (filterrank + (weightedrank * weight) ) / (filters.length + (weightedCount * weight));
-            }
-            else if ((includeMonth && !(includePop || includeNonRank)) || (includePop && !(includeMonth || includeNonRank)) || (includeNonRank && !(includePop || includeMonth))){
-                if(nonRankCount == 2){
-                    rank = weightedrank/weightedCount;
-                }
-                else{
+        } else if (filters.length == 2) {
+            if (!(includeMonth || includePop || includeNonRank)) {
+                rank =
+                    (filterrank + weightedrank * weight) /
+                    (filters.length + weightedCount * weight);
+            } else if (
+                (includeMonth && !(includePop || includeNonRank)) ||
+                (includePop && !(includeMonth || includeNonRank)) ||
+                (includeNonRank && !(includePop || includeMonth))
+            ) {
+                if (nonRankCount == 2) {
+                    rank = weightedrank / weightedCount;
+                } else {
                     rank = filterrank;
                 }
+            } else {
+                rank = weightedrank / weightedCount;
             }
-            else{
-                rank = weightedrank/weightedCount;
-            }
-        }
-        else if (filters.length == 3 && includeMonth && includePop && includeNonRank){
-            rank = weightedrank/weightedCount;
-        }
-        else {
-            rank = (filterrank + (weightedrank * weight) ) / (filters.length + (weightedCount * weight));
+        } else if (
+            filters.length == 3 &&
+            includeMonth &&
+            includePop &&
+            includeNonRank
+        ) {
+            rank = weightedrank / weightedCount;
+        } else {
+            rank =
+                (filterrank + weightedrank * weight) /
+                (filters.length + weightedCount * weight);
         }
 
         // Adjust to only 1 decimal place
-        var roundedRank = Math.round(rank * 10)/10;
+        var roundedRank = Math.round(rank * 10) / 10;
 
         //name, lon, lat, rank, id
         if (cities[i]['image']) {
             rankedCities.push({
-                "city": cities[i]["city"],
-                "lon": Number(cities[i]["lon"]),
-                "lat": Number(cities[i]["lat"]),
-                "rank": Number(roundedRank.toFixed(1)),
-                "id": cities[i]["id"],
-                "image": cities[i]["image"]
+                city: cities[i]['city'],
+                lon: Number(cities[i]['lon']),
+                lat: Number(cities[i]['lat']),
+                rank: Number(roundedRank.toFixed(1)),
+                id: cities[i]['id'],
+                image: cities[i]['image'],
             });
-        }
-        else {
+        } else {
             rankedCities.push({
-                "city": cities[i]["city"],
-                "lon": Number(cities[i]["lon"]),
-                "lat": Number(cities[i]["lat"]),
-                "rank": Number(roundedRank.toFixed(1)),
-                "id": cities[i]["id"]
+                city: cities[i]['city'],
+                lon: Number(cities[i]['lon']),
+                lat: Number(cities[i]['lat']),
+                rank: Number(roundedRank.toFixed(1)),
+                id: cities[i]['id'],
             });
         }
-
     }
 
-    var returnVal = {'cities': rankedCities};
+    var returnVal = { cities: rankedCities };
     return returnVal;
 }
 
@@ -895,7 +920,7 @@ RANKING DONE BELOW
 // makes for an error handling experience with fewer suprises.
 async function swimming_pool(query = '', action) {
     try {
-        const client = await pool.connect()
+        const client = await pool.connect();
         const result = await client.query(query);
         const results = result ? result.rows : null;
         client.release();
@@ -909,7 +934,7 @@ async function swimming_pool(query = '', action) {
             action(results);
         }
 
-    //TODO: It should probably just show the data that it can get, or say that it can't find data.
+        //TODO: It should probably just show the data that it can get, or say that it can't find data.
     } catch (err) {
         console.error(err);
     }
@@ -929,17 +954,17 @@ function getAvgThing(obj, prefix = '') {
     return Math.round(sum / total.length);
 }
 
-function getMonthUV(city, month){
-    const index = "uv" +  month;
+function getMonthUV(city, month) {
+    const index = 'uv' + month;
     return city[index];
 }
 
-function getMonthPrecip(city, month){
-    const index = "precip" +  month;
+function getMonthPrecip(city, month) {
+    const index = 'precip' + month;
     return city[index];
 }
 
-function getMonthTemp(city, month){
-    const index = "temp" +  month;
+function getMonthTemp(city, month) {
+    const index = 'temp' + month;
     return city[index];
 }
