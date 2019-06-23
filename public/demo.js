@@ -171,11 +171,11 @@ function doTerminal(terminal, socket) {
         let up = 0;
         let down = 0;
         let ctrl = false;
-        let pinged = false;
 
         // Listen for messages
         socket.onmessage = event => {
             message = event.data;
+            let pinged = false;
 
             var myblob = new Blob([message], {
                 type: 'text/plain',
@@ -261,8 +261,7 @@ function doTerminal(terminal, socket) {
                     event.preventDefault();
                 }
             } else if (key == 38) {
-
-            /*
+                /*
             else if (key == 9) {
                 event.preventDefault();
                 terminal.innerHTML += "TAB detected";
