@@ -175,7 +175,6 @@ function doTerminal(terminal, socket) {
         // Listen for messages
         socket.onmessage = event => {
             message = event.data;
-            let pinged = false;
 
             var myblob = new Blob([message], {
                 type: 'text/plain',
@@ -187,7 +186,6 @@ function doTerminal(terminal, socket) {
 
                 if (message == 'pong') {
                     heartbeat();
-                    pinged = true;
                     return;
                 }
 
@@ -210,7 +208,7 @@ function doTerminal(terminal, socket) {
             reader.readAsText(myblob);
 
             messages = message.split('\n');
-            if (pinged == false) {
+            if (message != 'pong') {
                 terminal.scrollTop = terminal.scrollHeight;
             }
             zigzagPort(message);
