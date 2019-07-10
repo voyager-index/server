@@ -916,7 +916,7 @@ RANKING DONE BELOW
     return returnVal;
 }
 
-// a sleep deprived attempt to standardize interactions with the client.
+// standardizes interactions with the client.
 // makes for an error handling experience with fewer suprises.
 async function swimming_pool(query = '', action) {
     try {
