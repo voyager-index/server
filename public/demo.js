@@ -1,9 +1,6 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
 // url linker
 import Autolinker from 'autolinker';
-// used mainly for the nice syntax
-import $ from 'jquery';
-import jQuery from 'jquery';
 const AU = require('ansi_up');
 const ansi_up = new AU.default();
 
@@ -12,8 +9,8 @@ const development_url = 'ws://localhost:8181';
 const DEV = false;
 
 // namespace
-var MYLIBRARY =
-    MYLIBRARY ||
+var lib =
+    lib ||
     (function() {
         var _args = {}; // private
 
@@ -22,18 +19,31 @@ var MYLIBRARY =
                 _args = Args;
                 // some other initialising
             },
-            helloWorld: () => {
-                return _args[0];
+            args: () => {
+                return _args;
             },
         };
     })();
 
-export { MYLIBRARY };
+export { lib };
+export { bootup };
 
-$(document).ready(() => {
-    let terminals = $('.terminals');
+document.addEventListener('DOMContentLoaded', () => {
+    let boot = lib.args().boot;
+    if (boot == true) {
+        bootup(lib.args());
+    }
+});
 
-    let duplicateTerminal = $('#duplicate-terminal');
+function bootup(args) {
+    console.log('booting up');
+    console.log('args:', args);
+    //let terminals = $(".terminals");
+    let terminals =
+        args.terminal || document.getElementsByClassName('terminals')[0];
+    console.log('terminals:', terminals);
+
+    let duplicateTerminal = document.getElementById('duplicate-terminal');
     if (duplicateTerminal) {
         duplicateTerminal.onclick = () => {
             if (terminals.length < 2) {
@@ -42,31 +52,34 @@ $(document).ready(() => {
         };
     }
 
-    let examples = $('.demo-examples');
+    let examples = document.getElementsByClassName('demo-examples');
     for (let i = 0; i < examples.length; i++) {
         let example = examples[i].innerHTML;
         examples[i].onclick = () => {
-            terminals[0].innerHTML = terminals[0].innerHTML.replace(
+            terminals.innerHTML = terminals.innerHTML.replace(
                 /.*$/,
                 '> ' + example
             );
-            terminals[0].focus();
+            terminals.focus();
         };
     }
 
     let socket = getSocket();
-    doTerminal(terminals[0], socket);
+    doTerminal(terminals, socket, args);
 
     const interval = setInterval(function ping() {
         if (socket.isAlive === false) {
             socket = getSocket();
-            doTerminal(terminals[0], socket);
+            doTerminal(terminals[0], socket, args.mode);
         } else {
             socket.isAlive = false;
-            socket.send('ping');
+            let ping = JSON.stringify({
+                command: 'ping',
+            });
+            socket.send(ping);
         }
     }, 3000);
-});
+}
 
 function getSocket() {
     // Create WebSocket connection.
@@ -83,20 +96,21 @@ function getSocket() {
 
 // adds an additional terminal below the first.
 function dup() {
-    let terminals = $('.terminals');
-    let terminalContainer = $('.terminal');
-    let buttonContainer = $('#button-container');
+    let terminals = document.getElementsByClassName('terminals');
+    let terminalContainer = document.getElementsByClassName('terminal');
+    let buttonContainer = document.getElementById('button-container');
 
-    let clone = $('<textarea>');
+    let clone = document.createElement('textarea');
     clone.className = 'terminals';
     terminalContainer.appendChild(clone);
 
     // Create WebSocket connection.
-    let socket = new WebSocket('wss://liambeckman.com:8181');
+    let socket = new WebSocket('wss://liambeckman.com:8181', options);
+    //let socket = new WebSocket('wss://localhost:8181', options);
 
-    doTerminal(clone, socket);
+    doTerminal(clone, socket, { mode: 'command' });
 
-    let removeTerminal = $('span');
+    let removeTerminal = document.createElement('span');
     removeTerminal.id = 'remove-terminal';
     removeTerminal.innerHTML = '-';
     buttonContainer.appendChild(removeTerminal);
@@ -110,7 +124,7 @@ function dup() {
 
 // used for the zigzag tcp chat program
 function zigzagPort(message) {
-    let terminals = $('.terminals');
+    let terminals = document.getElementsByClassName('terminals');
     let original = terminals[0];
     let clone = terminals[1];
 
@@ -130,7 +144,13 @@ function zigzagPort(message) {
 function setCaret(el) {
     var range = document.createRange();
     var sel = window.getSelection();
-    range.setStart(el.lastChild, el.lastChild.length);
+    let children = el.lastChild.innerText.split('\n');
+    let last_child = children[children.length - 1];
+    //console.log('el:', el.lastChild);
+    //console.log('len:', el.lastChild.innerText.length)
+    //console.log('last_child:', last_child);
+    //console.log('last_child.length:', last_child.length);
+    range.setStart(el.lastChild, el.lastChild.innerText.length);
     range.collapse(true);
     sel.removeAllRanges();
     sel.addRange(range);
@@ -138,28 +158,51 @@ function setCaret(el) {
 }
 
 // main terminal function
-function doTerminal(terminal, socket) {
+function doTerminal(terminal, socket, args) {
+    console.log('doTerminal mode:', args.mode);
     function heartbeat() {
         socket.isAlive = true;
     }
+    console.log('terminal:', terminal);
 
     terminal.spellcheck = false;
     console.log('Connecting to server...');
 
-    let info = $('#info')[0];
-    info.innerHTML = 'Status: Connecting...';
-    info.style.backgroundColor = '#ff357a';
+    let info = document.getElementById('info');
+    if (info) {
+        info.innerHTML = 'Status: Connecting...';
+        info.style.backgroundColor = '#ff357a';
+    }
 
     // Connection opened
     socket.onopen = event => {
-        console.log('Sending initial message to server.');
-        info.innerHTML = 'Status: Connected. Press ENTER to blast off!';
-        info.style.backgroundColor = '#49ccd4';
+        console.log('socket is open.');
+        if (info) {
+            info.innerHTML = 'Status: Connected. Press ENTER to blast off!';
+            info.style.backgroundColor = '#49ccd4';
+        }
 
-        let userPrompt = MYLIBRARY.helloWorld();
+        let command = lib.args().command || '';
+        let userPrompt = lib.args().userPrompt || '> ';
+        let code = lib.args().code || args.code;
+        let language = lib.args().language || args.language;
 
-        if (terminal.innerHTML == '') {
-            terminal.innerHTML = '> ' + userPrompt;
+        if (args.mode == 'code') {
+            //terminal.innerHTML = language + ': ' + code;
+            console.log('DOMAIN:', args.domain);
+            if (args.domain === 'browser') {
+                terminal.innerHTML += eval(code);
+                //console.log('EVAL:', eval(code));
+                //eval(code);
+                socket.send('prompt');
+            } else {
+                runCode(code, language, socket);
+            }
+        } else {
+            console.log('YUP:', terminal.innerText.length);
+            if (terminal.innerText.length == 0) {
+                terminal.innerHTML = userPrompt + command;
+            }
         }
 
         socket.isAlive = true;
@@ -186,31 +229,43 @@ function doTerminal(terminal, socket) {
 
                 if (message == 'pong') {
                     heartbeat();
+                    console.log('pong.');
                     return;
-                }
-
-                if (message.includes('\r')) {
+                } else if (message.includes('\r')) {
                     message = message.replace(/\r/g, '');
                     terminal.innerHTML = terminal.innerHTML.replace(
                         /.*$/,
                         message
                     );
                 } else {
+                    // ansi_up (converts ansi colors to html colors).
                     message = ansi_up.ansi_to_html(message);
-                    console.log('message:', message);
-                    console.log('typeof message:', typeof message);
-                    message = Autolinker.link(message);
-                    terminal.innerHTML += message;
+
+                    // Autolinker (makes clickable url's).
+                    const matches = Autolinker.parse(message);
+                    if (matches.length > 0) {
+                        message = Autolinker.link(message);
+                        //window.open(matches[0].getUrl());
+                    }
+
+                    let from_server = document.createElement('span');
+                    from_server.className = 'from_server';
+                    from_server.innerHTML = message;
+                    from_server.contentEditable = false;
+                    terminal.appendChild(from_server);
+
+                    let user_input = document.createElement('span');
+                    user_input.className = 'user_input';
+                    user_input.innerHTML = '';
+                    terminal.appendChild(user_input);
+
                     setCaret(terminal);
+                    terminal.scrollTop = terminal.scrollHeight;
                 }
             });
 
             reader.readAsText(myblob);
-
             messages = message.split('\n');
-            if (message != 'pong') {
-                terminal.scrollTop = terminal.scrollHeight;
-            }
             zigzagPort(message);
         };
 
@@ -242,7 +297,7 @@ function doTerminal(terminal, socket) {
                     e.preventDefault();
                     terminal.innerHTML = terminal.innerHTML.replace(
                         /.*$/,
-                        '&gt '
+                        userPrompt
                     );
                     setCaret(terminal);
                 }
@@ -260,6 +315,7 @@ function doTerminal(terminal, socket) {
                 }
             } else if (key == 38) {
                 /*
+            // TAB key detected. TODO: Add autocompletion functionality.
             else if (key == 9) {
                 event.preventDefault();
                 terminal.innerHTML += "TAB detected";
@@ -291,42 +347,81 @@ function doTerminal(terminal, socket) {
                         );
                     }
                 }
-            } else if (key == 13) {
+            }
+
+            // enter key
+            else if (key == 13) {
                 let comm = '';
+                console.log('HEY!:', terminal.lastChild);
+                comm = terminal.lastChild.innerText;
                 event.preventDefault();
                 terminal.innerHTML += '\n';
+
+                let user_input = document.createElement('span');
+                user_input.className = 'user_input';
+                user_input.innerHTML = '';
+                terminal.appendChild(user_input);
+
                 up = 0;
                 down = 0;
-                comm = lines[lines.length - 1];
-                comm = comm.replace(/\> /g, '');
-                comm = comm.replace(/^[ ]*/g, '');
-                console.log('you entered:', comm);
-
-                if (comm == 'clear') {
-                    event.preventDefault();
-                    terminal.innerHTML = '> ';
-                    commands[commNum] = comm;
-                    commNum += 1;
-                } else if (comm == '') {
-                    event.preventDefault();
-                    terminal.innerHTML += '\n> ';
-                } else {
-                    socket.send(comm);
-                    commands[commNum] = comm;
-                    commNum += 1;
-
-                    if (comm == 'zigzag-server') {
-                        let terminals = $('.terminals');
-                        if (terminals.length < 2) {
-                            dup();
-                        }
-                    }
+                if (comm == null) {
+                    // only use last line
+                    comm = lines[lines.length - 1];
+                    // remove user prompt
+                    comm = comm.replace(/\> /g, '');
+                    comm = comm.replace(/\$ /g, '');
+                    comm = comm.replace(/\: /g, '');
+                    // remove leading spaces
+                    comm = comm.replace(/^[ ]*/g, '');
                 }
 
+                runCommand(comm, commands, commNum, terminal, socket);
                 terminal.scrollTop = terminal.scrollHeight;
             }
 
             setCaret(terminal);
         };
     };
+}
+
+function runCommand(comm, commands, commNum, terminal, socket) {
+    console.log('you entered:', comm);
+
+    if (comm == 'clear') {
+        event.preventDefault();
+        terminal.innerHTML = '> ';
+        commands[commNum] = comm;
+        commNum += 1;
+    } else if (comm == '') {
+        event.preventDefault();
+        terminal.innerHTML += '\n> ';
+    } else {
+        let message = JSON.stringify({
+            command: comm,
+        });
+        console.log('command:', message.command);
+        console.log('message:', message);
+        socket.send(message);
+        commands[commNum] = comm;
+        commNum += 1;
+
+        if (comm == 'zigzag-server') {
+            let terminals = document.getElementsByClassName('terminals');
+            if (terminals.length < 2) {
+                dup();
+            }
+        }
+    }
+}
+
+function runCode(code, language, socket) {
+    console.log('code:', code);
+    console.log('language:', language);
+
+    let message = JSON.stringify({
+        mode: 'code',
+        code: code,
+        language: language,
+    });
+    socket.send(message);
 }

@@ -21,7 +21,11 @@
     <pre class="terminals" tabindex="0" contentEditable="true"></pre>
 </div>
 <script src="demo.bundle.js"></script>
-<script type="text/javascript">Voyager.MYLIBRARY.init(["voy search --color --name portland"]);</script>
+    <script type="text/javascript">Voyager.lib.init({
+        command: 'voy search --color --name portland',
+        userPrompt: '> ',
+        boot: true,
+    });</script>
 
 <div id="button-container">
     <div class="what-is-this">
