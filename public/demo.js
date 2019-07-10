@@ -58,7 +58,7 @@ function bootup(args) {
         examples[i].onclick = () => {
             terminals.innerHTML = terminals.innerHTML.replace(
                 /.*$/,
-                '> ' + example
+                `</span>> <span class="user_input">${example}</span>`
             );
             terminals.focus();
         };
